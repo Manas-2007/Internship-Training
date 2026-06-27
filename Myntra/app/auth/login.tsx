@@ -80,7 +80,7 @@ export default function Login() {
           </TouchableOpacity>
 
           {/* Sign Up Link */}
-          <TouchableOpacity className="items-center mt-auto mb-4">
+          <TouchableOpacity className="items-center mt-auto mb-4" onPress={()=>router.replace('/auth/signup')}>
             <Text className="text-base text-neutral-500 font-medium">
               Don't have an account? <Text className="text-[#ff3f6c] font-bold">Sign Up</Text>
             </Text>
