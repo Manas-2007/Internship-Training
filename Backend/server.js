@@ -111,6 +111,24 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// GET USER PROFILE API 
+app.get('/api/auth/profile', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.split(' ')[1];
+        if (!token) return res.status(401).json({ message: "No token, authorization denied" });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'myntra_super_secret_key_123');
+        
+        const user = await User.findById(decoded.id).select('-password');
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        res.status(200).json(user);
+    } catch (error) {
+        console.error("Profile Fetch Error:", error.message);
+        res.status(401).json({ message: "Token is not valid" });
+    }
+});
+
 // --- SERVER START ---
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
