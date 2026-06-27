@@ -10,7 +10,8 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Mock product data to test the UI (since we are ignoring backend)
 const mockProducts: Record<string, any> = {
@@ -92,6 +93,32 @@ export default function ProductDetails() {
     router.push("/(tabs)/bag");
   };
 
+  const toggleWishlist = async () => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        alert("Please login to add to wishlist!");
+        return;
+      }
+
+      // Optimistic UI update (Instant toggle)
+      setIsWishlisted(!isWishlisted);
+
+      // Backend API Call
+      await axios.post(
+        "http://172.16.52.102:5000/api/wishlist",
+        { productId: product.id }, // Product ID send kar rahe hain
+        { headers: { Authorization: `Bearer ${token}` } } // Token yahan bhejna zaroori hai
+      );
+      
+      console.log("Wishlist updated successfully!");
+    } catch (error) {
+      console.log("Wishlist error:", error);
+      setIsWishlisted(isWishlisted); // Agar error aaye, wapas original state pe jao
+      alert("Something went wrong!");
+    }
+  };
+
   if (!product) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
@@ -160,7 +187,8 @@ export default function ProductDetails() {
             </View>
             <TouchableOpacity 
               className="p-2"
-              onPress={() => setIsWishlisted(!isWishlisted)}
+             onPress={toggleWishlist}
+              
             >
               <Ionicons 
                 name={isWishlisted ? "heart" : "heart-outline"} 
