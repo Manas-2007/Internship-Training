@@ -425,6 +425,17 @@ app.get("/api/orders/user/:userid", async (req, res) => {
     }
 });
 
+// Update Item Quantity in Bag
+app.put("/api/bag/:itemid", async (req, res) => {
+    try {
+        const { quantity } = req.body;
+        await Bag.findByIdAndUpdate(req.params.itemid, { quantity: quantity });
+        res.status(200).json({ message: "Quantity updated successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating quantity" });
+    }
+});
+
 // Home API for Myntra Clone
 app.get("/api/home", async (req, res) => {
     try {

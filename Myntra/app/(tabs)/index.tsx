@@ -51,7 +51,7 @@ export default function Home() {
         setWishlistIds((prev: string[]) => prev.filter((id) => id !== productId));
         
         // API Call: Delete
-        await axios.delete(`http://10.132.253.253:5000/api/wishlist/product/${productId}`, {
+        await axios.delete(`http://10.132.206.253:5000/api/wishlist/product/${productId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
@@ -59,7 +59,7 @@ export default function Home() {
         setWishlistIds((prev: string[]) => [...prev, productId]);
         
         // API Call: Add product
-        await axios.post(`http://10.132.253.253:5000/api/wishlist`, { productId }, {
+        await axios.post(`http://10.132.206.253:5000/api/wishlist`, { productId }, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -202,7 +202,6 @@ export default function Home() {
         <View className="mt-6 px-4 mb-5">
           <Text className="text-lg font-black text-neutral-800 tracking-wide mb-6">TRENDING NOW</Text>
           <View className="flex-row flex-wrap justify-between">
-            {console.log("Total Products in Home:", products?.length)}
             {products?.map((product: any) => (
               <TouchableOpacity
                 key={product._id}

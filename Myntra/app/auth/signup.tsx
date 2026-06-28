@@ -38,7 +38,7 @@ export default function SignUp() {
     }
 
     try {
-      const API_URL = "http://10.132.253.253:5000/api/auth/register";
+      const API_URL = "http://10.132.206.253:5000/api/auth/register";
 
       const response = await axios.post(API_URL, {
         name,
