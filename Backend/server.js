@@ -316,10 +316,8 @@ app.get("/api/wishlist/:userid", async (req, res) => {
             userId: new mongoose.Types.ObjectId(uid) 
         }).populate("productId");
         
-        console.log("Found items for", uid, ":", wishlist.length);
         res.status(200).json(wishlist);
     } catch (error) {
-        console.log("Wishlist Fetch Error:", error.message);
         res.status(500).json({ message: "Error fetching wishlist", error: error.message });
     }
 });

@@ -1,146 +1,195 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Image, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-// Components (Make sure paths match your folder structure)
-import SearchBar from "../../components/Category Tab/SearchBar";
-import CategoryCard from "../../components/Category Tab/CategoryCard";
-import SubcategoryPills from "../../components/Category Tab/SubcategoryPills";
-import ProductCard from "../../components/Category Tab/ProductCard";
+// 🚀 REAL Database products use karne ke liye context import kiya
+import { useGlobalContext } from "../context/GlobalContext"; 
 
-// 🚀 PREMIUM PEXELS DATA
+// PREMIUM PEXELS CATEGORIES (Exactly matching your UI flow)
 const categoriesData = [
-  {
-    _id: "cat_1",
-    name: "Men",
-    image: "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg",
-    subCategories: ["T-Shirts", "Shirts", "Jeans"],
-  },
-  {
-    _id: "cat_2",
-    name: "Women",
-    image: "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg",
-    subCategories: ["Dresses", "Tops", "Ethnic"],
-  },
-  {
-    _id: "cat_3",
-    name: "Footwear",
-    image: "https://images.pexels.com/photos/19090/pexels-photo.jpg",
-    subCategories: ["Sneakers", "Formal", "Sandals"],
-  },
-  {
-    _id: "cat_4",
-    name: "Accessories",
-    image: "https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg",
-    subCategories: ["Watches", "Belts", "Jewellery"],
-  },
-  {
-    _id: "cat_5",
-    name: "Beauty",
-    image: "https://images.pexels.com/photos/2533266/pexels-photo-2533266.jpeg",
-    subCategories: ["Makeup", "Skin Care", "Fragrance"],
-  },
-  {
-    _id: "cat_6",
-    name: "Kids",
-    image: "https://images.pexels.com/photos/1648377/pexels-photo-1648377.jpeg",
-    subCategories: ["Sets", "Shoes", "T-Shirts"],
-  },
-];
-
-const productsData = [
-  { _id: "prod_1", categoryId: "cat_1", name: "Premium T-Shirt", brand: "Roadster", price: "599", discount: "40% OFF", image: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg" },
-  { _id: "prod_2", categoryId: "cat_2", name: "Floral Summer Dress", brand: "H&M", price: "1299", discount: "20% OFF", image: "https://images.pexels.com/photos/2065200/pexels-photo-2065200.jpeg" },
-  { _id: "prod_3", categoryId: "cat_3", name: "Classic Sneakers", brand: "Nike", price: "2999", discount: "15% OFF", image: "https://images.pexels.com/photos/1464625/pexels-photo-1464625.jpeg" },
-  { _id: "prod_4", categoryId: "cat_4", name: "Luxury Watch", brand: "Titan", price: "1499", discount: "50% OFF", image: "https://images.pexels.com/photos/2783873/pexels-photo-2783873.jpeg" },
-  { _id: "prod_5", categoryId: "cat_5", name: "Matte Lipstick", brand: "Lakme", price: "450", discount: "10% OFF", image: "https://images.pexels.com/photos/3373736/pexels-photo-3373736.jpeg" },
-  { _id: "prod_6", categoryId: "cat_6", name: "Cartoon T-Shirt", brand: "Allen Solly", price: "399", discount: "30% OFF", image: "https://images.pexels.com/photos/35537/child-children-girl-happy.jpg" },
+  { name: "Men", image: "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg", subCategories: ["T-Shirts", "Shirts", "Jeans", "Trousers"] },
+  { name: "Women", image: "https://images.pexels.com/photos/1536619/pexels-photo-1536619.jpeg", subCategories: ["Dresses", "Tops", "Ethnic Wear", "Western"] },
+  { name: "Footwear", image: "https://images.pexels.com/photos/19090/pexels-photo.jpg", subCategories: ["Sneakers", "Formal", "Sandals", "Heels"] },
+  { name: "Accessories", image: "https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg", subCategories: ["Watches", "Belts", "Jewellery", "Bags"] },
+  { name: "Beauty", image: "https://images.pexels.com/photos/2533266/pexels-photo-2533266.jpeg", subCategories: ["Makeup", "Skin Care", "Fragrance", "Hair"] },
+  { name: "Kids", image: "https://images.pexels.com/photos/1648377/pexels-photo-1648377.jpeg", subCategories: ["Sets", "Shoes", "T-Shirts", "Toys"] },
 ];
 
 export default function Categories() {
   const router = useRouter(); 
   const params = useLocalSearchParams();
+  const { products } = useGlobalContext();
   
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
 
-  // Jab Home screen se kisi category par click hokar aaye
+  // 🔥 MASTER LOCK: Isse infinite loop kabhi nahi banega
+  const isInitialized = useRef(false);
+
   useEffect(() => {
-    if (params.categoryName) {
+    // Sirf tabhi run karo jab params ho aur pehle run NA hua ho
+    if (params.categoryName && !isInitialized.current) {
       const found = categoriesData.find((c) => c.name === params.categoryName);
       if (found) {
         setSelectedCategory(found);
         setSelectedSubCategory(found.subCategories[0]); 
+        isInitialized.current = true; // Lock lag gaya
       }
     }
   }, [params.categoryName]);
 
+  const getDisplayProducts = () => {
+    if (!products || products.length === 0) return [];
+
+    const isFirstSubcategory = selectedSubCategory === selectedCategory?.subCategories[0];
+    
+    // Agar user ne subcategory change kardi hai, toh kuch mat dikhao
+    if (!isFirstSubcategory) return [];
+
+    // Sirf 1 product nikalna database se
+    const matched = products.filter((p: any) => {
+      const catName = selectedCategory?.name?.toLowerCase();
+      return p.name?.toLowerCase().includes(catName) || 
+             p.brand?.toLowerCase().includes(catName) || 
+             p.description?.toLowerCase().includes(catName) ||
+             p.category?.toLowerCase() === catName;
+    });
+
+    const baseList = matched.length > 0 ? matched : products;
+    return baseList.slice(0, 1);
+  };
+
+  const visibleProducts = selectedCategory ? getDisplayProducts() : [];
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      
+      {/* GLOBAL HEADER */}
       <View className="px-4 py-3 bg-white">
-        <Text className="text-2xl font-black text-neutral-800">Categories</Text>
+        <Text className="text-3xl font-black text-neutral-900 tracking-tight">Categories</Text>
       </View>
 
-      <SearchBar />
+      {/* SEARCH BAR */}
+      <View className="px-4 pb-4 bg-white border-b border-neutral-100">
+        <View className="flex-row items-center bg-[#f5f5f5] px-4 py-3 rounded-xl">
+          <Ionicons name="search" size={20} color="#a3a3a3" />
+          <TextInput 
+            placeholder="Search for products, brands and..." 
+            className="flex-1 ml-2 text-neutral-800 text-base"
+            placeholderTextColor="#a3a3a3"
+          />
+        </View>
+      </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-white">
         {selectedCategory ? (
           
-          /* --- DETAIL VIEW (Subcategories & Products List) --- */
-          <View className="pb-20">
+          <View className="pb-24">
+            
+            {/* Back to Categories */}
             <TouchableOpacity
-              className="flex-row items-center mb-4 px-4"
+              className="flex-row items-center px-4 mt-4 mb-2"
               onPress={() => {
                 setSelectedCategory(null);
                 setSelectedSubCategory(null);
               }}
             >
-              <Ionicons name="arrow-back" size={20} color="#ff3f6c" />
-              <Text className="text-[#ff3f6c] font-bold text-base ml-1">
-                Back to Categories
-              </Text>
+              <Ionicons name="arrow-back" size={18} color="#ce4067" />
+              <Text className="text-[#ce4067] font-bold text-base ml-1">Back to Categories</Text>
             </TouchableOpacity>
 
-            <Text className="text-3xl font-black text-neutral-800 mb-4 px-4">
+            {/* Category Name */}
+            <Text className="text-4xl font-black text-neutral-900 px-4 mb-4 mt-1">
               {selectedCategory.name}
             </Text>
 
-            <SubcategoryPills
-              subCategories={selectedCategory.subCategories}
-              selectedSubCategory={selectedSubCategory}
-              onSelect={(sub: string) => setSelectedSubCategory(sub)}
-            />
+            {/* Subcategory Pills */}
+            <View className="mb-6">
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
+                {selectedCategory.subCategories.map((sub: string, index: number) => {
+                  const isActive = sub === selectedSubCategory;
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => setSelectedSubCategory(sub)}
+                      className={`px-5 py-2.5 rounded-full mr-3 ${
+                        isActive ? "bg-white border border-neutral-200 shadow-sm" : "bg-[#f5f5f5]"
+                      }`}
+                    >
+                      <Text className={`font-bold text-sm ${isActive ? "text-neutral-900" : "text-neutral-600"}`}>
+                        {sub}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+                <View className="w-4" /> 
+              </ScrollView>
+            </View>
 
+            {/* EXACT 1 PRODUCT SHOWCASE */}
             <View className="flex-row flex-wrap justify-between px-4">
-              {productsData
-                .filter((p) => p.categoryId === selectedCategory._id)
-                .map((product) => (
+              {visibleProducts.map((product: any) => {
+                const imageUrl = product.images?.[0] || product.image || "https://via.placeholder.com/150";
+
+                return (
                   <TouchableOpacity
                     key={product._id}
+                    className="w-[48%] mb-6"
                     onPress={() => router.push(`/product/${product._id}`)}
-                    activeOpacity={0.8}
+                    activeOpacity={0.9}
                   >
-                    <ProductCard product={product} />
+                    <Image source={{ uri: imageUrl }} className="w-full h-56 rounded-xl bg-neutral-100 mb-3 object-cover" />
+                    <Text className="text-neutral-500 text-sm font-semibold">{product.brand || "Brand Name"}</Text>
+                    <Text className="text-neutral-900 text-base font-medium mt-0.5 leading-5">{product.name}</Text>
+                    <View className="flex-row items-center mt-1">
+                      <Text className="text-neutral-900 font-bold text-base">₹{product.price}</Text>
+                      <Text className="text-[#ce4067] text-sm font-bold ml-2">{product.discount || "40% OFF"}</Text>
+                    </View>
                   </TouchableOpacity>
-                ))}
+                );
+              })}
             </View>
+
           </View>
           
         ) : (
           
-          /* --- MAIN LIST VIEW (All Categories) --- */
-          <View className="pb-20">
-            {categoriesData.map((category) => (
-              <CategoryCard
-                key={category._id}
-                category={category}
-                onSelectCategory={(cat: any) => {
-                  setSelectedCategory(cat);
-                  setSelectedSubCategory(cat.subCategories[0]); // Auto-selects the first subcategory
-                }}
-              />
+          <View className="pb-24 pt-4">
+            {categoriesData.map((category, index) => (
+              <View key={index} className="mb-8">
+                <TouchableOpacity 
+                  className="px-4"
+                  activeOpacity={0.9}
+                  onPress={() => {
+                    setSelectedCategory(category);
+                    setSelectedSubCategory(category.subCategories[0]);
+                  }}
+                >
+                  <Image source={{ uri: category.image }} className="w-full h-44 rounded-xl object-cover bg-neutral-100" />
+                </TouchableOpacity>
+
+                <Text className="text-3xl font-black text-neutral-900 px-4 mt-4">
+                  {category.name}
+                </Text>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 mt-3">
+                  {category.subCategories.map((sub: string, subIndex: number) => (
+                    <TouchableOpacity
+                      key={subIndex}
+                      onPress={() => {
+                        setSelectedCategory(category);
+                        setSelectedSubCategory(sub);
+                      }}
+                      className="bg-[#f5f5f5] px-5 py-2.5 rounded-full mr-3"
+                    >
+                      <Text className="font-semibold text-neutral-700 text-sm">{sub}</Text>
+                    </TouchableOpacity>
+                  ))}
+                  <View className="w-4" /> 
+                </ScrollView>
+              </View>
             ))}
           </View>
           

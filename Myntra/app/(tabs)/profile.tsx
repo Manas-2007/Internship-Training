@@ -8,7 +8,7 @@ import axios from "axios";
 import { StatusBar } from "expo-status-bar";
 
 const menuItems = [
-  { icon: "cube-outline", label: "Orders", route: "/orders" },
+  { icon: "cube-outline", label: "Orders", route: "/orders" }, 
   { icon: "heart-outline", label: "Wishlist", route: "/(tabs)/wishlist" },
   { icon: "card-outline", label: "Payment Methods", route: "/payments" },
   { icon: "location-outline", label: "Addresses", route: "/addresses" },
@@ -24,7 +24,6 @@ export default function Profile() {
     const fetchProfileData = async () => {
       try {
         const token = await AsyncStorage.getItem("userToken");
-        
         if (!token) {
           router.replace("/auth/login");
           return;
@@ -83,36 +82,23 @@ export default function Profile() {
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
       <StatusBar style="dark" />
       
-      {/* Header */}
       <View className="px-5 py-4 bg-white border-b border-neutral-100">
-        <Text className="text-3xl font-black text-neutral-800 tracking-tight">
-          Profile
-        </Text>
+        <Text className="text-3xl font-black text-neutral-800 tracking-tight">Profile</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        
-        {/* User Info Section */}
         <View className="bg-white px-5 py-8 mb-3 border-b border-neutral-100">
           <View className="flex-row items-center">
             <View className="w-20 h-20 rounded-full bg-[#ff3f6c] items-center justify-center shadow-sm">
-              <Text className="text-white text-3xl font-black">
-                {getInitials(userData.name)}
-              </Text>
+              <Text className="text-white text-3xl font-black">{getInitials(userData.name)}</Text>
             </View>
-            
             <View className="ml-5 flex-1">
-              <Text className="text-2xl font-black text-neutral-800 mb-1" numberOfLines={1}>
-                {userData.name}
-              </Text>
-              <Text className="text-neutral-500 text-sm font-medium" numberOfLines={1}>
-                {userData.email}
-              </Text>
+              <Text className="text-2xl font-black text-neutral-800 mb-1" numberOfLines={1}>{userData.name}</Text>
+              <Text className="text-neutral-500 text-sm font-medium" numberOfLines={1}>{userData.email}</Text>
             </View>
           </View>
         </View>
 
-        {/* Menu Section */}
         <View className="bg-white border-y border-neutral-100">
           {menuItems.map((item, index) => (
             <TouchableOpacity
@@ -120,36 +106,27 @@ export default function Profile() {
               className={`flex-row items-center justify-between px-5 py-4 ${
                 index !== menuItems.length - 1 ? "border-b border-neutral-50" : ""
               } active:bg-neutral-50`}
-              onPress={() => {
-                if (item.route === "/(tabs)/wishlist") {
-                  router.push(item.route as any);
-                }
-              }}
+              // 🚀 FIX: Ab saare options properly navigate karenge
+              onPress={() => router.push(item.route as any)}
             >
               <View className="flex-row items-center">
                 <View className="w-9 h-9 rounded-full bg-neutral-50 items-center justify-center">
                   <Ionicons name={item.icon as any} size={20} color="#52525b" />
                 </View>
-                <Text className="text-base font-semibold text-neutral-700 ml-4">
-                  {item.label}
-                </Text>
+                <Text className="text-base font-semibold text-neutral-700 ml-4">{item.label}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#d4d4d8" />
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Safe Logout Button */}
         <TouchableOpacity 
           className="flex-row items-center justify-center py-4 mt-8 mb-12 mx-5 rounded-2xl bg-white border border-[#ff3f6c] shadow-sm active:bg-pink-50"
           onPress={handleLogout}
         >
           <Ionicons name="log-out-outline" size={22} color="#ff3f6c" />
-          <Text className="ml-2 text-lg font-bold text-[#ff3f6c] tracking-wide">
-            Logout
-          </Text>
+          <Text className="ml-2 text-lg font-bold text-[#ff3f6c] tracking-wide">Logout</Text>
         </TouchableOpacity>
-
       </ScrollView>
     </SafeAreaView>
   );

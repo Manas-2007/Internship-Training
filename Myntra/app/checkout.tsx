@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   View,
   Text,
@@ -37,6 +37,21 @@ export default function Checkout() {
   const [cardNumber, setCardNumber] = useState("");
   
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    const loadDefaultData = async () => {
+      try {
+        const addr = await AsyncStorage.getItem("defaultAddress");
+        const card = await AsyncStorage.getItem("defaultCard");
+        
+        if (addr) setAddress(addr);
+        if (card) setCardNumber(card);
+      } catch (error) {
+        console.log("Error loading defaults:", error);
+      }
+    };
+    loadDefaultData();
+  }, []);
 
   // PLACE ORDER API LOGIC
   const handlePlaceOrder = async () => {

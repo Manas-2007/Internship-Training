@@ -115,7 +115,7 @@ export default function Orders() {
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
       {/* Header */}
       <View className="px-5 py-4 bg-white border-b border-neutral-100 shadow-sm z-10">
-        <Text className="text-3xl font-black text-[#282c3f] tracking-tight">
+        <Text className="text-2xl font-black text-[#282c3f] tracking-tight">
           My Orders
         </Text>
       </View>

@@ -1,45 +1,45 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global.css";
 import { GlobalProvider } from "./context/GlobalContext";
 
 export default function Layout() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const segments = useSegments(); // Current active route segments pata lagane ke liye
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
     const checkLoginStatus = async () => {
       try {
         const token = await AsyncStorage.getItem("userToken");
-        if (token) {
+        
+      
+        const inAuthGroup = segments[0] === "auth";
+        const inTabsGroup = segments[0] === "(tabs)";
+        
+        if (token && !inTabsGroup) {
+           router.replace("/(tabs)"); 
+        } else if (!token && !inAuthGroup) {
           
-          setTimeout(() => {
-            router.replace("/(tabs)"); 
-          }, 100); 
         }
       } catch (error) {
         console.log("Token check failed:", error);
-      } finally {
-        setIsChecking(false); 
       }
     };
     
     checkLoginStatus();
-  }, []);
+  }, [isMounted, segments]); // segments dependency add ki taaki navigation complete hone ke baad ruk jaye
 
-  if (isChecking) {
-    return (
-      <View style={{ flex: 1, backgroundColor: "white", justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#ff3f6c" />
-      </View>
-    );
-  }
-
- return (
+  return (
     <GlobalProvider>
        <Stack screenOptions={{ headerShown: false }} />
     </GlobalProvider>
   );
-} 
+}
