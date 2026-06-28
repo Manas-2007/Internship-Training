@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   ScrollView,
   View,
@@ -6,240 +6,192 @@ import {
   Image,
   TouchableOpacity,
   StatusBar,
+  ActivityIndicator,
+  RefreshControl,
+  useWindowDimensions,
+  Alert, 
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-const categories = [
-  {
-    id: 1,
-    name: "Men",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Women",
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Kids",
-    image:
-      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Beauty",
-    image:
-      "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Footwear",
-    image:
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 6,
-    name: "Accessories",
-    image:
-      "https://images.unsplash.com/photo-1523380744952-b7e00e6e2ffa?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 7,
-    name: "Home",
-    image:
-      "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=500&auto=format&fit=crop",
-  },
-];
-
-const deals = [
-  {
-    id: 1,
-    title: "Under ₹599",
-    image:
-      "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    title: "40-70% OFF",
-    image:
-      "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=500&auto=format&fit=crop",
-  },
-];
-
-const products = [
-  {
-    id: 1,
-    name: "Running Shoes",
-    brand: "Adidas",
-    price: "₹3999",
-    discount: "20% OFF",
-    image:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Floral Printed Kurta",
-    brand: "W for Woman",
-    price: "₹1499",
-    discount: "30% OFF",
-    image:
-      "https://plus.unsplash.com/premium_photo-1675186049366-64a655f8f537?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Y2xvdGhpbmd8ZW58MHx8MHx8fDA%3D",
-  },
-  {
-    id: 3,
-    name: "Leather Belt",
-    brand: "Allen Solly",
-    price: "₹899",
-    discount: "45% OFF",
-    image:
-      "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Oversized Hoodie",
-    brand: "H&M",
-    price: "₹1999",
-    discount: "15% OFF",
-    image:
-      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Sports Shorts",
-    brand: "Puma",
-    price: "₹1199",
-    discount: "35% OFF",
-    image:
-      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 6,
-    name: "Slim Fit Shirt",
-    brand: "Raymond",
-    price: "₹2199",
-    discount: "25% OFF",
-    image:
-      "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 7,
-    name: "Aviator Sunglasses",
-    brand: "Fastrack",
-    price: "₹1299",
-    discount: "50% OFF",
-    image:
-      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 8,
-    name: "Handheld Tote Bag",
-    brand: "Lavie",
-    price: "₹2499",
-    discount: "40% OFF",
-    image:
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 9,
-    name: "Track Pants",
-    brand: "HRX",
-    price: "₹1599",
-    discount: "20% OFF",
-    image:
-      "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 10,
-    name: "Woolen Sweater",
-    brand: "UCB",
-    price: "₹2899",
-    discount: "30% OFF",
-    image:
-      "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=500&auto=format&fit=crop",
-  },
-];
+import { useGlobalContext } from "../context/GlobalContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 export default function Home() {
-  const router=useRouter();
+  const router = useRouter();
+  const { width } = useWindowDimensions();
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+
+  // Saara state Global Context se aayega
+  const { categories, deals, products, loading, fetchHomeData, wishlistIds, setWishlistIds, fetchWishlistIds } = useGlobalContext();
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchHomeData(); 
+    await fetchWishlistIds(); // Refresh karne par IDs bhi update hongi
+    setRefreshing(false);
+  };
+
+  // Toggle Logic: Add/Remove instantly without alerts
+  const toggleWishlist = async (productId: string) => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        Alert.alert("Login Required", "Please login to manage your wishlist.");
+        return;
+      }
+
+      const isAlreadyWishlisted = wishlistIds.includes(productId);
+
+      if (isAlreadyWishlisted) {
+        // Optimistic UI: Heart ko turant black/outline karo
+        setWishlistIds((prev: string[]) => prev.filter((id) => id !== productId));
+        
+        // API Call: Delete
+        await axios.delete(`http://10.132.253.253:5000/api/wishlist/product/${productId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        // Optimistic UI: Heart ko turant pink/filled karo
+        setWishlistIds((prev: string[]) => [...prev, productId]);
+        
+        // API Call: Add product
+        await axios.post(`http://10.132.253.253:5000/api/wishlist`, { productId }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+    } catch (error) {
+      console.log("Wishlist Toggle Error:", error);
+      fetchWishlistIds(); // Agar error aaye, toh UI ko server se resync karo
+    }
+  };
+
+  const bannerImages = [
+    "https://images.unsplash.com/photo-1523380744952-b7e00e6e2ffa?w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&auto=format&fit=crop",
+  ];
+
+  // Slider Logic
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const nextIndex = (activeIndex + 1) % bannerImages.length;
+      scrollRef.current?.scrollTo({ x: nextIndex * width, animated: true });
+      setActiveIndex(nextIndex);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [activeIndex, width]);
+
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-white justify-center items-center">
+        <ActivityIndicator size="large" color="#ff3f6c" />
+        <Text className="text-neutral-500 mt-4 font-medium">
+          Curating trends for you...
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-      {/* 1. Header Section */}
-      <View className="flex-row justify-between items-center px-4 py-3 bg-white border-b border-neutral-100">
-        <Text className="text-2xl font-black text-neutral-800 tracking-widest">
-          MYNTRA
-        </Text>
-        <TouchableOpacity className="p-2"
-        onPress={() => router.push("/categories")}
-        >
-          <Ionicons name="search" size={24} color="#333" />
+      {/* 1. Sleek Header Section */}
+      <View className="flex-row justify-between items-center px-4 py-1 bg-white border-b border-neutral-100">
+        <View className="flex-row items-center gap-2">
+          <Image
+            source={require("../../assets/images/favicon.png")}
+            style={{ width: 28, height: 28 }}
+            resizeMode="contain"
+          />
+          <Text className="text-xl font-black text-neutral-900 tracking-wider">
+            MYNTRA
+          </Text>
+        </View>
+        <TouchableOpacity className="p-2" onPress={() => router.push("/categories")}>
+          <Ionicons name="search-outline" size={26} color="#ff3f6c" />
         </TouchableOpacity>
       </View>
 
       {/* Main Scroll Content */}
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        className="flex-1"
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            tintColor="#ff3f6c" 
+            colors={["#ff3f6c"]}
+          />
+        }
+      >
         {/* 2. Hero Banner */}
-        <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&auto=format&fit=crop",
-          }}
-          className="w-full h-52 object-cover"
-        />
+        <View className="w-full mt-2">
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={(e) => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setActiveIndex(index);
+            }}
+          >
+            {bannerImages.map((img, index) => (
+              <View key={index} style={{ width }}>
+                <Image source={{ uri: img }} className="w-full h-56 object-cover" />
+                <View className="absolute inset-0 bg-black/30" />
+                <View className="absolute bottom-10 left-8">
+                  <Text className="text-white text-3xl font-black tracking-wide">SUMMER</Text>
+                  <Text className="text-white text-xl font-bold tracking-widest">COLLECTION</Text>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+
+          <View className="absolute bottom-4 w-full flex-row justify-center gap-2">
+            {bannerImages.map((_, i) => (
+              <View key={i} className={`h-2 rounded-full ${activeIndex === i ? "w-4 bg-white" : "w-2 bg-white/50"}`} />
+            ))}
+          </View>
+        </View>
 
         {/* 3. Shop By Category */}
         <View className="mt-6 px-4">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-extrabold text-neutral-800 tracking-wider">
-              SHOP BY CATEGORY
-            </Text>
-            <TouchableOpacity className="flex-row items-center">
-              <Text className="text-[#ff3f6c] font-bold mr-1" onPress={()=>router.push("/categories")}>View All</Text>
-              <Ionicons name="chevron-forward" size={16} color="#ff3f6c" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {categories.map((cat) => (
-              <TouchableOpacity key={cat.id} className="items-center mr-6">
-                <Image
-                  source={{ uri: cat.image }}
-                  className="w-20 h-20 rounded-full border border-neutral-200"
-                />
-                <Text className="mt-2 text-sm font-semibold text-neutral-700">
-                  {cat.name}
-                </Text>
+          <Text className="text-lg font-black text-neutral-800 tracking-wide mb-4">SHOP BY CATEGORY</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="overflow-visible" contentContainerStyle={{ paddingRight: 20 }}>
+            {categories?.map((cat: any) => (
+              <TouchableOpacity key={cat._id} className="items-center mr-6 group" activeOpacity={0.7}>
+                <View className="w-20 h-20 rounded-full bg-white items-center justify-center shadow-lg shadow-pink-200 border-[2px] border-[#ff3f6c]/20 p-[2px]">
+                  <Image source={{ uri: cat.image || "https://via.placeholder.com/150" }} className="w-full h-full rounded-full object-cover" />
+                </View>
+                <Text className="mt-3 text-[13px] font-bold text-neutral-700 tracking-tight">{cat.name}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
 
         {/* 4. Deals of the Day */}
-        <View className="mt-8 px-4">
-          <Text className="text-lg font-extrabold text-neutral-800 tracking-wider mb-4">
-            DEALS OF THE DAY
-          </Text>
+        <View className="mt-6 py-5 bg-white px-4">
+          <Text className="text-xl font-black text-neutral-800 tracking-wide mb-5">DEALS OF THE DAY</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {deals.map((deal) => (
-              <TouchableOpacity
-                key={deal.id}
-                className="mr-4 w-64 h-36 rounded-lg overflow-hidden relative"
-                onPress={() => router.push("/categories")}
-              >
-                <Image
-                  source={{ uri: deal.image }}
-                  className="w-full h-full object-cover"
-                />
-                {/* Dark Overlay for Text Readability */}
-                <View className="absolute inset-0 bg-black/30 justify-end p-4">
-                  <Text className="text-white text-xl font-bold">
-                    {deal.title}
-                  </Text>
+            {deals?.map((deal: any, index: number) => (
+              <TouchableOpacity key={deal._id || index} className="mr-5 w-72 h-44 rounded-2xl overflow-hidden relative shadow-lg shadow-neutral-300" activeOpacity={0.9}>
+                <Image source={{ uri: deal.image }} className="w-full h-full object-cover" />
+                <View className="absolute inset-0 bg-black/30 p-5 justify-between">
+                  <View className="bg-white/15 self-start px-2 py-1 rounded border border-white/30 backdrop-blur-md">
+                    <Text className="text-white text-[10px] font-bold tracking-widest uppercase">Limited Offer</Text>
+                  </View>
+                  <View>
+                    <Text className="text-white text-3sm font-black shadow-lg">{deal.title}</Text>
+                    <Text className="text-white/90 text-sm font-semibold mt-1">{deal.subtitle}</Text>
+                  </View>
                 </View>
               </TouchableOpacity>
             ))}
@@ -247,40 +199,43 @@ export default function Home() {
         </View>
 
         {/* 5. Trending Now (Product Grid) */}
-        <View className="mt-8 px-4 mb-24">
-          <Text className="text-lg font-extrabold text-neutral-800 tracking-wider mb-4">
-            TRENDING NOW
-          </Text>
-
-          {/* Grid Container */}
+        <View className="mt-6 px-4 mb-5">
+          <Text className="text-lg font-black text-neutral-800 tracking-wide mb-6">TRENDING NOW</Text>
           <View className="flex-row flex-wrap justify-between">
-            {products.map((product) => (
+            {console.log("Total Products in Home:", products?.length)}
+            {products?.map((product: any) => (
               <TouchableOpacity
-                key={product.id}
-                onPress={() => router.push(`/product/${product.id}` as any)}
-                className="w-[48%] mb-4 bg-white rounded-lg overflow-hidden shadow-sm shadow-neutral-300 border border-neutral-100"
+                key={product._id}
+                onPress={() => router.push(`/product/${product._id}`)}
+                className="w-[48%] mb-6 bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden"
               >
-                <Image
-                  source={{ uri: product.image }}
-                  className="w-full h-48 object-cover"
-                />
-                <View className="p-3">
-                  <Text className="text-neutral-500 text-xs font-bold mb-1">
-                    {product.brand}
-                  </Text>
-                  <Text
-                    className="text-neutral-800 text-sm font-medium mb-1"
-                    numberOfLines={1}
+                <View className="relative w-full h-60 bg-neutral-100">
+                  <Image source={{ uri: product.images?.[0] }} className="w-full h-full object-cover" />
+                  
+                  {/* Wishlist Button (UPDATED) */}
+                  <TouchableOpacity 
+                    className="absolute top-2 right-2 p-2 bg-white/70 rounded-full backdrop-blur-md"
+                    onPress={() => toggleWishlist(product._id)} 
                   >
-                    {product.name}
-                  </Text>
+                    <Ionicons 
+                      name={wishlistIds?.includes(product._id) ? "heart" : "heart-outline"} 
+                      size={18} 
+                      color={wishlistIds?.includes(product._id) ? "#ff3f6c" : "#000"} 
+                    />
+                  </TouchableOpacity>
+
+                  {product.discount && (
+                    <View className="absolute bottom-2 left-2 bg-[#ff3f6c] px-2 py-1 rounded">
+                      <Text className="text-white text-[10px] font-black">{product.discount}</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View className="p-3">
+                  <Text className="text-neutral-900 text-[14px] font-extrabold" numberOfLines={1}>{product.brand}</Text>
+                  <Text className="text-neutral-500 text-[12px] mb-2" numberOfLines={1}>{product.name}</Text>
                   <View className="flex-row items-center">
-                    <Text className="text-neutral-900 font-bold mr-2">
-                      {product.price}
-                    </Text>
-                    <Text className="text-[#ff3f6c] text-xs font-bold">
-                      {product.discount}
-                    </Text>
+                    <Text className="text-neutral-900 font-bold text-[15px]">₹{product.price}</Text>
                   </View>
                 </View>
               </TouchableOpacity>

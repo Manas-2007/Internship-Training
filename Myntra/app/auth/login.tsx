@@ -37,7 +37,7 @@ export default function Login() {
     }
 
     try {
-      const API_URL = "http://172.16.52.102:5000/api/auth/login"; 
+      const API_URL = "http://10.132.253.253:5000/api/auth/login"; 
       
       const response = await axios.post(API_URL, { email, password });
 

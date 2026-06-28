@@ -30,7 +30,7 @@ export default function Profile() {
           return;
         }
 
-        const API_URL = "http://172.16.52.102:5000/api/auth/profile"; 
+        const API_URL = "http://10.132.253.253:5000/api/auth/profile"; 
         const response = await axios.get(API_URL, {
           headers: { Authorization: `Bearer ${token}` },
         });

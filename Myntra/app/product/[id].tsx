@@ -6,62 +6,71 @@ import {
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
-  Platform
+  Platform,
+  ActivityIndicator,
+  Alert
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// Mock product data to test the UI (since we are ignoring backend)
-const mockProducts: Record<string, any> = {
-  "1": {
-    id: 1,
-    name: "Casual White T-Shirt",
-    brand: "Roadster",
-    price: 499,
-    discount: "60% OFF",
-    description:
-      "Classic white t-shirt made from premium cotton. Perfect for everyday wear with a comfortable regular fit. Features a round neck and short sleeves.",
-    sizes: ["S", "M", "L", "XL"],
-    images: [
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&auto=format&fit=crop",
-    ],
-  }
-};
+import { useGlobalContext } from "../context/GlobalContext";
 
 export default function ProductDetails() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { width } = useWindowDimensions();
   
+  // Global Context se wishlist sync karne ke liye
+  const { wishlistIds, setWishlistIds, fetchWishlistIds } = useGlobalContext();
+
   // States
+  const [product, setProduct] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   
   // Refs for Auto-scroll
   const scrollViewRef = useRef<ScrollView>(null);
   const autoScrollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Fetch product (Mocking it for now. Defaulting to '1' if id is undefined for testing)
-  const product = mockProducts[id as string] || mockProducts["1"];
-
-  // Auto-scroll logic
+  // 1. Fetch Product Details from Backend
   useEffect(() => {
-    startAutoScroll();
+    const fetchProductDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://10.132.253.253:5000/api/products/${id}`);
+        setProduct(response.data);
+      } catch (error) {
+        console.log("Error fetching product details:", error);
+        Alert.alert("Error", "Could not load product details.");
+      } {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProductDetails();
+    }
+  }, [id]);
+
+  // 2. Auto-scroll logic for Images
+  useEffect(() => {
+    if (product && product.images && product.images.length > 0) {
+      startAutoScroll();
+    }
     return () => {
       if (autoScrollTimer.current) {
         clearInterval(autoScrollTimer.current);
       }
     };
-  }, []);
+  }, [product, currentImageIndex]);
 
   const startAutoScroll = () => {
+    if (autoScrollTimer.current) clearInterval(autoScrollTimer.current);
+    
     autoScrollTimer.current = setInterval(() => {
-      if (product && scrollViewRef.current) {
+      if (product?.images && scrollViewRef.current) {
         const nextIndex = (currentImageIndex + 1) % product.images.length;
         scrollViewRef.current.scrollTo({
           x: nextIndex * width,
@@ -69,55 +78,85 @@ export default function ProductDetails() {
         });
         setCurrentImageIndex(nextIndex);
       }
-    }, 3000); // Scrolls every 3 seconds
+    }, 3500);
   };
 
   const handleScroll = (event: any) => {
     const contentOffset = event.nativeEvent.contentOffset;
     const imageIndex = Math.round(contentOffset.x / width);
     setCurrentImageIndex(imageIndex);
-
-    // Reset auto-scroll timer when user manually scrolls
-    if (autoScrollTimer.current) {
-      clearInterval(autoScrollTimer.current);
-      startAutoScroll();
-    }
   };
 
-  const handleAddToBag = () => {
+  // 3. Add to Bag Functionality
+  const handleAddToBag = async () => {
     if (!selectedSize) {
-      alert("Please select a size first!");
+      Alert.alert("Select Size", "Please select a size first!");
       return;
     }
-    // Navigate to Bag tab for testing
-    router.push("/(tabs)/bag");
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        Alert.alert("Login Required", "Please login to add items to your bag.");
+        return;
+      }
+
+      await axios.post(
+        "http://10.132.253.253:5000/api/bag",
+        {
+          productId: product._id,
+          size: selectedSize,
+          quantity: 1
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      Alert.alert("Success", "Added to Bag successfully!", [
+        { text: "Go to Bag", onPress: () => router.push("/bag") },
+        { text: "Continue Shopping" }
+      ]);
+    } catch (error) {
+      console.log("Add to Bag Error:", error);
+      Alert.alert("Error", "Failed to add item to bag.");
+    }
   };
 
+  // 4. Toggle Wishlist (Sync with Global Context)
   const toggleWishlist = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) {
-        alert("Please login to add to wishlist!");
+        Alert.alert("Login Required", "Please login to manage your wishlist.");
         return;
       }
 
-      // Optimistic UI update (Instant toggle)
-      setIsWishlisted(!isWishlisted);
+      const isAlreadyWishlisted = wishlistIds.includes(product._id);
 
-      // Backend API Call
-      await axios.post(
-        "http://172.16.52.102:5000/api/wishlist",
-        { productId: product.id }, // Product ID send kar rahe hain
-        { headers: { Authorization: `Bearer ${token}` } } // Token yahan bhejna zaroori hai
-      );
-      
-      console.log("Wishlist updated successfully!");
+      if (isAlreadyWishlisted) {
+        setWishlistIds((prev: string[]) => prev.filter((id) => id !== product._id));
+        await axios.delete(`http://10.132.253.253:5000/api/wishlist/product/${product._id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        setWishlistIds((prev: string[]) => [...prev, product._id]);
+        await axios.post(
+          `http://10.132.253.253:5000/api/wishlist`, 
+          { productId: product._id }, 
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
     } catch (error) {
-      console.log("Wishlist error:", error);
-      setIsWishlisted(isWishlisted); // Agar error aaye, wapas original state pe jao
-      alert("Something went wrong!");
+      console.log("Wishlist Toggle Error:", error);
+      fetchWishlistIds(); // Error aane par wapas sync karo
     }
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#ff3f6c" />
+      </View>
+    );
+  }
 
   if (!product) {
     return (
@@ -127,17 +166,31 @@ export default function ProductDetails() {
     );
   }
 
+  // ... (Upar ka saara logic same rahega)
+
+  if (!product) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text className="text-lg font-bold text-neutral-500">Product not found</Text>
+      </View>
+    );
+  }
+
+  // ✅ BULLETPROOF FALLBACKS (Agar DB mein data missing ho toh yeh default use hoga)
+  const displayImages = product.images?.length > 0 ? product.images : ["https://via.placeholder.com/800x800?text=No+Image"];
+  const displaySizes = product.sizes?.length > 0 ? product.sizes : ["S", "M", "L", "XL"];
+  const displayDescription = product.description || "Premium quality product. Experience the best in class comfort and style with this exclusive piece.";
+
   return (
     <View className="flex-1 bg-white">
       {/* Absolute Back Button */}
-      <View className="absolute top-12 left-4 z-10 bg-white/70 p-2 rounded-full">
+      <View className="absolute top-12 left-4 z-10 bg-white/80 p-2 rounded-full shadow-sm">
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#3f3f46" />
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        
         {/* Image Carousel */}
         <View className="relative">
           <ScrollView
@@ -148,11 +201,11 @@ export default function ProductDetails() {
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
-            {product.images.map((image: string, index: number) => (
+            {displayImages.map((image: string, index: number) => (
               <Image
                 key={index}
                 source={{ uri: image }}
-                style={{ width, height: 500 }}
+                style={{ width, height: 520 }}
                 resizeMode="cover"
               />
             ))}
@@ -160,13 +213,11 @@ export default function ProductDetails() {
 
           {/* Pagination Dots */}
           <View className="absolute bottom-5 w-full flex-row justify-center items-center">
-            {product.images.map((_: any, index: number) => (
+            {displayImages.map((_: any, index: number) => (
               <View
                 key={index}
                 className={`mx-1 rounded-full ${
-                  currentImageIndex === index 
-                    ? "bg-white w-2.5 h-2.5" 
-                    : "bg-white/50 w-2 h-2"
+                  currentImageIndex === index ? "bg-white w-2.5 h-2.5" : "bg-white/50 w-2 h-2"
                 }`}
               />
             ))}
@@ -175,88 +226,65 @@ export default function ProductDetails() {
 
         {/* Product Details Section */}
         <View className="p-5">
-          {/* Header Row: Brand & Wishlist */}
+          {/* Header Row */}
           <View className="flex-row justify-between items-start">
             <View className="flex-1">
-              <Text className="text-lg font-semibold text-neutral-500 mb-1">
-                {product.brand}
-              </Text>
-              <Text className="text-2xl font-black text-neutral-800 leading-7">
-                {product.name}
-              </Text>
+              <Text className="text-xl font-extrabold text-neutral-900 mb-1">{product.brand || "Brand"}</Text>
+              <Text className="text-base text-neutral-600 leading-5">{product.name || "Product Name"}</Text>
             </View>
-            <TouchableOpacity 
-              className="p-2"
-             onPress={toggleWishlist}
-              
-            >
+            <TouchableOpacity className="p-2 bg-neutral-50 rounded-full" onPress={toggleWishlist}>
               <Ionicons 
-                name={isWishlisted ? "heart" : "heart-outline"} 
-                size={28} 
-                color={isWishlisted ? "#ff3f6c" : "#71717a"} 
+                name={wishlistIds.includes(product._id) ? "heart" : "heart-outline"} 
+                size={26} 
+                color={wishlistIds.includes(product._id) ? "#ff3f6c" : "#71717a"} 
               />
             </TouchableOpacity>
           </View>
 
-          {/* Price Row */}
-          <View className="flex-row items-center mt-3 mb-4">
-            <Text className="text-2xl font-black text-neutral-800 mr-3">
-              ₹{product.price}
-            </Text>
-            <Text className="text-lg font-bold text-[#ff3f6c]">
-              {product.discount}
-            </Text>
+          {/* Price */}
+          <View className="flex-row items-center mt-4 mb-4">
+            <Text className="text-2xl font-black text-neutral-900 mr-3">₹{product.price || 999}</Text>
+            {product.discount && <Text className="text-lg font-bold text-[#ff3f6c]">({product.discount})</Text>}
           </View>
 
+          <View className="h-[1px] bg-neutral-100 my-2" />
+
           {/* Description */}
-          <Text className="text-base text-neutral-600 leading-6 mb-6">
-            {product.description}
+          <Text className="text-sm font-bold text-neutral-800 mt-2 mb-1">Product Details</Text>
+          <Text className="text-neutral-600 leading-6 mb-6 text-[14px]">
+            {displayDescription}
           </Text>
 
           {/* Size Selector */}
           <View className="mb-8">
-            <Text className="text-lg font-bold text-neutral-800 mb-3">
-              Select Size
-            </Text>
+            <Text className="text-sm font-bold text-neutral-800 mb-3 uppercase tracking-wider">Select Size</Text>
             <View className="flex-row flex-wrap gap-3">
-              {product.sizes.map((size: string) => (
+              {displaySizes.map((size: string) => (
                 <TouchableOpacity
                   key={size}
                   onPress={() => setSelectedSize(size)}
-                  className={`w-14 h-14 rounded-full border items-center justify-center ${
-                    selectedSize === size 
-                      ? "border-[#ff3f6c] bg-pink-50" 
-                      : "border-neutral-300 bg-white"
+                  className={`w-12 h-12 rounded-full border items-center justify-center ${
+                    selectedSize === size ? "border-[#ff3f6c] bg-pink-50" : "border-neutral-200 bg-white"
                   }`}
                 >
-                  <Text 
-                    className={`text-base font-bold ${
-                      selectedSize === size ? "text-[#ff3f6c]" : "text-neutral-700"
-                    }`}
-                  >
+                  <Text className={`text-sm font-bold ${selectedSize === size ? "text-[#ff3f6c]" : "text-neutral-800"}`}>
                     {size}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
-          
         </View>
       </ScrollView>
 
-      {/* Sticky Bottom Footer: Add to Bag */}
-      <View 
-        className="px-4 py-3 bg-white border-t border-neutral-100"
-        style={{ paddingBottom: Platform.OS === 'ios' ? 30 : 15 }}
-      >
+      {/* Add to Bag Button */}
+      <View className="px-4 py-3 bg-white border-t border-neutral-100 flex-row gap-3" style={{ paddingBottom: Platform.OS === 'ios' ? 32 : 16 }}>
         <TouchableOpacity
           onPress={handleAddToBag}
-          className="bg-[#ff3f6c] py-4 rounded-xl flex-row justify-center items-center"
+          className="bg-[#ff3f6c] py-4 rounded-xl flex-1 flex-row justify-center items-center shadow-md shadow-pink-200"
         >
           <Ionicons name="bag-outline" size={20} color="#fff" />
-          <Text className="text-white text-lg font-bold ml-2 tracking-wide">
-            ADD TO BAG
-          </Text>
+          <Text className="text-white text-base font-black ml-2 tracking-wide">ADD TO BAG</Text>
         </TouchableOpacity>
       </View>
     </View>

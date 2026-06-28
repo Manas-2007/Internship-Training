@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global.css";
+import { GlobalProvider } from "./context/GlobalContext";
 
 export default function Layout() {
   const router = useRouter();
@@ -36,5 +37,9 @@ export default function Layout() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
-}
+ return (
+    <GlobalProvider>
+       <Stack screenOptions={{ headerShown: false }} />
+    </GlobalProvider>
+  );
+} 

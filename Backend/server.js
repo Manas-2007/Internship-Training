@@ -6,6 +6,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { body, validationResult } = require('express-validator');
 const jwt=require('jsonwebtoken');
+const dns=require('dns');
+dns.setServers(['1.1.1.1','8.8.8.8']);
 
 dotenv.config();
 const app = express();
@@ -55,6 +57,13 @@ const categorySchema = new mongoose.Schema({
     productId: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
 }, { timestamps: true });
 const Category = mongoose.model('Category', categorySchema);
+
+// 1. ADD DEAL MODEL (Category aur Product ke paas isko daal do)
+const dealSchema = new mongoose.Schema({
+    title: String,
+    image: String,
+}, { timestamps: true });
+const Deal = mongoose.model('Deal', dealSchema);
 
 // 3. WISHLIST MODEL
 const wishlistSchema = new mongoose.Schema({
@@ -315,6 +324,32 @@ app.get("/api/wishlist/:userid", async (req, res) => {
     }
 });
 
+// YAHAN ERROR THA: Is route ko replace karo
+app.delete('/api/wishlist/product/:productId', async (req, res) => {
+    try {
+        // 1. ASLI FIX: Token nikal kar manually decode karna padega
+        const token = req.header('Authorization')?.split(' ')[1];
+        if (!token) return res.status(401).json({ message: "Auth token missing" });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'myntra_super_secret_key_123');
+        const userId = decoded.id; // Ab userId perfectly mil jayega!
+
+        const { productId } = req.params;
+
+        // 2. Delete item from database
+        const result = await Wishlist.deleteOne({ userId, productId });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Product not found in wishlist" });
+        }
+
+        res.status(200).json({ message: "Removed from wishlist" });
+    } catch (error) {
+        console.error("Delete Error:", error);
+        res.status(500).json({ error: "Failed to delete" });
+    }
+});
+
 // ==========================================
 // 📦 ORDERS APIs
 // ==========================================
@@ -387,6 +422,22 @@ app.get("/api/orders/user/:userid", async (req, res) => {
         res.status(200).json(orders);
     } catch (error) {
         res.status(500).json({ message: "Error fetching orders" });
+    }
+});
+
+// Home API for Myntra Clone
+app.get("/api/home", async (req, res) => {
+    try {
+        const [categories, deals, products] = await Promise.all([
+            Category.find().limit(10),
+            Deal.find().limit(5),
+            Product.find().limit(20) // Trending ke liye top 20
+        ]);
+
+        res.status(200).json({ categories, deals, products });
+    } catch (error) {
+        console.error("Home Data Fetch Error:", error);
+        res.status(500).json({ message: "Error fetching home data" });
     }
 });
 
