@@ -1,0 +1,22 @@
+# --- Common ---
+.DS_Store
+.env
+.env.*
+
+# --- Backend Project ---
+Backend/node_modules
+Backend/dist
+Backend/npm-debug.log
+Backend/yarn-debug.log
+Backend/yarn-error.log
+
+# --- Myntra Project (React Native/Expo) ---
+Myntra/node_modules
+Myntra/.expo
+Myntra/dist
+Myntra/web-build
+Myntra/npm-debug.log
+Myntra/yarn-debug.log
+Myntra/yarn-error.log
+Myntra/*.jks
+Myntra/*.keystore
