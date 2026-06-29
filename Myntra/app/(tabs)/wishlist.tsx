@@ -22,6 +22,7 @@ export default function Wishlist() {
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
 
   const { setWishlistIds } = useGlobalContext();
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function Wishlist() {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) {
+        setIsGuest(true);
         setLoading(false);
         return;
       }
@@ -38,7 +40,7 @@ export default function Wishlist() {
       try {
         decodedToken = jwtDecode(token);
       } catch (decodeError) {
-        console.log("Token decode failed:", decodeError);
+        setIsGuest(true);
         setLoading(false);
         return;
       }
@@ -46,7 +48,7 @@ export default function Wishlist() {
       const userId = decodedToken?.id || decodedToken?._id;
       if (!userId) return;
 
-     const response = await axios.get(`${API_URL}/api/wishlist/${userId}`);
+      const response = await axios.get(`${API_URL}/api/wishlist/${userId}`);
 
       if (Array.isArray(response.data)) {
         setWishlistItems(response.data);
@@ -91,10 +93,9 @@ export default function Wishlist() {
       }
 
       await axios.delete(`${API_URL}/api/wishlist/product/${productId}`, {
-  headers: { Authorization: `Bearer ${token}` },
-});
+        headers: { Authorization: `Bearer ${token}` },
+      });
     } catch (error) {
-      console.log("Error deleting item:", error);
       Alert.alert("Error", "Could not remove item. Please try again.");
       fetchWishlist();
     }
@@ -108,15 +109,38 @@ export default function Wishlist() {
     );
   }
 
+  if (isGuest) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" edges={["top"]}>
+        <View className="w-28 h-28 bg-pink-50 rounded-full items-center justify-center mb-6">
+          <Ionicons name="heart-outline" size={48} color="#ff3f6c" />
+        </View>
+        <Text className="text-3xl font-black text-neutral-800 mb-3 text-center tracking-tight">
+          Login Required
+        </Text>
+        <Text className="text-base text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
+          Login to your account to save your favorite items and view them anytime, anywhere.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/auth/login")}
+          className="bg-[#ff3f6c] w-full py-4 rounded-2xl items-center shadow-sm"
+        >
+          <Text className="text-white font-black text-lg tracking-widest">
+            LOGIN NOW
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="px-5 py-4 bg-white border-b border-neutral-100 z-10">
-        <Text className="text-3xl font-black text-neutral-900 tracking-tight">
+        <Text className="text-2xl font-black text-neutral-900 tracking-tight">
           Wishlist
         </Text>
         <Text className="text-sm font-medium text-neutral-500 mt-1">
-          {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"}{" "}
-          saved
+          {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"} saved
         </Text>
       </View>
 
@@ -190,7 +214,6 @@ export default function Wishlist() {
                   </View>
                 </View>
 
-                {/* Delete Button */}
                 <TouchableOpacity
                   className="p-3 bg-red-50 rounded-full ml-2"
                   onPress={(e) => {

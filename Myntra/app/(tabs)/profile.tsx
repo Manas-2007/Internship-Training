@@ -27,13 +27,15 @@ export default function Profile() {
   const router = useRouter();
   const [userData, setUserData] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
         const token = await AsyncStorage.getItem("userToken");
         if (!token) {
-          router.replace("/auth/login");
+          setIsGuest(true);
+          setLoading(false);
           return;
         }
 
@@ -44,9 +46,8 @@ export default function Profile() {
 
         setUserData(response.data);
       } catch (error) {
-        console.log("Profile Fetch Error", error);
         await AsyncStorage.removeItem("userToken");
-        router.replace("/auth/login");
+        setIsGuest(true);
       } finally {
         setLoading(false);
       }
@@ -63,7 +64,7 @@ export default function Profile() {
         style: "destructive",
         onPress: async () => {
           await AsyncStorage.removeItem("userToken");
-          router.replace("/auth/login");
+          setIsGuest(true);
         },
       },
     ]);
@@ -83,6 +84,31 @@ export default function Profile() {
       <View className="flex-1 bg-white items-center justify-center">
         <ActivityIndicator size="large" color="#ff3f6c" />
       </View>
+    );
+  }
+
+  if (isGuest) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" edges={["top"]}>
+        <StatusBar style="dark" />
+        <View className="w-28 h-28 bg-pink-50 rounded-full items-center justify-center mb-6">
+          <Ionicons name="person-outline" size={48} color="#ff3f6c" />
+        </View>
+        <Text className="text-3xl font-black text-neutral-800 mb-3 text-center tracking-tight">
+          Login Required
+        </Text>
+        <Text className="text-base text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
+          Login your account to use this feature and seamlessly manage your profile, orders, and wishlist.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/auth/login")}
+          className="bg-[#ff3f6c] w-full py-4 rounded-2xl items-center shadow-sm"
+        >
+          <Text className="text-white font-black text-lg tracking-widest">
+            LOGIN NOW
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
     );
   }
 

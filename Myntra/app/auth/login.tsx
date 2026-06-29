@@ -42,7 +42,6 @@ export default function Login() {
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);
-        
         router.replace('/(tabs)');
       }
     } catch (error: any) {
@@ -58,21 +57,25 @@ export default function Login() {
     }
   };
 
+  const handleGuestLogin = async () => {
+    await AsyncStorage.removeItem('userToken');
+    router.replace('/(tabs)');
+  };
+
   return (
     <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       className="flex-1 bg-white"
     >
       <StatusBar style="light" />
       
       <ScrollView 
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
         
-        {/* Top Banner Image */}
         <View style={{ height: height * 0.45, width: '100%' }}>
           <Image 
             source={{ uri: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&auto=format&fit=crop" }} 
@@ -80,7 +83,6 @@ export default function Login() {
           />
         </View>
 
-        {/* Bottom White Overlay Card */}
         <View className="flex-1 bg-white rounded-t-[40px] -mt-12 px-6 pt-10 pb-8">
           
           <Text className="text-4xl font-black text-neutral-800 mb-2 tracking-tight">
@@ -90,7 +92,6 @@ export default function Login() {
             Login to continue shopping
           </Text>
 
-          {/* Email Input */}
           <View className="mb-4">
             <TextInput 
               placeholder="Email"
@@ -109,8 +110,7 @@ export default function Login() {
             )}
           </View>
 
-          {/* Password Input */}
-          <View className="mb-8">
+          <View className="mb-6">
             <TextInput 
               placeholder="Password"
               value={password}
@@ -127,9 +127,8 @@ export default function Login() {
             )}
           </View>
 
-          {/* Login Button */}
           <TouchableOpacity 
-            className="bg-[#ff3f6c] py-4 rounded-2xl items-center shadow-sm mb-6 mt-4"
+            className="bg-[#ff3f6c] py-4 rounded-2xl items-center shadow-sm mb-4"
             onPress={handleLogin} 
           >
             <Text className="text-white font-bold text-lg tracking-widest">
@@ -137,7 +136,15 @@ export default function Login() {
             </Text>
           </TouchableOpacity>
 
-          {/* Sign Up Link */}
+          <TouchableOpacity 
+            className="bg-white border-2 border-neutral-200 py-4 rounded-2xl items-center mb-6"
+            onPress={handleGuestLogin} 
+          >
+            <Text className="text-neutral-700 font-bold text-lg tracking-widest">
+              CONTINUE AS GUEST
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity className="items-center mt-auto mb-4" onPress={()=>router.replace('/auth/signup')}>
             <Text className="text-base text-neutral-500 font-medium">
               Don't have an account? <Text className="text-[#ff3f6c] font-bold">Sign Up</Text>

@@ -15,23 +15,34 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import { useFocusEffect, useRouter } from "expo-router";
-
 import { API_URL } from "../constants/api";
 
 export default function Bag() {
   const [bagItems, setBagItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
   const router = useRouter();
 
   const fetchBagItems = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) {
+        setIsGuest(true);
         setLoading(false);
         return;
       }
-      const decodedToken: any = jwtDecode(token);
+      setIsGuest(false);
+      
+      let decodedToken: any;
+      try {
+        decodedToken = jwtDecode(token);
+      } catch (decodeError) {
+        setIsGuest(true);
+        setLoading(false);
+        return;
+      }
+      
       const userId = decodedToken?.id || decodedToken?._id;
       if (!userId) return;
 
@@ -77,7 +88,6 @@ export default function Bag() {
   const updateQuantity = async (itemId: string, type: "inc" | "dec") => {
     let newQty = 1;
 
-    // 1. UI ko instantly update karo taaki app slow na lage
     setBagItems((prevItems) =>
       prevItems.map((item) => {
         if (item._id === itemId) {
@@ -98,7 +108,6 @@ export default function Bag() {
     }
   };
 
-  // Dynamic Total Calculation
   const totalAmount = bagItems.reduce((sum, item) => {
     const price = item.productId?.price || 0;
     return sum + price * item.localQuantity;
@@ -109,6 +118,30 @@ export default function Bag() {
       <View className="flex-1 bg-white items-center justify-center">
         <ActivityIndicator size="large" color="#f43365" />
       </View>
+    );
+  }
+
+  if (isGuest) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" edges={["top"]}>
+        <View className="w-28 h-28 bg-pink-50 rounded-full items-center justify-center mb-6">
+          <Ionicons name="bag-handle-outline" size={48} color="#f43365" />
+        </View>
+        <Text className="text-3xl font-black text-neutral-800 mb-3 text-center tracking-tight">
+          Login Required
+        </Text>
+        <Text className="text-base text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
+          Login to your account to add items to your shopping bag, apply coupons, and checkout smoothly.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push("/auth/login")}
+          className="bg-[#f43365] w-full py-4 rounded-2xl items-center shadow-sm"
+        >
+          <Text className="text-white font-black text-lg tracking-widest">
+            LOGIN NOW
+          </Text>
+        </TouchableOpacity>
+      </SafeAreaView>
     );
   }
 
@@ -156,7 +189,6 @@ export default function Bag() {
                 key={item._id}
                 className="flex-row py-5 border-b border-neutral-100 bg-white"
               >
-                {/* Image */}
                 <TouchableOpacity
                   onPress={() => router.push(`/product/${product._id}`)}
                 >
@@ -166,7 +198,6 @@ export default function Bag() {
                   />
                 </TouchableOpacity>
 
-                {/* Details */}
                 <View className="flex-1 ml-4 justify-between">
                   <View>
                     <Text className="text-neutral-500 text-sm font-medium mb-0.5">
@@ -186,9 +217,7 @@ export default function Bag() {
                     </Text>
                   </View>
 
-                  {/* Action Row  */}
                   <View className="flex-row justify-between items-center mt-3">
-                    {/* Quantity Selector */}
                     <View className="flex-row items-center">
                       <TouchableOpacity
                         onPress={() => updateQuantity(item._id, "dec")}
@@ -209,7 +238,6 @@ export default function Bag() {
                       </TouchableOpacity>
                     </View>
 
-                    {/* Trash Button */}
                     <TouchableOpacity
                       onPress={() => removeBagItem(item._id)}
                       className="p-2"
