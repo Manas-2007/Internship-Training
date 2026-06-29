@@ -18,8 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import { useFocusEffect } from "expo-router";
 
-const API_URL = "http://10.132.206.253:5000";
-
+import { API_URL } from "./constants/api";
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental

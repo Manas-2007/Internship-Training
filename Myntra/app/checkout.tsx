@@ -16,9 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
-
-const API_URL = "http://10.132.206.253:5000";
-
+import { API_URL } from "./constants/api";
 export default function Checkout() {
   const router = useRouter();
   

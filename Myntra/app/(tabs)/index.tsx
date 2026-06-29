@@ -12,6 +12,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { API_URL } from "../constants/api";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useGlobalContext } from "../context/GlobalContext";
@@ -59,7 +60,7 @@ export default function Home() {
         );
 
         await axios.delete(
-          `http://10.132.206.253:5000/api/wishlist/product/${productId}`,
+          `${API_URL}/api/wishlist/product/${productId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           },
@@ -68,7 +69,7 @@ export default function Home() {
         setWishlistIds((prev: string[]) => [...prev, productId]);
 
         await axios.post(
-          `http://10.132.206.253:5000/api/wishlist`,
+          `${API_URL}/api/wishlist`,
           { productId },
           {
             headers: { Authorization: `Bearer ${token}` },

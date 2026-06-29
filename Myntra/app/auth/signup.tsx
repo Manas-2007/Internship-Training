@@ -13,6 +13,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { API_URL } from "../constants/api";
 import axios from "axios";
 
 export default function SignUp() {
@@ -38,13 +39,11 @@ export default function SignUp() {
     }
 
     try {
-      const API_URL = "http://10.132.206.253:5000/api/auth/register";
-
-      const response = await axios.post(API_URL, {
-        name,
-        email,
-        password,
-      });
+     const response = await axios.post(`${API_URL}/api/auth/register`, {
+  name,
+  email,
+  password,
+});
 
       if (response.status === 201) {
         Alert.alert("Success", "Account created successfully!");

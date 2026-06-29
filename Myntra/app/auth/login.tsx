@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../constants/api';
 
 const { height } = Dimensions.get('window');
 
@@ -37,9 +38,7 @@ export default function Login() {
     }
 
     try {
-      const API_URL = "http://10.132.206.253:5000/api/auth/login"; 
-      
-      const response = await axios.post(API_URL, { email, password });
+      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);

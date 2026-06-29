@@ -16,6 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import { useGlobalContext } from "../context/GlobalContext";
 import { useFocusEffect, useRouter } from "expo-router";
+import { API_URL } from "../constants/api";
 
 export default function Wishlist() {
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
@@ -45,8 +46,7 @@ export default function Wishlist() {
       const userId = decodedToken?.id || decodedToken?._id;
       if (!userId) return;
 
-      const API_URL = `http://10.132.206.253:5000/api/wishlist/${userId}`;
-      const response = await axios.get(API_URL);
+     const response = await axios.get(`${API_URL}/api/wishlist/${userId}`);
 
       if (Array.isArray(response.data)) {
         setWishlistItems(response.data);
@@ -90,10 +90,9 @@ export default function Wishlist() {
         );
       }
 
-      const API_URL = `http://10.132.206.253:5000/api/wishlist/product/${productId}`;
-      await axios.delete(API_URL, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(`${API_URL}/api/wishlist/product/${productId}`, {
+  headers: { Authorization: `Bearer ${token}` },
+});
     } catch (error) {
       console.log("Error deleting item:", error);
       Alert.alert("Error", "Could not remove item. Please try again.");

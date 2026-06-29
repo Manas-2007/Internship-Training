@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const API_URL = "http://10.132.206.253:5000";
+import { API_URL } from "../constants/api"; 
 const GlobalContext = createContext<any>(null);
 
 export const GlobalProvider = ({ children }: any) => {
