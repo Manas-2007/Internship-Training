@@ -1,17 +1,37 @@
 import { useEffect } from 'react';
 import { View, Image, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SplashScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    // Navigate to tabs after 3 seconds
-    const timer = setTimeout(() => {
-      router.replace('/auth/login');
-    }, 3000);
+    const checkAuthAndNavigate = async () => {
+      try {
+        // 1. Background mein chupchaap token check kar lo
+        const token = await AsyncStorage.getItem("userToken");
 
-    return () => clearTimeout(timer);
+        // 2. 3 seconds ka timer, taaki splash screen ka logo properly dikhe
+        const timer = setTimeout(() => {
+          if (token) {
+            router.replace('/(tabs)'); // Token hai toh seedha Home/Tabs par
+          } else {
+            router.replace('/auth/login'); // Token nahi hai toh Login par
+          }
+        }, 3000);
+
+        return () => clearTimeout(timer);
+      } catch (error) {
+        console.log("Error checking token:", error);
+        // Agar koi error aaye toh safe side login par bhej do
+        setTimeout(() => {
+          router.replace('/auth/login');
+        }, 3000);
+      }
+    };
+
+    checkAuthAndNavigate();
   }, []);
 
   return (

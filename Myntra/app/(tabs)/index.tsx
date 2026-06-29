@@ -69,16 +69,25 @@ export default function Home() {
     }
   };
 
-  const bannerImages = [
-    "https://images.unsplash.com/photo-1523380744952-b7e00e6e2ffa?w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&auto=format&fit=crop",
+  const bannerData = [
+    { 
+      image: "https://images.unsplash.com/photo-1523380744952-b7e00e6e2ffa?w=800&auto=format&fit=crop", 
+      productId: "6a41fc6587c055c8a09c323d" 
+    },
+    { 
+      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop", 
+      productId: "6a41f21987c055c8a09c3230" 
+    },
+    { 
+      image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&auto=format&fit=crop", 
+      productId: "6a41fce787c055c8a09c323f" 
+    },
   ];
 
   // Slider Logic
   useEffect(() => {
     const interval = setInterval(() => {
-      const nextIndex = (activeIndex + 1) % bannerImages.length;
+      const nextIndex = (activeIndex + 1) % bannerData.length; // Yahan change kiya
       scrollRef.current?.scrollTo({ x: nextIndex * width, animated: true });
       setActiveIndex(nextIndex);
     }, 2000);
@@ -131,7 +140,7 @@ export default function Home() {
           />
         }
       >
-        {/* 2. Hero Banner */}
+        {/* 2. Hero Banner (UPDATED WITH LINKS) */}
         <View className="w-full mt-2">
           <ScrollView
             ref={scrollRef}
@@ -143,20 +152,25 @@ export default function Home() {
               setActiveIndex(index);
             }}
           >
-            {bannerImages.map((img, index) => (
-              <View key={index} style={{ width }}>
-                <Image source={{ uri: img }} className="w-full h-56 object-cover" />
+            {bannerData.map((item, index) => (
+              <TouchableOpacity 
+                key={index} 
+                style={{ width }} 
+                activeOpacity={0.9} 
+                onPress={() => router.push(`/product/${item.productId}`)} // 🔥 Yahan Link attach kiya
+              >
+                <Image source={{ uri: item.image }} className="w-full h-56 object-cover" />
                 <View className="absolute inset-0 bg-black/30" />
                 <View className="absolute bottom-10 left-8">
                   <Text className="text-white text-3xl font-black tracking-wide">SUMMER</Text>
                   <Text className="text-white text-xl font-bold tracking-widest">COLLECTION</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
 
           <View className="absolute bottom-4 w-full flex-row justify-center gap-2">
-            {bannerImages.map((_, i) => (
+            {bannerData.map((_, i) => ( // Yahan bhi bannerImages ki jagah bannerData kiya
               <View key={i} className={`h-2 rounded-full ${activeIndex === i ? "w-4 bg-white" : "w-2 bg-white/50"}`} />
             ))}
           </View>
@@ -164,10 +178,22 @@ export default function Home() {
 
         {/* 3. Shop By Category */}
         <View className="mt-6 px-4">
-          <Text className="text-lg font-black text-neutral-800 tracking-wide mb-4">SHOP BY CATEGORY</Text>
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-lg font-black text-neutral-800 tracking-wide">SHOP BY CATEGORY</Text>
+            <TouchableOpacity 
+              className="flex-row items-center" 
+              onPress={() => router.push("/categories")}
+            >
+              <Text className="text-[#ff3f6c] font-bold text-sm">View All</Text>
+              <Ionicons name="arrow-forward" size={16} color="#ff3f6c" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+          </View>
+
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="overflow-visible" contentContainerStyle={{ paddingRight: 20 }}>
             {categories?.map((cat: any) => (
-              <TouchableOpacity key={cat._id} className="items-center mr-6 group" activeOpacity={0.7}>
+              <TouchableOpacity key={cat._id} className="items-center mr-6 group" activeOpacity={0.7}
+              onPress={()=>{router.push({pathname: "/categories",params: { categoryName: cat.name }})}}
+              >
                 <View className="w-20 h-20 rounded-full bg-white items-center justify-center shadow-lg shadow-pink-200 border-[2px] border-[#ff3f6c]/20 p-[2px]">
                   <Image source={{ uri: cat.image || "https://via.placeholder.com/150" }} className="w-full h-full rounded-full object-cover" />
                 </View>
@@ -182,7 +208,14 @@ export default function Home() {
           <Text className="text-xl font-black text-neutral-800 tracking-wide mb-5">DEALS OF THE DAY</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             {deals?.map((deal: any, index: number) => (
-              <TouchableOpacity key={deal._id || index} className="mr-5 w-72 h-44 rounded-2xl overflow-hidden relative shadow-lg shadow-neutral-300" activeOpacity={0.9}>
+              <TouchableOpacity key={deal._id || index} className="mr-5 w-72 h-44 rounded-2xl overflow-hidden relative shadow-lg shadow-neutral-300" activeOpacity={0.9} onPress={() => {
+      if (deal.productId) {
+        router.push(`/product/${deal.productId}`);
+      } else {
+        Alert.alert("Coming Soon", "Deal link will be available shortly.");
+      }
+    }}
+  >
                 <Image source={{ uri: deal.image }} className="w-full h-full object-cover" />
                 <View className="absolute inset-0 bg-black/30 p-5 justify-between">
                   <View className="bg-white/15 self-start px-2 py-1 rounded border border-white/30 backdrop-blur-md">
@@ -199,7 +232,7 @@ export default function Home() {
         </View>
 
         {/* 5. Trending Now (Product Grid) */}
-        <View className="mt-6 px-4 mb-5">
+        <View className="mt-6 px-4 mb-24">
           <Text className="text-lg font-black text-neutral-800 tracking-wide mb-6">TRENDING NOW</Text>
           <View className="flex-row flex-wrap justify-between">
             {products?.map((product: any) => (
