@@ -1,1 +1,1 @@
-export const API_URL = "http://10.132.206.253:5000";
+export const API_URL = "https://myntra-backend-internship.onrender.com";

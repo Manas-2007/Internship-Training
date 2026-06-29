@@ -16,9 +16,9 @@ import { useGlobalContext } from "../context/GlobalContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import { API_URL } from "../constants/api";
 
 const { width } = Dimensions.get("window");
-const API_URL = "http://10.132.206.253:5000";
 
 export default function ProductDetails() {
   const { id } = useLocalSearchParams();
