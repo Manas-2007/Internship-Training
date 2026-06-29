@@ -20,7 +20,6 @@ import { useFocusEffect } from "expo-router";
 
 const API_URL = "http://10.132.206.253:5000";
 
-// Android ke liye LayoutAnimation enable karna zaroori hai
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -33,7 +32,6 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Jis order ki ID yahan hogi, sirf wahi expand hoga
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
@@ -49,7 +47,6 @@ export default function Orders() {
 
       const response = await axios.get(`${API_URL}/api/orders/user/${userId}`);
 
-      // Latest order sabse upar dikhane ke liye reverse kar rahe hain
       if (Array.isArray(response.data)) {
         setOrders(response.data.reverse());
       } else {
@@ -74,13 +71,11 @@ export default function Orders() {
     setRefreshing(false);
   }, []);
 
-  // Smooth Expand/Collapse Logic
   const toggleExpand = (orderId: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
-  // Date Formatting Helper (e.g., "15 Mar 2024")
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -91,7 +86,6 @@ export default function Orders() {
     });
   };
 
-  // Status Pill Color Helper
   const getStatusColor = (status: string) => {
     const s = status?.toLowerCase();
     if (s === "delivered")
@@ -149,7 +143,6 @@ export default function Orders() {
                 key={order._id}
                 className="bg-white rounded-2xl mb-4 shadow-sm border border-neutral-100 overflow-hidden"
               >
-                {/* --- ALWAYS VISIBLE HEADER --- */}
                 <View className="p-4 border-b border-neutral-50">
                   <View className="flex-row justify-between items-start mb-4">
                     <View>
@@ -305,7 +298,7 @@ export default function Orders() {
                           (event: any, index: number) => {
                             const isLast =
                               index === order.tracking.timeline.length - 1;
-                            const isCompleted = true; // Backend timeline items are usually completed past events
+                            const isCompleted = true;
 
                             return (
                               <View

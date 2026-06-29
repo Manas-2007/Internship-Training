@@ -35,7 +35,6 @@ export default function Addresses() {
     setAddresses(updatedAddresses);
     setNewAddress("");
     
-    // Automatically set as default if it's the first one
     if (updatedAddresses.length === 1) {
       handleSetDefault(newAddress);
     }

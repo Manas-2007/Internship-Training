@@ -9,22 +9,19 @@ export default function SplashScreen() {
   useEffect(() => {
     const checkAuthAndNavigate = async () => {
       try {
-        // 1. Background mein chupchaap token check kar lo
         const token = await AsyncStorage.getItem("userToken");
 
-        // 2. 3 seconds ka timer, taaki splash screen ka logo properly dikhe
         const timer = setTimeout(() => {
           if (token) {
-            router.replace('/(tabs)'); // Token hai toh seedha Home/Tabs par
+            router.replace('/(tabs)'); 
           } else {
-            router.replace('/auth/login'); // Token nahi hai toh Login par
+            router.replace('/auth/login'); 
           }
         }, 3000);
 
         return () => clearTimeout(timer);
       } catch (error) {
         console.log("Error checking token:", error);
-        // Agar koi error aaye toh safe side login par bhej do
         setTimeout(() => {
           router.replace('/auth/login');
         }, 3000);

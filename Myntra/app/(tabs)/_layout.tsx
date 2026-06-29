@@ -7,16 +7,16 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#ff3f6c", // Myntra Active Pink
-        tabBarInactiveTintColor: "#282c3f", // Myntra Dark Charcoal Inactive
+        tabBarActiveTintColor: "#ff3f6c",
+        tabBarInactiveTintColor: "#282c3f",
         tabBarStyle: {
-          backgroundColor: "#ffffff", // Pure white like original Myntra
+          backgroundColor: "#ffffff",
           borderTopWidth: 1,
-          borderTopColor: "#eaeaec", // Lightweight grey border
-          height: Platform.OS === "ios" ? 88 : 68, // Fixed alignment for both OS
-          paddingBottom: Platform.OS === "ios" ? 28 : 12, // Protects text from cutting off on low-end & premium devices
+          borderTopColor: "#eaeaec",
+          height: Platform.OS === "ios" ? 88 : 68,
+          paddingBottom: Platform.OS === "ios" ? 28 : 12,
           paddingTop: 10,
-          position: "absolute", // Makes layout stay layout-level without breaking layouts
+          position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
@@ -28,13 +28,13 @@ export default function TabLayout() {
               shadowRadius: 6,
             },
             android: {
-              elevation: 4, // Clean shadow lift
+              elevation: 4,
             },
           }),
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: "800", // Extra bold like premium apps
+          fontWeight: "800",
           marginTop: 4,
           letterSpacing: 0.2,
         },
@@ -46,10 +46,10 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "home" : "home-outline"} // Focused par Filled icon, baaki par Outline
-              size={23} 
-              color={color} 
+            <Ionicons
+              name={focused ? "home" : "home-outline"}
+              size={23}
+              color={color}
             />
           ),
         }}
@@ -61,10 +61,10 @@ export default function TabLayout() {
         options={{
           title: "Categories",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "apps" : "apps-outline"} 
-              size={23} 
-              color={color} 
+            <Ionicons
+              name={focused ? "apps" : "apps-outline"}
+              size={23}
+              color={color}
             />
           ),
         }}
@@ -76,10 +76,10 @@ export default function TabLayout() {
         options={{
           title: "Wishlist",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "heart" : "heart-outline"} 
-              size={23} 
-              color={color} 
+            <Ionicons
+              name={focused ? "heart" : "heart-outline"}
+              size={23}
+              color={color}
             />
           ),
         }}
@@ -91,10 +91,10 @@ export default function TabLayout() {
         options={{
           title: "Bag",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "bag" : "bag-outline"} 
-              size={23} 
-              color={color} 
+            <Ionicons
+              name={focused ? "bag" : "bag-outline"}
+              size={23}
+              color={color}
             />
           ),
         }}
@@ -106,10 +106,10 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "person" : "person-outline"} 
-              size={23} 
-              color={color} 
+            <Ionicons
+              name={focused ? "person" : "person-outline"}
+              size={23}
+              color={color}
             />
           ),
         }}

@@ -22,11 +22,10 @@ const API_URL = "http://10.132.206.253:5000";
 export default function Checkout() {
   const router = useRouter();
   
-  // Bag se pass kiya hua total amount catch karo
   const { totalAmount } = useLocalSearchParams(); 
   const subTotal = totalAmount ? Number(totalAmount) : 0;
   const shipping = subTotal > 0 ? 99 : 0;
-  const tax = Math.round(subTotal * 0.05); // Dummy 5% tax
+  const tax = Math.round(subTotal * 0.05); 
   const finalTotal = subTotal + shipping + tax;
 
   // Form States
@@ -76,13 +75,11 @@ export default function Checkout() {
       const fullShippingAddress = `${fullName}, ${address}, ${city}, Postal: ${postalCode}`;
       const paymentMethodInfo = `Card ending in ${cardNumber.slice(-4) || 'XXXX'}`;
 
-      // Hit Backend API to create order
       await axios.post(`${API_URL}/api/orders/create/${userId}`, {
         shippingAddress: fullShippingAddress,
         paymentMethod: paymentMethodInfo,
       });
 
-      // Success hone par Order tab ya Success page par bhej do
       Alert.alert("Success!", "Your order has been placed successfully.");
       router.replace("/orders"); 
       
@@ -215,7 +212,6 @@ export default function Checkout() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Sticky Bottom Footer - Safe area adjustment included */}
       <View className="px-5 py-4 bg-white border-t border-neutral-100 shadow-lg mb-[15px]">
         <TouchableOpacity
           onPress={handlePlaceOrder}

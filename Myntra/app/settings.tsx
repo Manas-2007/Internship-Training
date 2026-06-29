@@ -7,22 +7,20 @@ import { useRouter } from "expo-router";
 export default function Settings() {
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false); // Default Light (false)
+  const [darkMode, setDarkMode] = useState(false); 
 
-  // Dark Mode Toggle Logic
   const handleDarkModeToggle = (value: boolean) => {
     if (value) {
       Alert.alert(
         "Coming Soon", 
         "Dark Mode is currently under development. Stay tuned for the next update!"
       );
-      setDarkMode(false); // Keep it Light by default
+      setDarkMode(false); 
     } else {
       setDarkMode(false);
     }
   };
 
-  // T&C Alert Logic
   const showTerms = () => {
     Alert.alert(
       "Terms & Conditions",

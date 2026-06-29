@@ -8,7 +8,7 @@ export const GlobalProvider = ({ children }: any) => {
   const [categories, setCategories] = useState([]);
   const [deals, setDeals] = useState([]);
   const [products, setProducts] = useState([]);
-  const [wishlistIds, setWishlistIds] = useState<string[]>([]); // <--- Global State
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]); 
   const [loading, setLoading] = useState(true);
 
   // Home Data Fetch
@@ -16,17 +16,14 @@ export const GlobalProvider = ({ children }: any) => {
   try {
     const response = await axios.get(`${API_URL}/api/home`);
     
-    // API response mein ab tumhare DB ke saare products hain
     setCategories(response.data.categories);
     setProducts(response.data.products); 
 
-    // Deals Mapping (Yahan tumhare DB ke real _id's use honge)
-    // Ye map tumhare deals ko product se link kar dega
     const dealProductMap: any = {
-      "FLAT 60% OFF": "6a40e542efeaeaa042b5d603", // DB mein jo Sneaker ka ID hai wo dalo
-      "BUY 1 GET 1": "6a41fc6587c055c8a09c323d",  // DB mein jo Kids item ka ID hai
-      "UPTO 70% OFF": "6a41faa287c055c8a09c323b", // DB mein jo Handbag ka ID hai
-      "STARTING ₹499": "6a41f21987c055c8a09c3230", // DB mein jo Watch ka ID hai
+      "FLAT 60% OFF": "6a40e542efeaeaa042b5d603", 
+      "BUY 1 GET 1": "6a41fc6587c055c8a09c323d",  
+      "UPTO 70% OFF": "6a41faa287c055c8a09c323b",
+      "STARTING ₹499": "6a41f21987c055c8a09c3230",
     };
 
     const mappedDeals = response.data.deals.map((deal: any) => ({
@@ -52,7 +49,7 @@ export const GlobalProvider = ({ children }: any) => {
       const response = await axios.get(`${API_URL}/api/wishlist/ids`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setWishlistIds(response.data); // Pure app ke liye IDs sync ho gayi
+      setWishlistIds(response.data); 
     } catch (error) {
     }
   };
@@ -65,7 +62,7 @@ export const GlobalProvider = ({ children }: any) => {
   return (
     <GlobalContext.Provider value={{ 
       categories, deals, products, loading, fetchHomeData, 
-      wishlistIds, setWishlistIds, fetchWishlistIds // <--- Sab expose kar diya
+      wishlistIds, setWishlistIds, fetchWishlistIds
     }}>
       {children}
     </GlobalContext.Provider>
