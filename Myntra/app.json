@@ -10,10 +10,21 @@
     "web": {
       "output": "static"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2f40b9f9-d764-4ad5-a9da-f1a43f012e5c"
+      }
+    },
+    "android": {
+      "package": "com.manas2007.Myntra"
     }
   }
 }
