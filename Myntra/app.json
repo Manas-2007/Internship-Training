@@ -8,8 +8,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": ["expo-router"],
     "experiments": {
