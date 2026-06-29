@@ -118,9 +118,10 @@ export default function Login() {
                 setPassword(val);
                 setErrors((prev) => ({ ...prev, password: "" }));
               }}
+              style={{ color: '#000000', fontFamily: Platform.OS === 'android' ? 'sans-serif' : undefined }}
               className="bg-neutral-50 px-5 py-4 rounded-2xl text-base border border-neutral-100"
               placeholderTextColor="#a3a3a3"
-              secureTextEntry
+              secureTextEntry={true}
             />
             {errors.password && (
               <Text className="text-red-500 text-xs mt-1 ml-1">{errors.password}</Text>

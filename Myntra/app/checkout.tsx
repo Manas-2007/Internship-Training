@@ -118,12 +118,14 @@ export default function Checkout() {
               <TextInput
                 className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 focus:border-[#ff3f6c]"
                 placeholder="Full Name"
+                placeholderTextColor="#a3a3a3"
                 value={fullName}
                 onChangeText={setFullName}
               />
               <TextInput
                 className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200"
                 placeholder="Complete Address (House No, Street)"
+                placeholderTextColor="#a3a3a3"
                 value={address}
                 onChangeText={setAddress}
               />
@@ -131,12 +133,14 @@ export default function Checkout() {
                 <TextInput
                   className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
                   placeholder="City"
+                  placeholderTextColor="#a3a3a3"
                   value={city}
                   onChangeText={setCity}
                 />
                 <TextInput
                   className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
                   placeholder="Postal Code"
+                  placeholderTextColor="#a3a3a3"
                   keyboardType="numeric"
                   value={postalCode}
                   onChangeText={setPostalCode}
@@ -156,6 +160,7 @@ export default function Checkout() {
               <TextInput
                 className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200"
                 placeholder="Card Number"
+                placeholderTextColor="#a3a3a3"
                 keyboardType="numeric"
                 maxLength={16}
                 value={cardNumber}
@@ -165,11 +170,13 @@ export default function Checkout() {
                 <TextInput
                   className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
                   placeholder="MM/YY"
+                  placeholderTextColor="#a3a3a3"
                   maxLength={5}
                 />
                 <TextInput
                   className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
                   placeholder="CVV"
+                  placeholderTextColor="#a3a3a3"
                   keyboardType="numeric"
                   maxLength={3}
                   secureTextEntry

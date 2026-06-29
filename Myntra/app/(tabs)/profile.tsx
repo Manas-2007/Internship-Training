@@ -72,19 +72,14 @@ export default function Profile() {
 
   const getInitials = (name: string) => {
     if (!name) return "";
-    const names = name.split(" ");
-    if (names.length > 1) {
-      return (names[0][0] + names[names.length - 1][0]).toUpperCase();
-    }
-    return names[0][0].toUpperCase();
-  };
+   const names = name.trim().split(" ").filter(n => n.length > 0);
 
-  if (loading) {
-    return (
-      <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#ff3f6c" />
-      </View>
-    );
+  if (names.length === 0) return "";
+
+  if (names.length === 1) {
+    return names[0][0].toUpperCase();
+  }
+  return (names[0][0] + names[names.length - 1][0]).toUpperCase();
   }
 
   if (isGuest) {

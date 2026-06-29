@@ -126,11 +126,11 @@ export default function Home() {
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
       {/* 1. Sleek Header Section */}
-      <View className="flex-row justify-between items-center px-4 py-1 bg-white border-b border-neutral-100">
+      <View className="flex-row justify-between items-center px-4 bg-white border-b border-neutral-100">
         <View className="flex-row items-center gap-2">
     <Image
   source={require("../../assets/images/myntra.jpg")} 
-  style={{ width: 28, height: 28 }}
+  style={{ width:50, height:50 }}
   resizeMode="contain"
 />
           <Text className="text-xl font-black text-neutral-900 tracking-wider">
