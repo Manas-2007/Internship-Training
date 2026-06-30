@@ -157,7 +157,7 @@ export default function Categories() {
           {selectedCategory ? (
             <View className="pt-4">
               <TouchableOpacity
-                className="flex-row items-center px-4 mb-4 hover:opacity-70 transition-opacity cursor-pointer w-48"
+                className="flex-row items-center px-4 mb-4 hover:opacity-70 transition-opacity cursor-pointer"
                 onPress={() => setSelectedCategory(null)}
               >
                 <Ionicons name="arrow-back" size={18} color="#ce4067" />
