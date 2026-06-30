@@ -37,6 +37,7 @@ export default function ProductDetails() {
   const { products, wishlistIds, setWishlistIds } = useGlobalContext();
   const { width } = useWindowDimensions();
   const isLargeScreen: boolean = width >= 768;
+  
   const scrollRef = useRef<ScrollView>(null);
 
   const maxContentWidth: number = 1152;

@@ -127,10 +127,11 @@ export default function Categories() {
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="w-full max-w-6xl mx-auto flex-1">
         
-        <View className="px-4 py-4 bg-white">
-          <Text className="text-3xl font-bold text-neutral-900 tracking-tight">
-            Categories
-          </Text>
+        <View className="px-4 py-4 bg-white flex-row items-center">
+            <Ionicons name="grid" size={28} color="#ff3f6c" />
+              <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
+                Categories
+              </Text>
         </View>
 
         <View className="px-4 pb-4 bg-white border-b border-neutral-100">
@@ -150,14 +151,14 @@ export default function Categories() {
         </View>
 
         <ScrollView
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
           className="flex-1 bg-white"
           contentContainerStyle={{ paddingBottom: 40 }}
         >
           {selectedCategory ? (
-            <View className="pt-4">
+            <View className="pt-3">
               <TouchableOpacity
-                className="flex-row items-center px-4 mb-4 hover:opacity-70 transition-opacity cursor-pointer"
+                className="flex-row items-center px-4 mb-2 hover:opacity-70 transition-opacity cursor-pointer"
                 onPress={() => setSelectedCategory(null)}
               >
                 <Ionicons name="arrow-back" size={18} color="#ce4067" />
@@ -166,11 +167,11 @@ export default function Categories() {
                 </Text>
               </TouchableOpacity>
 
-              <Text className="text-4xl font-bold text-neutral-900 px-4 mb-6">
+              <Text className="text-3xl font-bold text-neutral-800 px-4 mb-2 mt-2">
                 {selectedCategory.name}
               </Text>
 
-              <View className="mb-8">
+              <View className="mb-6">
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -286,7 +287,7 @@ export default function Categories() {
                     </View>
                   </TouchableOpacity>
 
-                  <Text className="text-2xl font-bold text-neutral-900 mt-4 px-1">
+                  <Text className="text-xl font-bold text-neutral-900 mt-4 px-1">
                     {category.name}
                   </Text>
 
