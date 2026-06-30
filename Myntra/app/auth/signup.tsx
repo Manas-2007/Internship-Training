@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -23,6 +24,10 @@ export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Screen dimension check for responsive layout
+  const { height, width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
 
   // Backend Integration Function
   const handleSignUp = async () => {
@@ -39,11 +44,11 @@ export default function SignUp() {
     }
 
     try {
-     const response = await axios.post(`${API_URL}/api/auth/register`, {
-  name,
-  email,
-  password,
-});
+      const response = await axios.post(`${API_URL}/api/auth/register`, {
+        name,
+        email,
+        password,
+      });
 
       if (response.status === 201) {
         Alert.alert("Success", "Account created successfully!");
@@ -66,102 +71,124 @@ export default function SignUp() {
   };
 
   return (
-    <View className="flex-1 bg-neutral-100">
-      <StatusBar style="dark" />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-white sm:bg-neutral-50"
+    >
+      <StatusBar style={isLargeScreen ? "dark" : "light"} />
+      
+      <ScrollView 
+        contentContainerStyle={{ 
+          flexGrow: 1, 
+          justifyContent: isLargeScreen ? 'center' : 'flex-start',
+          paddingBottom: isLargeScreen ? 40 : 0
+        }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false} 
+        bounces={false}
       >
-        <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+        
+        {/* Centered Card Wrapper for Web/Tablet */}
+        <View className={`w-full mx-auto bg-white ${isLargeScreen ? 'max-w-md rounded-[32px] overflow-hidden shadow-xl border border-neutral-100 my-10' : 'flex-1'}`}>
+          
           {/* Top Image */}
-          <Image
-            source={{
-              uri: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&auto=format&fit=crop",
-            }}
-            className="w-full h-72 object-cover"
-          />
+          <View style={{ height: isLargeScreen ? 280 : height * 0.35, width: '100%' }}>
+            <Image
+              source={{
+                uri: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&auto=format&fit=crop",
+              }}
+              className="w-full h-full object-cover"
+            />
+          </View>
 
           {/* Bottom Form Section */}
-          <View className="bg-white rounded-t-[32px] px-6 pt-8 pb-12 -mt-8 flex-1 min-h-screen">
-            <Text className="text-4xl font-black text-neutral-800 tracking-tight">
+          <View className="bg-white rounded-t-[32px] px-6 pt-8 pb-6 -mt-8 flex-1">
+            <Text className="text-3xl font-bold text-neutral-800 tracking-tight mb-1">
               Create Account
             </Text>
-            <Text className="text-base text-neutral-500 mt-2 mb-8 font-medium">
+            <Text className="text-sm text-neutral-500 mb-6 font-medium">
               Join Myntra and discover amazing fashion
             </Text>
 
             {/* Inputs */}
-            <View className="gap-y-4">
-              <TextInput
-                placeholder="Full Name"
-                value={name}
-                onChangeText={(val) => {
-                  setName(val);
-                  setErrors((prev) => ({ ...prev, name: "" }));
-                }}
-                className="bg-[#f5f5f5] px-5 py-4 rounded-xl text-base text-neutral-800 font-semibold"
-                placeholderTextColor="#a3a3a3"
-              />
-              {errors.name && (
-                <Text className="text-red-500 text-xs mt-1 ml-1">
-                  {errors.name}
-                </Text>
-              )}
-
-              <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={(val) => {
-                  setEmail(val);
-                  setErrors((prev) => ({ ...prev, email: "" }));
-                }}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                className="bg-[#f5f5f5] px-5 py-4 rounded-xl text-base text-neutral-800 font-semibold"
-                placeholderTextColor="#a3a3a3"
-              />
-              {errors.email && (
-                <Text className="text-red-500 text-xs mt-1 ml-1">
-                  {errors.email}
-                </Text>
-              )}
-
-              <View className="bg-[#f5f5f5] rounded-xl flex-row items-center px-5">
+            <View className="gap-y-3.5">
+              <View>
                 <TextInput
-                  placeholder="Password"
-                  value={password}
+                  placeholder="Full Name"
+                  value={name}
                   onChangeText={(val) => {
-                    setPassword(val);
-                    setErrors((prev) => ({ ...prev, password: "" }));
+                    setName(val);
+                    setErrors((prev) => ({ ...prev, name: "" }));
                   }}
-                  secureTextEntry={!showPassword}
-                  className="flex-1 py-4 text-base text-neutral-800 font-semibold"
+                  className="bg-neutral-50 px-4 py-3 rounded-xl text-base border border-neutral-100 hover:bg-neutral-100 transition-colors"
                   placeholderTextColor="#a3a3a3"
                 />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  className="p-2 -mr-2"
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={20}
-                    color="#737373"
-                  />
-                </TouchableOpacity>
+                {errors.name && (
+                  <Text className="text-red-500 text-xs mt-1 ml-1">
+                    {errors.name}
+                  </Text>
+                )}
               </View>
-              {errors.password && (
-                <Text className="text-red-500 text-xs mt-1 ml-1">
-                  {errors.password}
-                </Text>
-              )}
+
+              <View>
+                <TextInput
+                  placeholder="Email"
+                  value={email}
+                  onChangeText={(val) => {
+                    setEmail(val);
+                    setErrors((prev) => ({ ...prev, email: "" }));
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  className="bg-neutral-50 px-4 py-3 rounded-xl text-base border border-neutral-100 hover:bg-neutral-100 transition-colors"
+                  placeholderTextColor="#a3a3a3"
+                />
+                {errors.email && (
+                  <Text className="text-red-500 text-xs mt-1 ml-1">
+                    {errors.email}
+                  </Text>
+                )}
+              </View>
+
+              <View>
+                <View className="bg-neutral-50 rounded-xl flex-row items-center px-4 border border-neutral-100 hover:bg-neutral-100 transition-colors">
+                  <TextInput
+                    placeholder="Password"
+                    value={password}
+                    onChangeText={(val) => {
+                      setPassword(val);
+                      setErrors((prev) => ({ ...prev, password: "" }));
+                    }}
+                    secureTextEntry={!showPassword}
+                    style={{ color: '#000000', fontFamily: Platform.OS === 'android' ? 'sans-serif' : undefined }}
+                    className="flex-1 py-3 text-base"
+                    placeholderTextColor="#a3a3a3"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    className="p-2 -mr-2 cursor-pointer"
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={20}
+                      color="#737373"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {errors.password && (
+                  <Text className="text-red-500 text-xs mt-1 ml-1">
+                    {errors.password}
+                  </Text>
+                )}
+              </View>
             </View>
 
             {/* Sign Up Button */}
             <TouchableOpacity
               onPress={handleSignUp}
-              className="bg-[#ff3f6c] py-4 rounded-xl items-center mt-8"
+              className="bg-[#ff3f6c] py-3 rounded-xl items-center mt-8 shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
             >
-              <Text className="text-white font-extrabold text-lg tracking-wide">
+              <Text className="text-white font-semibold text-base tracking-wide">
                 SIGN UP
               </Text>
             </TouchableOpacity>
@@ -169,16 +196,17 @@ export default function SignUp() {
             {/* Login Link */}
             <TouchableOpacity
               onPress={() => router.replace("/auth/login")}
-              className="mt-6 items-center"
+              className="mt-6 mb-2 items-center cursor-pointer"
             >
-              <Text className="text-base text-neutral-500 font-medium">
+              <Text className="text-sm text-neutral-500 font-medium">
                 Already have an account?{" "}
-                <Text className="text-[#ff3f6c] font-bold">Login</Text>
+                <Text className="text-[#ff3f6c] font-semibold hover:underline">Login</Text>
               </Text>
             </TouchableOpacity>
+            
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

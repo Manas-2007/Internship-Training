@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_URL } from "../constants/api"; 
@@ -56,125 +57,162 @@ export default function Profile() {
     fetchProfileData();
   }, []);
 
-  const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout",
-        style: "destructive",
-        onPress: async () => {
-          await AsyncStorage.removeItem("userToken");
-          setIsGuest(true);
+  const handleLogout = async () => {
+    // Web requires a standard browser confirmation
+    if (Platform.OS === "web") {
+      const confirmLogout = window.confirm("Are you sure you want to logout?");
+      if (confirmLogout) {
+        await AsyncStorage.removeItem("userToken");
+        setIsGuest(true);
+      }
+    } else {
+      // Mobile uses the native Alert component
+      Alert.alert("Logout", "Are you sure you want to logout?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: async () => {
+            await AsyncStorage.removeItem("userToken");
+            setIsGuest(true);
+          },
         },
-      },
-    ]);
+      ]);
+    }
   };
 
   const getInitials = (name: string) => {
     if (!name) return "";
-   const names = name.trim().split(" ").filter(n => n.length > 0);
+    const names = name.trim().split(" ").filter((n) => n.length > 0);
 
-  if (names.length === 0) return "";
+    if (names.length === 0) return "";
 
-  if (names.length === 1) {
-    return names[0][0].toUpperCase();
-  }
-  return (names[0][0] + names[names.length - 1][0]).toUpperCase();
-  }
+    if (names.length === 1) {
+      return names[0][0].toUpperCase();
+    }
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  };
 
+  // -------------------------------------------------------------
+  // GUEST VIEW
+  // -------------------------------------------------------------
   if (isGuest) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center px-6" edges={["top"]}>
+      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <StatusBar style="dark" />
-        <View className="w-28 h-28 bg-pink-50 rounded-full items-center justify-center mb-6">
-          <Ionicons name="person-outline" size={48} color="#ff3f6c" />
-        </View>
-        <Text className="text-3xl font-black text-neutral-800 mb-3 text-center tracking-tight">
-          Login Required
-        </Text>
-        <Text className="text-base text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
-          Login your account to use this feature and seamlessly manage your profile, orders, and wishlist.
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push("/auth/login")}
-          className="bg-[#ff3f6c] w-full py-4 rounded-2xl items-center shadow-sm"
-        >
-          <Text className="text-white font-black text-lg tracking-widest">
-            LOGIN NOW
+        <View className="flex-1 items-center justify-center px-6 w-full max-w-md mx-auto">
+          <View className="w-24 h-24 bg-pink-50 rounded-full items-center justify-center mb-6">
+            <Ionicons name="person-outline" size={40} color="#ff3f6c" />
+          </View>
+          {/* Changed from font-black to font-bold */}
+          <Text className="text-2xl font-bold text-neutral-800 mb-3 text-center tracking-tight">
+            Login Required
           </Text>
-        </TouchableOpacity>
+          <Text className="text-base text-neutral-500 mb-10 text-center px-4 leading-6">
+            Login to your account to seamlessly manage your profile, orders, and wishlist.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push("/auth/login")}
+            className="bg-[#ff3f6c] w-full py-4 rounded-xl items-center shadow-sm hover:opacity-90 transition-opacity"
+          >
+            {/* Changed from font-black to font-bold */}
+            <Text className="text-white font-bold text-lg tracking-wide">
+              LOGIN NOW
+            </Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
 
+  // -------------------------------------------------------------
+  // LOGGED IN VIEW
+  // -------------------------------------------------------------
   return (
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
       <StatusBar style="dark" />
 
-      <View className="px-5 py-4 bg-white border-b border-neutral-100">
-        <Text className="text-3xl font-black text-neutral-800 tracking-tight">
-          Profile
-        </Text>
+      {/* Header Area */}
+      <View className="bg-white border-b border-neutral-100 items-center">
+        {/* Tightened max-width from 2xl to lg */}
+        <View className="w-full max-w-lg px-5 py-4">
+          <Text className="text-2xl font-bold text-neutral-800 tracking-tight text-center sm:text-left">
+            Profile
+          </Text>
+        </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        <View className="bg-white px-5 py-8 mb-3 border-b border-neutral-100">
-          <View className="flex-row items-center">
-            <View className="w-20 h-20 rounded-full bg-[#ff3f6c] items-center justify-center shadow-sm">
-              <Text className="text-white text-3xl font-black">
-                {getInitials(userData.name)}
-              </Text>
-            </View>
-            <View className="ml-5 flex-1">
-              <Text
-                className="text-2xl font-black text-neutral-800 mb-1"
-                numberOfLines={1}
-              >
-                {userData.name}
-              </Text>
-              <Text
-                className="text-neutral-500 text-sm font-medium"
-                numberOfLines={1}
-              >
-                {userData.email}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View className="bg-white border-y border-neutral-100">
-          {menuItems.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              className={`flex-row items-center justify-between px-5 py-4 ${
-                index !== menuItems.length - 1
-                  ? "border-b border-neutral-50"
-                  : ""
-              } active:bg-neutral-50`}
-              onPress={() => router.push(item.route as any)}
-            >
-              <View className="flex-row items-center">
-                <View className="w-9 h-9 rounded-full bg-neutral-50 items-center justify-center">
-                  <Ionicons name={item.icon as any} size={20} color="#52525b" />
-                </View>
-                <Text className="text-base font-semibold text-neutral-700 ml-4">
-                  {item.label}
+      {/* Scrollable Content */}
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        className="flex-1"
+        contentContainerStyle={{ alignItems: 'center', paddingBottom: 40 }} 
+      >
+        <View className="w-full max-w-lg mt-5 px-5 sm:px-0">
+          
+          {/* User Profile Card */}
+          <View className="bg-white px-5 py-6 mb-5 border border-neutral-100 rounded-2xl shadow-sm">
+            <View className="flex-row items-center">
+              <View className="w-16 h-16 rounded-full bg-[#ff3f6c] items-center justify-center shadow-sm">
+                <Text className="text-white text-xl font-bold">
+                  {getInitials(userData.name)}
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#d4d4d8" />
-            </TouchableOpacity>
-          ))}
-        </View>
+              <View className="ml-4 flex-1">
+                {/* Changed font weights */}
+                <Text
+                  className="text-xl font-bold text-neutral-800 mb-1"
+                  numberOfLines={1}
+                >
+                  {userData.name}
+                </Text>
+                <Text
+                  className="text-neutral-500 text-sm"
+                  numberOfLines={1}
+                >
+                  {userData.email}
+                </Text>
+              </View>
+            </View>
+          </View>
 
-        <TouchableOpacity
-          className="flex-row items-center justify-center py-4 mt-8 mb-12 mx-5 rounded-2xl bg-white border border-[#ff3f6c] shadow-sm active:bg-pink-50"
-          onPress={handleLogout}
-        >
-          <Ionicons name="log-out-outline" size={22} color="#ff3f6c" />
-          <Text className="ml-2 text-lg font-bold text-[#ff3f6c] tracking-wide">
-            Logout
-          </Text>
-        </TouchableOpacity>
+          {/* Settings / Menu List */}
+          <View className="bg-white border border-neutral-100 rounded-2xl shadow-sm overflow-hidden mb-6">
+            {menuItems.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                className={`flex-row items-center justify-between px-5 py-4 ${
+                  index !== menuItems.length - 1
+                    ? "border-b border-neutral-100"
+                    : ""
+                } active:bg-neutral-50 hover:bg-neutral-50 cursor-pointer transition-colors`}
+                onPress={() => router.push(item.route as any)}
+              >
+                <View className="flex-row items-center">
+                  <View className="w-9 h-9 rounded-full bg-neutral-50 items-center justify-center">
+                    <Ionicons name={item.icon as any} size={20} color="#52525b" />
+                  </View>
+                  <Text className="text-base font-semibold text-neutral-700 ml-4">
+                    {item.label}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#d4d4d8" />
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Logout Button */}
+          <TouchableOpacity
+            className="flex-row items-center justify-center py-4 rounded-xl bg-white border border-[#ff3f6c] shadow-sm active:bg-pink-50 hover:bg-pink-50 cursor-pointer transition-colors"
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#ff3f6c" />
+            <Text className="ml-2 text-base font-bold text-[#ff3f6c] tracking-wide">
+              Logout
+            </Text>
+          </TouchableOpacity>
+          
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  useWindowDimensions,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,6 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { API_URL } from "./constants/api";
+
 export default function Checkout() {
   const router = useRouter();
   
@@ -26,7 +28,10 @@ export default function Checkout() {
   const tax = Math.round(subTotal * 0.05); 
   const finalTotal = subTotal + shipping + tax;
 
-  // Form States
+  const { width } = useWindowDimensions();
+  const isLargeScreen: boolean = width >= 1024;
+  const isTablet: boolean = width >= 768 && width < 1024;
+
   const [fullName, setFullName] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -50,10 +55,17 @@ export default function Checkout() {
     loadDefaultData();
   }, []);
 
-  // PLACE ORDER API LOGIC
+  const showMessage = (title: string, message: string): void => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!fullName || !address || !city || !postalCode || !cardNumber) {
-      Alert.alert("Missing Fields", "Please fill all the required details.");
+      showMessage("Missing Fields", "Please fill all the required details.");
       return;
     }
 
@@ -62,7 +74,7 @@ export default function Checkout() {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) {
-        Alert.alert("Session Expired", "Please login again.");
+        showMessage("Session Expired", "Please login again.");
         setIsProcessing(false);
         return;
       }
@@ -78,161 +90,202 @@ export default function Checkout() {
         paymentMethod: paymentMethodInfo,
       });
 
-      Alert.alert("Success!", "Your order has been placed successfully.");
+      showMessage("Success!", "Your order has been placed successfully.");
       router.replace("/orders"); 
       
     } catch (error) {
       console.log("Checkout Error:", error);
-      Alert.alert("Error", "Something went wrong while placing your order.");
+      showMessage("Error", "Something went wrong while placing your order.");
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const OrderSummaryCard = () => (
+    <View className="bg-white p-6 rounded-xl shadow-sm border border-neutral-100">
+      <View className="flex-row items-center mb-5">
+        <Ionicons name="receipt" size={20} color="#ff3f6c" />
+        <Text className="text-lg font-bold text-neutral-800 ml-2 tracking-tight">Price Details</Text>
+      </View>
+
+      <View className="gap-3.5">
+        <View className="flex-row justify-between items-center">
+          <Text className="text-sm text-neutral-500 font-medium">Total MRP</Text>
+          <Text className="text-sm text-neutral-800 font-semibold">₹{subTotal}</Text>
+        </View>
+        <View className="flex-row justify-between items-center">
+          <Text className="text-sm text-neutral-500 font-medium">Platform Fee & Tax</Text>
+          <Text className="text-sm text-neutral-800 font-semibold">₹{tax}</Text>
+        </View>
+        <View className="flex-row justify-between items-center pb-4 border-b border-neutral-100">
+          <Text className="text-sm text-neutral-500 font-medium">Shipping Charges</Text>
+          <Text className="text-sm text-emerald-600 font-semibold">
+            {shipping === 0 ? "FREE" : `₹${shipping}`}
+          </Text>
+        </View>
+        <View className="flex-row justify-between items-center pt-2 mb-2">
+          <Text className="text-base font-bold text-neutral-800">Total Amount</Text>
+          <Text className="text-xl font-bold text-neutral-900 tracking-tight">₹{finalTotal}</Text>
+        </View>
+      </View>
+
+      {(isLargeScreen || isTablet) && (
+        <TouchableOpacity
+          onPress={handlePlaceOrder}
+          disabled={isProcessing}
+          className={`mt-6 py-3.5 rounded-xl items-center shadow-sm flex-row justify-center transition-colors cursor-pointer ${
+            isProcessing ? 'bg-pink-300' : 'bg-[#ff3f6c] hover:bg-[#e0355f]'
+          }`}
+        >
+          {isProcessing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Text className="text-white text-sm font-bold tracking-wider mr-2">PAY ₹{finalTotal}</Text>
+              <Ionicons name="lock-closed" size={14} color="#fff" />
+            </>
+          )}
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
-      {/* Header */}
       <View className="px-5 py-4 bg-white border-b border-neutral-100 flex-row items-center z-10">
-        <TouchableOpacity onPress={() => router.back()} className="mr-4 p-1">
-          <Ionicons name="arrow-back" size={24} color="#282c3f" />
-        </TouchableOpacity>
-        <Text className="text-2xl font-black text-[#282c3f] tracking-tight">
-          Checkout
-        </Text>
+        <View className="w-full max-w-5xl mx-auto flex-row items-center">
+          <TouchableOpacity onPress={() => router.back()} className="mr-3 p-1 cursor-pointer hover:opacity-70 transition-opacity">
+            <Ionicons name="arrow-back" size={22} color="#171717" />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold text-neutral-900 tracking-tight">
+            Checkout
+          </Text>
+        </View>
       </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
       >
-        <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-4 py-4" contentContainerStyle={{ paddingBottom: 40 }}>
-          
-          {/* Shipping Address Box */}
-          <View className="bg-white p-5 rounded-2xl mb-5 shadow-sm border border-neutral-100">
-            <View className="flex-row items-center mb-4">
-              <Ionicons name="location" size={22} color="#ff3f6c" />
-              <Text className="text-lg font-bold text-neutral-800 ml-2">Shipping Address</Text>
-            </View>
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          className="flex-1" 
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <View className={`w-full max-w-5xl mx-auto flex-1 px-4 py-6 ${isLargeScreen || isTablet ? "flex-row gap-8" : "flex-col"}`}>
+            
+            {/* Forms Column (Left on Desktop, Top on Mobile) */}
+            <View className="flex-1">
+              
+              {/* Shipping Address Box */}
+              <View className="bg-white p-5 rounded-xl mb-6 shadow-sm border border-neutral-100">
+                <View className="flex-row items-center mb-5">
+                  <Ionicons name="location" size={20} color="#ff3f6c" />
+                  <Text className="text-lg font-bold text-neutral-800 ml-2 tracking-tight">Shipping Address</Text>
+                </View>
 
-            <View className="gap-3">
-              <TextInput
-                className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 focus:border-[#ff3f6c]"
-                placeholder="Full Name"
-                placeholderTextColor="#a3a3a3"
-                value={fullName}
-                onChangeText={setFullName}
-              />
-              <TextInput
-                className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200"
-                placeholder="Complete Address (House No, Street)"
-                placeholderTextColor="#a3a3a3"
-                value={address}
-                onChangeText={setAddress}
-              />
-              <View className="flex-row justify-between">
-                <TextInput
-                  className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
-                  placeholder="City"
-                  placeholderTextColor="#a3a3a3"
-                  value={city}
-                  onChangeText={setCity}
-                />
-                <TextInput
-                  className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
-                  placeholder="Postal Code"
-                  placeholderTextColor="#a3a3a3"
-                  keyboardType="numeric"
-                  value={postalCode}
-                  onChangeText={setPostalCode}
-                />
+                <View className="gap-3.5">
+                  <TextInput
+                    className="bg-neutral-50 px-4 py-3 rounded-lg text-sm text-neutral-800 border border-neutral-200 focus:border-neutral-400 focus:bg-white transition-colors outline-none"
+                    placeholder="Full Name"
+                    placeholderTextColor="#a3a3a3"
+                    value={fullName}
+                    onChangeText={setFullName}
+                  />
+                  <TextInput
+                    className="bg-neutral-50 px-4 py-3 rounded-lg text-sm text-neutral-800 border border-neutral-200 focus:border-neutral-400 focus:bg-white transition-colors outline-none"
+                    placeholder="Complete Address (House No, Street)"
+                    placeholderTextColor="#a3a3a3"
+                    value={address}
+                    onChangeText={setAddress}
+                  />
+                  <View className="flex-row justify-between gap-3.5">
+                    <TextInput
+                      className="flex-1 bg-neutral-50 px-4 py-3 rounded-lg text-sm text-neutral-800 border border-neutral-200 focus:border-neutral-400 focus:bg-white transition-colors outline-none"
+                      placeholder="City"
+                      placeholderTextColor="#a3a3a3"
+                      value={city}
+                      onChangeText={setCity}
+                    />
+                    <TextInput
+                      className="flex-1 bg-neutral-50 px-4 py-3 rounded-lg text-sm text-neutral-800 border border-neutral-200 focus:border-neutral-400 focus:bg-white transition-colors outline-none"
+                      placeholder="Postal Code"
+                      placeholderTextColor="#a3a3a3"
+                      keyboardType="numeric"
+                      value={postalCode}
+                      onChangeText={setPostalCode}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* Payment Method Box */}
+              <View className="bg-white p-5 rounded-xl mb-6 shadow-sm border border-neutral-100">
+                <View className="flex-row items-center mb-5">
+                  <Ionicons name="card" size={20} color="#ff3f6c" />
+                  <Text className="text-lg font-bold text-neutral-800 ml-2 tracking-tight">Payment Details</Text>
+                </View>
+
+                <View className="gap-3.5">
+                  <TextInput
+                    className="bg-neutral-50 px-4 py-3 rounded-lg text-sm text-neutral-800 border border-neutral-200 focus:border-neutral-400 focus:bg-white transition-colors outline-none"
+                    placeholder="Card Number"
+                    placeholderTextColor="#a3a3a3"
+                    keyboardType="numeric"
+                    maxLength={16}
+                    value={cardNumber}
+                    onChangeText={setCardNumber}
+                  />
+                  <View className="flex-row justify-between gap-3.5">
+                    <TextInput
+                      className="flex-1 bg-neutral-50 px-4 py-3 rounded-lg text-sm text-neutral-800 border border-neutral-200 focus:border-neutral-400 focus:bg-white transition-colors outline-none"
+                      placeholder="MM/YY"
+                      placeholderTextColor="#a3a3a3"
+                      maxLength={5}
+                    />
+                    <TextInput
+                      className="flex-1 bg-neutral-50 px-4 py-3 rounded-lg text-sm text-neutral-800 border border-neutral-200 focus:border-neutral-400 focus:bg-white transition-colors outline-none"
+                      placeholder="CVV"
+                      placeholderTextColor="#a3a3a3"
+                      keyboardType="numeric"
+                      maxLength={3}
+                      secureTextEntry
+                    />
+                  </View>
+                </View>
               </View>
             </View>
+
+            {/* Order Summary Column (Right on Desktop, Bottom on Mobile) */}
+            <View className={isLargeScreen || isTablet ? "w-[340px]" : "w-full pb-20"}>
+              <OrderSummaryCard />
+            </View>
+
           </View>
-
-          {/* Payment Method Box */}
-          <View className="bg-white p-5 rounded-2xl mb-5 shadow-sm border border-neutral-100">
-            <View className="flex-row items-center mb-4">
-              <Ionicons name="card" size={22} color="#ff3f6c" />
-              <Text className="text-lg font-bold text-neutral-800 ml-2">Payment Details</Text>
-            </View>
-
-            <View className="gap-3">
-              <TextInput
-                className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200"
-                placeholder="Card Number"
-                placeholderTextColor="#a3a3a3"
-                keyboardType="numeric"
-                maxLength={16}
-                value={cardNumber}
-                onChangeText={setCardNumber}
-              />
-              <View className="flex-row justify-between">
-                <TextInput
-                  className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
-                  placeholder="MM/YY"
-                  placeholderTextColor="#a3a3a3"
-                  maxLength={5}
-                />
-                <TextInput
-                  className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base text-neutral-800 border border-neutral-200 w-[48%]"
-                  placeholder="CVV"
-                  placeholderTextColor="#a3a3a3"
-                  keyboardType="numeric"
-                  maxLength={3}
-                  secureTextEntry
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* Order Summary Box */}
-          <View className="bg-white p-5 rounded-2xl mb-8 shadow-sm border border-neutral-100">
-            <View className="flex-row items-center mb-4">
-              <Ionicons name="receipt" size={22} color="#ff3f6c" />
-              <Text className="text-lg font-bold text-neutral-800 ml-2">Price Details</Text>
-            </View>
-
-            <View className="gap-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-base text-neutral-500 font-medium">Total MRP</Text>
-                <Text className="text-base text-neutral-800 font-semibold">₹{subTotal}</Text>
-              </View>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-base text-neutral-500 font-medium">Platform Fee & Tax</Text>
-                <Text className="text-base text-neutral-800 font-semibold">₹{tax}</Text>
-              </View>
-              <View className="flex-row justify-between items-center pb-3 border-b border-neutral-100">
-                <Text className="text-base text-neutral-500 font-medium">Shipping Charges</Text>
-                <Text className="text-base text-[#ff3f6c] font-semibold">
-                  {shipping === 0 ? "FREE" : `₹${shipping}`}
-                </Text>
-              </View>
-              <View className="flex-row justify-between items-center pt-2">
-                <Text className="text-lg font-bold text-neutral-800">Total Amount</Text>
-                <Text className="text-xl font-black text-[#282c3f]">₹{finalTotal}</Text>
-              </View>
-            </View>
-          </View>
-
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <View className="px-5 py-4 bg-white border-t border-neutral-100 shadow-lg mb-[15px]">
-        <TouchableOpacity
-          onPress={handlePlaceOrder}
-          disabled={isProcessing}
-          className={`py-4 rounded-xl items-center shadow-md flex-row justify-center ${isProcessing ? 'bg-pink-300' : 'bg-[#ff3f6c]'}`}
-        >
-          {isProcessing ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Text className="text-white text-base font-black tracking-widest mr-2">PAY ₹{finalTotal}</Text>
-              <Ionicons name="lock-closed" size={16} color="#fff" />
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
+      {/* Sticky Bottom Bar for Mobile Only */}
+      {(!isLargeScreen && !isTablet) && (
+        <View className="absolute bottom-0 w-full px-4 py-4 bg-white border-t border-neutral-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+          <TouchableOpacity
+            onPress={handlePlaceOrder}
+            disabled={isProcessing}
+            className={`py-3.5 rounded-xl items-center shadow-sm flex-row justify-center ${
+              isProcessing ? 'bg-pink-300' : 'bg-[#ff3f6c]'
+            }`}
+          >
+            {isProcessing ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Text className="text-white text-sm font-bold tracking-wider mr-2">PAY ₹{finalTotal}</Text>
+                <Ionicons name="lock-closed" size={14} color="#fff" />
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

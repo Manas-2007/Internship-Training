@@ -1,42 +1,52 @@
-import { useEffect } from 'react';
-import { View, Image, StatusBar } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Image, StatusBar, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  
+  const isLargeScreen: boolean = width >= 768;
+  const logoSize: number = isLargeScreen ? 256 : 192;
 
   useEffect(() => {
-    const checkAuthAndNavigate = async () => {
+    let timer: ReturnType<typeof setTimeout>;
+
+    const checkAuthAndNavigate = async (): Promise<void> => {
       try {
         const token = await AsyncStorage.getItem("userToken");
 
-        const timer = setTimeout(() => {
+        timer = setTimeout(() => {
           if (token) {
             router.replace('/(tabs)'); 
           } else {
             router.replace('/auth/login'); 
           }
         }, 3000);
-
-        return () => clearTimeout(timer);
       } catch (error) {
         console.log("Error checking token:", error);
-        setTimeout(() => {
+        timer = setTimeout(() => {
           router.replace('/auth/login');
         }, 3000);
       }
     };
 
     checkAuthAndNavigate();
-  }, []);
+
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [router]);
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
       <StatusBar barStyle="dark-content" />
       <Image
         source={require('@/assets/images/myntra.jpg')}
-        className="w-48 h-48"
+        style={{ width: logoSize, height: logoSize }}
         resizeMode="contain"
       />
     </View>

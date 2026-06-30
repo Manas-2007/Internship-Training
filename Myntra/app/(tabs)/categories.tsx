@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   Image,
   TextInput,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,7 +14,13 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 
 import { useGlobalContext } from "../context/GlobalContext";
 
-const categoriesData = [
+interface Category {
+  name: string;
+  image: string;
+  subCategories: string[];
+}
+
+const categoriesData: Category[] = [
   {
     name: "Men",
     image: "https://images.pexels.com/photos/1043474/pexels-photo-1043474.jpeg",
@@ -51,12 +58,29 @@ export default function Categories() {
   const params = useLocalSearchParams();
   const { products } = useGlobalContext();
 
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const { width } = useWindowDimensions();
+  const isTablet = width >= 768;
+  const isDesktop = width >= 1024;
+
+  const getCategoryCardWidth = () => {
+    if (isDesktop) return "31%";
+    if (isTablet) return "48%";
+    return "100%";
+  };
+
+  const getProductCardWidth = () => {
+    if (isDesktop) return "23.5%";
+    if (isTablet) return "31%";
+    return "48%";
+  };
 
   useEffect(() => {
     if (params.categoryName) {
       const found = categoriesData.find(
-        (c: any) => c.name === params.categoryName,
+        (c: Category) => c.name === params.categoryName
       );
       if (found) {
         setSelectedCategory(found);
@@ -92,200 +116,205 @@ export default function Categories() {
 
     return [matches[0]];
   };
+
   const visibleProducts = getDisplayProducts();
 
-  const [searchQuery, setSearchQuery] = useState("");
-
   const filteredCategories = categoriesData.filter((cat) =>
-    cat.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    cat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* GLOBAL HEADER */}
-      <View className="px-4 py-3 bg-white">
-        <Text className="text-2xl font-black text-neutral-900 tracking-tight">
-          Categories
-        </Text>
-      </View>
-
-      {/* SEARCH BAR */}
-      <View className="px-4 pb-4 bg-white border-b border-neutral-100">
-        <View className="flex-row items-center bg-[#f5f5f5] px-4 py-3 rounded-xl">
-          <Ionicons name="search" size={20} color="#a3a3a3" />
-          <TextInput
-            placeholder="Search for categories..."
-            className="flex-1 ml-2 text-neutral-800 text-base"
-            placeholderTextColor="#a3a3a3"
-            value={searchQuery} // <-- Naya
-            onChangeText={(text) => {
-              setSearchQuery(text);
-              setSelectedCategory(null);
-            }}
-          />
+      <View className="w-full max-w-6xl mx-auto flex-1">
+        
+        <View className="px-4 py-4 bg-white">
+          <Text className="text-3xl font-bold text-neutral-900 tracking-tight">
+            Categories
+          </Text>
         </View>
-      </View>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        className="flex-1 bg-white"
-      >
-        {selectedCategory ? (
-          /* --- DETAIL VIEW --- */
-          <View className="pb-24">
-            <TouchableOpacity
-              className="flex-row items-center px-4 mt-4 mb-2"
-              onPress={() => setSelectedCategory(null)}
-            >
-              <Ionicons name="arrow-back" size={18} color="#ce4067" />
-              <Text className="text-[#ce4067] font-bold text-base ml-1">
-                Back to Categories
-              </Text>
-            </TouchableOpacity>
-
-            {/* Category Name */}
-            <Text className="text-4xl font-black text-neutral-900 px-4 mb-4 mt-1">
-              {selectedCategory.name}
-            </Text>
-
-            <View className="mb-6">
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="px-4"
-              >
-                {selectedCategory.subCategories.map(
-                  (sub: string, index: number) => {
-                    const isActive = index === 0;
-
-                    return (
-                      <TouchableOpacity
-                        key={index}
-                        activeOpacity={isActive ? 1 : 0.6}
-                        onPress={() => {
-                          if (!isActive) {
-                            alert(`${sub} products are coming soon!`);
-                          }
-                        }}
-                        className={`px-5 py-2 rounded-full mr-3 border flex-row items-center justify-center ${
-                          isActive
-                            ? "bg-[#ff3f6c] border-[#ff3f6c]"
-                            : "bg-white border-[#eaeaec]"
-                        }`}
-                      >
-                        <Text
-                          numberOfLines={1}
-                          className={`font-bold text-[13px] tracking-wide ${
-                            isActive ? "text-white" : "text-neutral-600"
-                          }`}
-                        >
-                          {sub}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  },
-                )}
-                <View className="w-6" />
-              </ScrollView>
-            </View>
-
-            <View className="flex-row flex-wrap justify-between px-4">
-              {visibleProducts.length > 0 ? (
-                visibleProducts.map((product: any) => {
-                  const imageUrl =
-                    product.images?.[0] ||
-                    product.image ||
-                    selectedCategory.image;
-
-                  return (
-                    <TouchableOpacity
-                      key={product._id}
-                      className="w-[48%] mb-6"
-                      onPress={() => router.push(`/product/${product._id}`)}
-                      activeOpacity={0.9}
-                    >
-                      <Image
-                        source={{ uri: imageUrl }}
-                        className="w-full h-56 rounded-xl bg-neutral-100 mb-3 object-cover"
-                      />
-                      <Text
-                        className="text-neutral-500 text-sm font-semibold"
-                        numberOfLines={1}
-                      >
-                        {product.brand || "Brand"}
-                      </Text>
-                      <Text
-                        className="text-neutral-900 text-base font-medium mt-0.5 leading-5"
-                        numberOfLines={1}
-                      >
-                        {product.name}
-                      </Text>
-                      <View className="flex-row items-center mt-1">
-                        <Text className="text-neutral-900 font-bold text-base">
-                          ₹{product.price}
-                        </Text>
-                        <Text className="text-[#ce4067] text-sm font-bold ml-2">
-                          {product.discount || "50% OFF"}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })
-              ) : (
-                <View className="w-full py-10 items-center justify-center">
-                  <Ionicons name="shirt-outline" size={40} color="#e5e5e5" />
-                  <Text className="text-neutral-400 font-medium mt-3">
-                    More styles coming soon...
-                  </Text>
-                </View>
-              )}
-            </View>
+        <View className="px-4 pb-4 bg-white border-b border-neutral-100">
+          <View className="flex-row items-center bg-[#f5f5f5] px-4 py-3 rounded-xl border border-transparent hover:border-neutral-200 transition-colors">
+            <Ionicons name="search" size={20} color="#a3a3a3" />
+            <TextInput
+              placeholder="Search for categories..."
+              className="flex-1 ml-2 text-neutral-800 text-base outline-none"
+              placeholderTextColor="#a3a3a3"
+              value={searchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                setSelectedCategory(null);
+              }}
+            />
           </View>
-        ) : (
-          /* --- MAIN OUTER VIEW --- */
-          <View className="pb-24 pt-4">
-            {filteredCategories.map((category, index) => (
-              <View key={index} className="mb-8">
-                <TouchableOpacity
-                  className="px-4"
-                  activeOpacity={0.9}
-                  onPress={() => setSelectedCategory(category)}
-                >
-                  <Image
-                    source={{ uri: category.image }}
-                    className="w-full h-44 rounded-xl object-cover bg-neutral-100"
-                  />
-                </TouchableOpacity>
+        </View>
 
-                <Text className="text-3xl font-black text-neutral-900 px-4 mt-4">
-                  {category.name}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          className="flex-1 bg-white"
+          contentContainerStyle={{ paddingBottom: 40 }}
+        >
+          {selectedCategory ? (
+            <View className="pt-4">
+              <TouchableOpacity
+                className="flex-row items-center px-4 mb-4 hover:opacity-70 transition-opacity cursor-pointer w-48"
+                onPress={() => setSelectedCategory(null)}
+              >
+                <Ionicons name="arrow-back" size={18} color="#ce4067" />
+                <Text className="text-[#ce4067] font-bold text-base ml-1">
+                  Back to Categories
                 </Text>
+              </TouchableOpacity>
 
-                {/* Main page pills */}
+              <Text className="text-4xl font-bold text-neutral-900 px-4 mb-6">
+                {selectedCategory.name}
+              </Text>
+
+              <View className="mb-8">
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  className="px-4 mt-3"
+                  className="px-4"
                 >
-                  {category.subCategories.map(
-                    (sub: string, subIndex: number) => (
-                      <View
-                        key={subIndex}
-                        className="bg-[#f5f5f5] px-5 py-2.5 rounded-full mr-3"
-                      >
-                        <Text className="font-semibold text-neutral-700 text-sm">
-                          {sub}
-                        </Text>
-                      </View>
-                    ),
+                  {selectedCategory.subCategories.map(
+                    (sub: string, index: number) => {
+                      const isActive = index === 0;
+
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          activeOpacity={isActive ? 1 : 0.6}
+                          onPress={() => {
+                            if (!isActive) {
+                              alert(`${sub} products are coming soon!`);
+                            }
+                          }}
+                          className={`px-6 py-2.5 rounded-full mr-3 border flex-row items-center justify-center transition-colors cursor-pointer ${
+                            isActive
+                              ? "bg-[#ff3f6c] border-[#ff3f6c] shadow-sm"
+                              : "bg-white border-neutral-200 hover:bg-neutral-50"
+                          }`}
+                        >
+                          <Text
+                            numberOfLines={1}
+                            className={`font-bold text-[14px] tracking-wide ${
+                              isActive ? "text-white" : "text-neutral-700"
+                            }`}
+                          >
+                            {sub}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }
                   )}
-                  <View className="w-4" />
+                  <View className="w-8" />
                 </ScrollView>
               </View>
-            ))}
-          </View>
-        )}
-      </ScrollView>
+
+              <View className="flex-row flex-wrap justify-between px-4">
+                {visibleProducts.length > 0 ? (
+                  visibleProducts.map((product: any) => {
+                    const imageUrl =
+                      product.images?.[0] ||
+                      product.image ||
+                      selectedCategory.image;
+
+                    return (
+                      <TouchableOpacity
+                        key={product._id}
+                        style={{ width: getProductCardWidth(), marginBottom: 32 }}
+                        onPress={() => router.push(`/product/${product._id}`)}
+                        activeOpacity={0.9}
+                        className="hover:-translate-y-1 transition-transform cursor-pointer group"
+                      >
+                        <View className="overflow-hidden rounded-xl mb-3">
+                          <Image
+                            source={{ uri: imageUrl }}
+                            className="w-full h-64 bg-neutral-100 object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </View>
+                        <Text
+                          className="text-neutral-500 text-sm font-semibold"
+                          numberOfLines={1}
+                        >
+                          {product.brand || "Brand"}
+                        </Text>
+                        <Text
+                          className="text-neutral-900 text-base font-medium mt-0.5 leading-5"
+                          numberOfLines={1}
+                        >
+                          {product.name}
+                        </Text>
+                        <View className="flex-row items-center mt-1">
+                          <Text className="text-neutral-900 font-bold text-base">
+                            ₹{product.price}
+                          </Text>
+                          <Text className="text-[#ce4067] text-sm font-bold ml-2">
+                            {product.discount || "50% OFF"}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <View className="w-full py-16 items-center justify-center">
+                    <Ionicons name="shirt-outline" size={48} color="#e5e5e5" />
+                    <Text className="text-neutral-400 font-medium mt-4 text-lg">
+                      More styles coming soon...
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          ) : (
+            <View className="flex-row flex-wrap justify-between px-4 pt-6">
+              {filteredCategories.map((category, index) => (
+                <View 
+                  key={index} 
+                  style={{ width: getCategoryCardWidth(), marginBottom: 40 }}
+                >
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => setSelectedCategory(category)}
+                    className="group cursor-pointer"
+                  >
+                    <View className="overflow-hidden rounded-2xl">
+                      <Image
+                        source={{ uri: category.image }}
+                        className="w-full h-56 object-cover bg-neutral-100 group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </View>
+                  </TouchableOpacity>
+
+                  <Text className="text-2xl font-bold text-neutral-900 mt-4 px-1">
+                    {category.name}
+                  </Text>
+
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    className="mt-3"
+                  >
+                    {category.subCategories.map(
+                      (sub: string, subIndex: number) => (
+                        <View
+                          key={subIndex}
+                          className="bg-neutral-50 border border-neutral-100 px-4 py-2 rounded-full mr-2"
+                        >
+                          <Text className="font-semibold text-neutral-600 text-sm">
+                            {sub}
+                          </Text>
+                        </View>
+                      )
+                    )}
+                    <View className="w-2" />
+                  </ScrollView>
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
