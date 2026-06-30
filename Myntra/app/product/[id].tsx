@@ -36,15 +36,31 @@ export default function ProductDetails() {
 
   const { products, wishlistIds, setWishlistIds } = useGlobalContext();
   const { width } = useWindowDimensions();
-  const isLargeScreen: boolean = width >= 768;
-  
   const scrollRef = useRef<ScrollView>(null);
 
-  const maxContentWidth: number = 1152;
-  const availableWidth: number = Math.min(width, maxContentWidth);
-  const desktopImageWidth: number = (availableWidth - 80) / 2;
-  const currentImageWidth: number = isLargeScreen ? desktopImageWidth : width;
-  const currentImageHeight: number = isLargeScreen ? 650 : 450;
+  const isDesktop = width >= 1024;
+  const isTablet = width >= 768 && width < 1024;
+  const isLargeScreen = isDesktop || isTablet;
+
+  const maxContentWidth = 1152;
+  const availableWidth = Math.min(width, maxContentWidth);
+  const horizontalPadding = 48;
+  const gap = 40;
+  const innerContentWidth = availableWidth - horizontalPadding - gap;
+
+  const currentImageWidth = isDesktop 
+    ? innerContentWidth * 0.5 
+    : isTablet 
+    ? innerContentWidth * 0.45 
+    : width;
+    
+  const textContainerWidth = isDesktop 
+    ? innerContentWidth * 0.5 
+    : isTablet 
+    ? innerContentWidth * 0.55 
+    : width;
+
+  const currentImageHeight = isDesktop ? 650 : isTablet ? 550 : 450;
 
   const product: Product = products?.find((p: Product) => p._id === id) || {
     _id: id as string,
@@ -239,7 +255,7 @@ export default function ProductDetails() {
             isLargeScreen ? "flex-row p-6 gap-10 pt-24" : "flex-col"
           }`}
         >
-          <View style={{ width: isLargeScreen ? "50%" : "100%" }}>
+          <View style={{ width: isLargeScreen ? currentImageWidth : "100%" }}>
             <View
               style={{ height: currentImageHeight }}
               className={`relative w-full bg-neutral-50 overflow-hidden ${
@@ -302,12 +318,12 @@ export default function ProductDetails() {
           </View>
 
           <View
-            style={{ width: isLargeScreen ? "50%" : "100%" }}
+            style={{ width: isLargeScreen ? textContainerWidth : "100%" }}
             className={isLargeScreen ? "px-2" : "p-5"}
           >
             <Text
               className={`${
-                isLargeScreen ? "text-4xl" : "text-2xl"
+                isDesktop ? "text-4xl" : "text-3xl"
               } font-bold text-neutral-900 tracking-tight`}
             >
               {product.brand}
