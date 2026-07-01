@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGlobalContext } from "../context/GlobalContext";
 
 interface Category {
@@ -57,15 +57,17 @@ export default function Categories() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { products } = useGlobalContext();
+  const insets = useSafeAreaInsets();
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const { width } = useWindowDimensions();
+  // Using 768 as the breakpoint to perfectly match your TabLayout's Navbar logic
+  const isLargeScreen = width >= 768; 
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
-  // Adjusted widths to account for the left-aligned gaps
   const getCategoryCardWidth = () => {
     if (isDesktop) return "31%"; // 3 per row
     if (isTablet) return "48%";  // 2 per row
@@ -128,21 +130,23 @@ export default function Categories() {
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <View className="w-full flex-1">
         
-        {/* Title Header: Hidden on Desktop (lg:hidden) to avoid clashing with Top Navbar */}
-        <View className="px-4 py-4 bg-white flex-row items-center lg:hidden">
-          <Ionicons name="grid" size={28} color="#ff3f6c" />
-          <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
-            Categories
-          </Text>
-        </View>
+        {/* Title Header: Hidden securely via JS when Top Navbar is present */}
+        {!isLargeScreen && (
+          <View className="px-5 py-4 bg-white flex-row items-center border-b border-neutral-100 z-10">
+            <Ionicons name="grid" size={26} color="#ff3f6c" />
+            <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
+              Categories
+            </Text>
+          </View>
+        )}
 
-        {/* Search Bar: Aligned padding for large screens (lg:px-4) */}
-        <View className="px-4 lg:px-12 pb-2 bg-white border-b border-neutral-100 mt-6">
+        {/* Search Bar */}
+        <View className={`px-4 lg:px-12 bg-white border-b border-neutral-100 ${isLargeScreen ? 'pt-4 pb-4' : 'py-3'}`}>
           <View className="flex-row items-center bg-[#f5f5f5] px-4 py-3 rounded-xl border border-transparent hover:border-neutral-200 transition-colors">
             <Ionicons name="search" size={20} color="#a3a3a3" />
             <TextInput
               placeholder="Search for categories..."
-              className="flex-1 ml-2 text-neutral-800 text-base outline-none"
+              className="flex-1 ml-3 text-neutral-800 text-sm md:text-base outline-none"
               placeholderTextColor="#a3a3a3"
               value={searchQuery}
               onChangeText={(text) => {
@@ -156,22 +160,26 @@ export default function Categories() {
         <ScrollView
           showsVerticalScrollIndicator={true}
           className="flex-1 bg-white"
-          contentContainerStyle={{ paddingBottom: 60 }}
+         contentContainerStyle={{ 
+  flexGrow: 1, 
+  paddingBottom: isLargeScreen ? 60 : insets.bottom + 350 
+}}
         >
           {selectedCategory ? (
             /* --- CATEGORY DETAIL VIEW (Products) --- */
-            <View className="pt-4">
+            <View className="pt-4 lg:pt-6">
               <TouchableOpacity
-                className="flex-row items-center px-4 lg:px-4 mb-2 hover:opacity-70 transition-opacity cursor-pointer"
+                className="flex-row items-center px-4 lg:px-12 mb-3 hover:opacity-70 transition-opacity cursor-pointer w-40"
                 onPress={() => setSelectedCategory(null)}
               >
                 <Ionicons name="arrow-back" size={18} color="#ce4067" />
-                <Text className="text-[#ce4067] font-bold text-base ml-1">
-                  Back to Categories
+                <Text className="text-[#ce4067] font-semibold text-sm md:text-base ml-1.5">
+                  Back
                 </Text>
               </TouchableOpacity>
 
-              <Text className="text-3xl font-black text-neutral-800 px-4 lg:px-4 mb-4 mt-2">
+              {/* Reduced font weight from black to bold, responsive sizes */}
+              <Text className="text-xl md:text-2xl font-bold text-neutral-900 px-4 lg:px-12 mb-3 mt-1 tracking-tight">
                 {selectedCategory.name}
               </Text>
 
@@ -180,7 +188,7 @@ export default function Categories() {
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  className="px-4 lg:px-4"
+                  className="px-4 lg:px-12"
                 >
                   {selectedCategory.subCategories.map(
                     (sub: string, index: number) => {
@@ -195,15 +203,15 @@ export default function Categories() {
                               alert(`${sub} products are coming soon!`);
                             }
                           }}
-                          className={`px-6 py-2.5 rounded-full mr-3 border flex-row items-center justify-center transition-colors cursor-pointer ${
-                            isActive
-                              ? "bg-[#ff3f6c] border-[#ff3f6c] shadow-sm"
-                              : "bg-white border-neutral-200 hover:bg-neutral-50"
-                          }`}
+                          className={`px-4 py-2 rounded-full mr-2 border flex-row items-center justify-center transition-colors cursor-pointer ${
+    isActive
+      ? "bg-[#ff3f6c] border-[#ff3f6c] shadow-sm"
+      : "bg-white border-neutral-200 hover:bg-neutral-50"
+  }`}
                         >
                           <Text
                             numberOfLines={1}
-                            className={`font-bold text-[14px] tracking-wide ${
+                            className={`font-semibold text-sm md:text-base tracking-wide ${
                               isActive ? "text-white" : "text-neutral-700"
                             }`}
                           >
@@ -213,12 +221,12 @@ export default function Categories() {
                       );
                     }
                   )}
-                  <View className="w-8" />
+                  <View className="w-12 lg:w-24" />
                 </ScrollView>
               </View>
 
-              {/* Products Grid: justify-start and gap ensures no empty middle spaces */}
-              <View className="flex-row flex-wrap justify-start gap-[2%] px-4 lg:px-4">
+              {/* Products Grid */}
+              <View className="flex-row flex-wrap justify-start gap-[2%] px-4 lg:px-12">
                 {visibleProducts.length > 0 ? (
                   visibleProducts.map((product: any) => {
                     const imageUrl =
@@ -234,29 +242,30 @@ export default function Categories() {
                         activeOpacity={0.9}
                         className="hover:-translate-y-1 transition-transform cursor-pointer group"
                       >
-                        <View className="overflow-hidden rounded-2xl mb-3">
+                        <View className="overflow-hidden rounded-2xl mb-3 border border-neutral-100">
                           <Image
                             source={{ uri: imageUrl }}
-                            className="w-full h-64 bg-neutral-100 object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-56 md:h-64 bg-neutral-100 object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </View>
+                        {/* Reduced boldness to semibold, responsive text sizing */}
                         <Text
-                          className="text-neutral-500 text-xs font-bold tracking-widest uppercase mb-1"
+                          className="text-neutral-500 text-[10px] md:text-xs font-semibold tracking-widest uppercase mb-1"
                           numberOfLines={1}
                         >
                           {product.brand || "Brand"}
                         </Text>
                         <Text
-                          className="text-neutral-900 text-base font-semibold mt-0.5 leading-5"
+                          className="text-neutral-800 text-sm md:text-base font-semibold mt-0.5 leading-5"
                           numberOfLines={1}
                         >
                           {product.name}
                         </Text>
                         <View className="flex-row items-center mt-1.5">
-                          <Text className="text-neutral-900 font-black text-lg">
+                          <Text className="text-neutral-900 font-bold text-base md:text-lg">
                             ₹{product.price}
                           </Text>
-                          <Text className="text-[#ce4067] text-sm font-bold ml-2">
+                          <Text className="text-[#ce4067] text-xs md:text-sm font-semibold ml-2">
                             {product.discount || "50% OFF"}
                           </Text>
                         </View>
@@ -266,7 +275,7 @@ export default function Categories() {
                 ) : (
                   <View className="w-full py-16 items-center justify-center">
                     <Ionicons name="shirt-outline" size={48} color="#e5e5e5" />
-                    <Text className="text-neutral-400 font-medium mt-4 text-lg">
+                    <Text className="text-neutral-400 font-medium mt-4 text-base md:text-lg">
                       More styles coming soon...
                     </Text>
                   </View>
@@ -275,12 +284,11 @@ export default function Categories() {
             </View>
           ) : (
             /* --- MAIN CATEGORIES OVERVIEW --- */
-            /* justify-start and gap ensures items flow correctly without massive side gaps */
-            <View className="flex-row flex-wrap justify-start gap-[3%] px-4 lg:px-12 pt-8">
+            <View className="flex-row flex-wrap justify-start gap-[3%] px-4 lg:px-12 pt-4 lg:pt-5">
               {filteredCategories.map((category, index) => (
                 <View 
                   key={index} 
-                  style={{ width: getCategoryCardWidth(), marginBottom: 40 }}
+                 style={{ width: getCategoryCardWidth(), marginBottom: isLargeScreen ? 36 : 1 }}
                 >
                   <TouchableOpacity
                     activeOpacity={0.9}
@@ -290,33 +298,34 @@ export default function Categories() {
                     <View className="overflow-hidden rounded-2xl shadow-sm border border-neutral-100">
                       <Image
                         source={{ uri: category.image }}
-                        className="w-full h-60 object-cover bg-neutral-100 group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-48 md:h-60 object-cover bg-neutral-100 group-hover:scale-105 transition-transform duration-500"
                       />
                     </View>
                   </TouchableOpacity>
 
-                  <Text className="text-xl font-black text-neutral-900 mt-5 px-1 tracking-wide">
+                  {/* Reduced from font-black to font-bold */}
+                  <Text className="text-lg md:text-xl font-bold text-neutral-900 mt-4 md:mt-5 px-1 tracking-tight">
                     {category.name}
                   </Text>
 
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    className="mt-3"
+                    className="mt-2.5 md:mt-3"
                   >
                     {category.subCategories.map(
                       (sub: string, subIndex: number) => (
                         <View
                           key={subIndex}
-                          className="bg-neutral-50 hover:bg-neutral-100 transition-colors border border-neutral-100 px-4 py-2 rounded-full mr-2 cursor-pointer"
+                          className="bg-neutral-50 hover:bg-neutral-100 transition-colors border border-neutral-100 px-3 md:px-4 py-1.5 md:py-2 rounded-full mr-2 cursor-pointer"
                         >
-                          <Text className="font-semibold text-neutral-600 text-xs uppercase tracking-wider">
+                          <Text className="font-medium text-neutral-600 text-[10px] md:text-xs uppercase tracking-wider">
                             {sub}
                           </Text>
                         </View>
                       )
                     )}
-                    <View className="w-2" />
+                    <View className="w-6" />
                   </ScrollView>
                 </View>
               ))}

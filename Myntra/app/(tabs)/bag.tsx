@@ -42,7 +42,6 @@ export default function Bag() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isGuest, setIsGuest] = useState<boolean>(false);
   const router = useRouter();
-  const insets = useSafeAreaInsets();
 
   const { width } = useWindowDimensions();
   const isLargeScreen: boolean = width >= 1024; // Standard desktop breakpoint
