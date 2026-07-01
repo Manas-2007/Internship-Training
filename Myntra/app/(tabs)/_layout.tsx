@@ -24,7 +24,7 @@ const TopNavbar = () => {
 
   return (
     <View className="bg-white border-b border-neutral-100 z-50 shadow-sm">
-      <View className="w-full max-w-7xl mx-auto px-6 py-4 flex-row justify-between items-center">
+      <View className="w-full max-w-6xl lg:max-w-full mx-auto px-6 py-4 flex-row justify-between items-center">
         {/* Logo */}
         <TouchableOpacity
           onPress={() => router.push("/")}

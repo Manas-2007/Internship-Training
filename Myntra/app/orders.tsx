@@ -66,7 +66,7 @@ export default function Orders() {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const { width } = useWindowDimensions();
-  const isLargeScreen: boolean = width >= 768;
+  const isLargeScreen: boolean = width >= 1024; // Standard desktop breakpoint
 
   const fetchOrders = async (): Promise<void> => {
     try {
@@ -141,17 +141,19 @@ export default function Orders() {
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
-      <View className="px-5 py-5 bg-white border-b border-neutral-100 shadow-sm z-10">
-        <View className="w-full max-w-4xl mx-auto">
-          <Text className="text-3xl font-bold text-neutral-900 tracking-tight">
-            My Orders
-          </Text>
-        </View>
-      </View>
+      {/* HEADER: Hidden on Large Screens, Icon Added */}
+<View className="px-5 py-5 bg-white border-b border-neutral-100 shadow-sm z-10">
+  <View className="w-full max-w-5xl mx-auto flex-row items-center">
+    <Ionicons name="cube" size={26} color="#ff3f6c" />
+    <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
+      My Orders
+    </Text>
+  </View>
+</View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1 px-4 pt-6"
+        className="flex-1 px-4 pt-2"
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
         refreshControl={
           <RefreshControl
@@ -161,7 +163,8 @@ export default function Orders() {
           />
         }
       >
-        <View className="w-full max-w-4xl mx-auto flex-1">
+        {/* Adjusted max-width and padding for better big screen visibility */}
+        <View className={`w-full max-w-5xl mx-auto flex-1 ${isLargeScreen ? "py-4" : ""}`}>
           {orders.length === 0 ? (
             <View className="flex-1 items-center justify-center pt-20">
               <View className="w-24 h-24 bg-neutral-100 rounded-full items-center justify-center mb-5">
@@ -182,9 +185,12 @@ export default function Orders() {
               return (
                 <View
                   key={order._id}
-                  className="bg-white rounded-2xl mb-6 shadow-sm border border-neutral-100 overflow-hidden hover:shadow-md transition-shadow"
+                  // Added smooth transition and hover effect for Desktop
+                  className={`bg-white rounded-2xl mb-6 shadow-sm border border-neutral-100 overflow-hidden ${
+                    isLargeScreen ? "hover:shadow-md transition-all duration-300" : ""
+                  }`}
                 >
-                  <View className={`border-b border-neutral-100 ${isLargeScreen ? "p-6" : "p-4"}`}>
+                  <View className={`border-b border-neutral-100 ${isLargeScreen ? "p-8" : "p-4"}`}>
                     <View className="flex-row justify-between items-start mb-5">
                       <View>
                         <Text className="text-neutral-900 font-bold text-lg tracking-tight">
@@ -211,11 +217,12 @@ export default function Orders() {
                     </View>
 
                     {order.items?.map((item: OrderItem, index: number) => {
-                      const product = item.productId || {} as Product;
+                      const product = item.productId || ({} as Product);
                       const imageUrl =
                         product.images?.[0] ||
                         product.image ||
                         "https://via.placeholder.com/100";
+                      
                       return (
                         <View key={index} className="flex-row mb-5 items-center">
                           <Image
@@ -254,7 +261,7 @@ export default function Orders() {
 
                     <TouchableOpacity
                       onPress={() => toggleExpand(order._id)}
-                      className="mt-6 flex-row justify-center items-center py-2.5 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer"
+                      className="mt-6 flex-row justify-center items-center py-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer"
                     >
                       <Text className="text-[#ff3f6c] font-bold text-sm tracking-wide mr-1.5">
                         {isExpanded ? "HIDE DETAILS" : "VIEW DETAILS"}
@@ -267,10 +274,11 @@ export default function Orders() {
                     </TouchableOpacity>
                   </View>
 
+                  {/* Expanded View: Properly adjusted gaps for large screens */}
                   {isExpanded && (
-                    <View className={`bg-neutral-50 border-t border-neutral-100 ${isLargeScreen ? "p-6" : "p-4"}`}>
+                    <View className={`bg-neutral-50 border-t border-neutral-100 ${isLargeScreen ? "p-8" : "p-4"}`}>
                       
-                      <View className={`flex-col ${isLargeScreen ? "flex-row gap-8" : ""}`}>
+                      <View className={`flex-col ${isLargeScreen ? "flex-row gap-12" : ""}`}>
                         <View className="flex-1 mb-6">
                           <View className="flex-row items-center mb-2.5">
                             <Ionicons
@@ -349,7 +357,9 @@ export default function Orders() {
 
                                   <View
                                     className={`w-3 h-3 rounded-full mt-1.5 z-10 ${
-                                      isCompleted ? "bg-emerald-500 shadow-sm shadow-emerald-200" : "bg-neutral-300"
+                                      isCompleted
+                                        ? "bg-emerald-500 shadow-sm shadow-emerald-200"
+                                        : "bg-neutral-300"
                                     }`}
                                   />
 

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { API_URL } from "../constants/api";
@@ -29,6 +30,8 @@ export default function Profile() {
   const [userData, setUserData] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 768;
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -58,11 +61,20 @@ export default function Profile() {
   }, []);
 
   const handleLogout = async () => {
+    const performLogout = async () => {
+      try {
+        await AsyncStorage.removeItem("userToken");
+        setIsGuest(true);
+        router.replace("/auth/login");
+      } catch (error) {
+        console.log("Logout Error:", error);
+      }
+    };
+
     if (Platform.OS === "web") {
       const confirmLogout = window.confirm("Are you sure you want to logout?");
       if (confirmLogout) {
-        await AsyncStorage.removeItem("userToken");
-        setIsGuest(true);
+        await performLogout();
       }
     } else {
       Alert.alert("Logout", "Are you sure you want to logout?", [
@@ -70,10 +82,7 @@ export default function Profile() {
         {
           text: "Logout",
           style: "destructive",
-          onPress: async () => {
-            await AsyncStorage.removeItem("userToken");
-            setIsGuest(true);
-          },
+          onPress: performLogout, // 3. Pass the helper function directly
         },
       ]);
     }
@@ -130,23 +139,26 @@ export default function Profile() {
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
       <StatusBar style="dark" />
 
-      <View className="bg-white border-b border-neutral-100 z-10">
-        <View className="w-full max-w-4xl mx-auto px-5 py-5 flex-row items-center">
-          <Ionicons name="person" size={28} color="#ff3f6c" />
-          <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
-            Profile
-          </Text>
-        </View>
-      </View>
+      {/* Header sirf tab dikhega jab Navbar nahi hoga (Mobile/Tablet) */}
+{!isLargeScreen && (
+  <View className="bg-white border-b border-neutral-100 z-10">
+    <View className="w-full max-w-4xl mx-auto px-5 py-5 flex-row items-center">
+      <Ionicons name="person" size={28} color="#ff3f6c" />
+      <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
+        Profile
+      </Text>
+    </View>
+  </View>
+)}
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
       >
-        <View className="w-full max-w-4xl mx-auto px-4 py-8 flex-col">
+        <View className="w-full max-w-4xl mx-auto px-4 py-2 flex-col">
           
-          <View className="bg-white p-6 border border-neutral-100 rounded-2xl shadow-sm flex-row items-center mb-8">
+          <View className="bg-white p-5 border border-neutral-100 rounded-2xl shadow-sm flex-row items-center mb-4">
             <View className="w-20 h-20 rounded-full bg-[#ff3f6c] items-center justify-center shadow-md shadow-pink-200">
               <Text className="text-white text-2xl font-bold tracking-widest">
                 {getInitials(userData.name)}
@@ -154,7 +166,7 @@ export default function Profile() {
             </View>
             <View className="ml-5 flex-1 justify-center">
               <Text
-                className="text-2xl font-bold text-neutral-900 mb-1 tracking-tight"
+                className="text-xl font-bold text-neutral-900 mb-1 tracking-tight"
                 numberOfLines={1}
               >
                 {userData.name}
@@ -172,7 +184,7 @@ export default function Profile() {
             {menuItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
-                className={`flex-row items-center justify-between px-6 py-5 ${
+                className={`flex-row items-center justify-between px-4 py-6 ${
                   index !== menuItems.length - 1
                     ? "border-b border-neutral-50"
                     : ""

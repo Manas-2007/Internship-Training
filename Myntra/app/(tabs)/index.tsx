@@ -31,8 +31,8 @@ export default function Home() {
   const isTablet = width >= 768 && width < 1024;
   const isLargeScreen = isDesktop || isTablet;
 
-  const maxContentWidth = 1152;
-  const sliderWidth = Math.min(width, maxContentWidth);
+ const maxContentWidth = isDesktop ? width : 1152;
+const sliderWidth = Math.min(width, maxContentWidth);
 
   const {
     categories,
@@ -178,10 +178,10 @@ export default function Home() {
           />
         }
       >
-        <View className="w-full max-w-6xl mx-auto pt-2">
+        <View className="w-full max-w-6xl lg:max-w-full mx-auto pt-2">
           
           {/* Hero Banner */}
-          <View className={`w-full overflow-hidden ${isLargeScreen ? "rounded-2xl shadow-sm mt-4 px-4" : "mt-2"}`}>
+          <View className={`w-full max-w-6xl mx-auto overflow-hidden ${isLargeScreen ? "rounded-2xl shadow-sm mt-4" : "mt-2 px-4"}`}>
             <ScrollView
               ref={scrollRef}
               horizontal
@@ -228,76 +228,78 @@ export default function Home() {
           </View>
 
           {/* Shop By Category */}
-          <View className={`mt-10 px-4 ${isLargeScreen ? "mb-6" : ""}`}>
-            <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-xl font-black text-neutral-900 tracking-wide">
-                SHOP BY CATEGORY
-              </Text>
-              <TouchableOpacity
-                className="flex-row items-center cursor-pointer hover:opacity-70 transition-opacity"
-                onPress={() => router.push("/categories")}
-              >
-                <Text className="text-[#ff3f6c] font-bold text-sm tracking-wide">VIEW ALL</Text>
-                <Ionicons name="arrow-forward" size={16} color="#ff3f6c" style={{ marginLeft: 4 }} />
-              </TouchableOpacity>
-            </View>
+<View className="mt-10 w-full">
+  <View className="max-w-6xl mx-auto w-full px-4 lg:px-4">
+    <View className="flex-row justify-between items-center mb-6 px-4 lg:px-0">
+      <Text className="text-xl font-black text-neutral-900 tracking-wide">
+        SHOP BY CATEGORY
+      </Text>
+      <TouchableOpacity
+        className="flex-row items-center cursor-pointer hover:opacity-70 transition-opacity"
+        onPress={() => router.push("/categories")}
+      >
+        <Text className="text-[#ff3f6c] font-bold text-sm tracking-wide">VIEW ALL</Text>
+        <Ionicons name="arrow-forward" size={16} color="#ff3f6c" style={{ marginLeft: 4 }} />
+      </TouchableOpacity>
+    </View>
 
-            {isLargeScreen ? (
-              <View className="flex-row flex-wrap justify-start gap-8">
-                {categories?.map((cat: any) => (
-                  <TouchableOpacity
-                    key={cat._id}
-                    className="items-center group cursor-pointer"
-                    activeOpacity={0.9}
-                    onPress={() => {
-                      router.push({ pathname: "/categories", params: { categoryName: cat.name } });
-                    }}
-                  >
-                    <View className="w-32 h-32 rounded-full bg-white items-center justify-center shadow-md shadow-pink-100 border-2 border-transparent group-hover:border-[#ff3f6c] transition-colors p-1">
-                      <Image
-                        source={{ uri: cat.image || "https://via.placeholder.com/150" }}
-                        className="w-full h-full rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </View>
-                    <Text className="mt-4 text-base font-bold text-neutral-800 tracking-tight group-hover:text-[#ff3f6c] transition-colors">
-                      {cat.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                className="overflow-visible"
-                contentContainerStyle={{ paddingRight: 20 }}
-              >
-                {categories?.map((cat: any) => (
-                  <TouchableOpacity
-                    key={cat._id}
-                    className="items-center mr-6 group"
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      router.push({ pathname: "/categories", params: { categoryName: cat.name } });
-                    }}
-                  >
-                    <View className="w-20 h-20 rounded-full bg-white items-center justify-center shadow-lg shadow-pink-200 border-[2px] border-[#ff3f6c]/20 p-[2px]">
-                      <Image
-                        source={{ uri: cat.image || "https://via.placeholder.com/150" }}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    </View>
-                    <Text className="mt-3 text-[13px] font-bold text-neutral-700 tracking-tight">
-                      {cat.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )}
-          </View>
+    {isLargeScreen ? (
+      <View className="flex-row flex-wrap justify-center gap-x-16 gap-y-8 px-4">
+        {categories?.map((cat: any) => (
+          <TouchableOpacity
+            key={cat._id}
+            className="items-center group cursor-pointer w-24"
+            activeOpacity={0.9}
+            onPress={() => {
+              router.push({ pathname: "/categories", params: { categoryName: cat.name } });
+            }}
+          >
+            <View className="w-24 h-24 rounded-full bg-white items-center justify-center shadow-md border-2 border-transparent group-hover:border-[#ff3f6c] transition-colors p-1">
+              <Image
+                source={{ uri: cat.image || "https://via.placeholder.com/150" }}
+                className="w-full h-full rounded-full object-cover"
+              />
+            </View>
+            <Text className="mt-3 text-sm font-bold text-neutral-800 tracking-tight text-center">
+              {cat.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    ) : (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        className="overflow-visible"
+        contentContainerStyle={{ paddingHorizontal: 16, paddingRight: 20 }}
+      >
+        {categories?.map((cat: any) => (
+          <TouchableOpacity
+            key={cat._id}
+            className="items-center mr-6"
+            activeOpacity={0.7}
+            onPress={() => {
+              router.push({ pathname: "/categories", params: { categoryName: cat.name } });
+            }}
+          >
+            <View className="w-20 h-20 rounded-full bg-white items-center justify-center shadow-lg border-[2px] border-[#ff3f6c]/20 p-[2px]">
+              <Image
+                source={{ uri: cat.image || "https://via.placeholder.com/150" }}
+                className="w-full h-full rounded-full object-cover"
+              />
+            </View>
+            <Text className="mt-3 text-[13px] font-bold text-neutral-700 tracking-tight">
+              {cat.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    )}
+  </View>
+</View>
 
           {/* Deals of the Day */}
-          <View className="mt-10 py-8 bg-neutral-50 px-4 rounded-2xl mx-4">
+          <View className="mt-10 py-8 bg-neutral-50 px-4 lg:px-8 rounded-2xl">
             <Text className="text-xl font-black text-neutral-900 tracking-wide mb-6">
               DEALS OF THE DAY
             </Text>
@@ -379,11 +381,11 @@ export default function Home() {
           </View>
 
           {/* Trending Now */}
-          <View className="mt-12 px-4">
+          <View className="mt-12 px-4 lg:px-8">
             <Text className="text-xl font-black text-neutral-900 tracking-wide mb-8">
               TRENDING NOW
             </Text>
-            <View className="flex-row flex-wrap justify-between">
+            <View className="flex-row flex-wrap justify-start gap-[2%] mb-20">
               {products?.map((product: any) => (
                 <TouchableOpacity
                   key={product._id}

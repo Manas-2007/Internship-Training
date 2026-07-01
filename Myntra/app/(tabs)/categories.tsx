@@ -62,19 +62,20 @@ export default function Categories() {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const { width } = useWindowDimensions();
-  const isTablet = width >= 768;
+  const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
+  // Adjusted widths to account for the left-aligned gaps
   const getCategoryCardWidth = () => {
-    if (isDesktop) return "31%";
-    if (isTablet) return "48%";
-    return "100%";
+    if (isDesktop) return "31%"; // 3 per row
+    if (isTablet) return "48%";  // 2 per row
+    return "100%";               // 1 per row
   };
 
   const getProductCardWidth = () => {
-    if (isDesktop) return "23.5%";
-    if (isTablet) return "31%";
-    return "48%";
+    if (isDesktop) return "23.5%"; // 4 per row
+    if (isTablet) return "31%";    // 3 per row
+    return "48%";                  // 2 per row
   };
 
   useEffect(() => {
@@ -125,16 +126,18 @@ export default function Categories() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="w-full max-w-6xl mx-auto flex-1">
+      <View className="w-full flex-1">
         
-        <View className="px-4 py-4 bg-white flex-row items-center">
-            <Ionicons name="grid" size={28} color="#ff3f6c" />
-              <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
-                Categories
-              </Text>
+        {/* Title Header: Hidden on Desktop (lg:hidden) to avoid clashing with Top Navbar */}
+        <View className="px-4 py-4 bg-white flex-row items-center lg:hidden">
+          <Ionicons name="grid" size={28} color="#ff3f6c" />
+          <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
+            Categories
+          </Text>
         </View>
 
-        <View className="px-4 pb-4 bg-white border-b border-neutral-100">
+        {/* Search Bar: Aligned padding for large screens (lg:px-4) */}
+        <View className="px-4 lg:px-12 pb-2 bg-white border-b border-neutral-100 mt-6">
           <View className="flex-row items-center bg-[#f5f5f5] px-4 py-3 rounded-xl border border-transparent hover:border-neutral-200 transition-colors">
             <Ionicons name="search" size={20} color="#a3a3a3" />
             <TextInput
@@ -153,12 +156,13 @@ export default function Categories() {
         <ScrollView
           showsVerticalScrollIndicator={true}
           className="flex-1 bg-white"
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingBottom: 60 }}
         >
           {selectedCategory ? (
-            <View className="pt-3">
+            /* --- CATEGORY DETAIL VIEW (Products) --- */
+            <View className="pt-4">
               <TouchableOpacity
-                className="flex-row items-center px-4 mb-2 hover:opacity-70 transition-opacity cursor-pointer"
+                className="flex-row items-center px-4 lg:px-4 mb-2 hover:opacity-70 transition-opacity cursor-pointer"
                 onPress={() => setSelectedCategory(null)}
               >
                 <Ionicons name="arrow-back" size={18} color="#ce4067" />
@@ -167,15 +171,16 @@ export default function Categories() {
                 </Text>
               </TouchableOpacity>
 
-              <Text className="text-3xl font-bold text-neutral-800 px-4 mb-2 mt-2">
+              <Text className="text-3xl font-black text-neutral-800 px-4 lg:px-4 mb-4 mt-2">
                 {selectedCategory.name}
               </Text>
 
-              <View className="mb-6">
+              {/* Subcategories Scroll */}
+              <View className="mb-8">
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
-                  className="px-4"
+                  className="px-4 lg:px-4"
                 >
                   {selectedCategory.subCategories.map(
                     (sub: string, index: number) => {
@@ -212,7 +217,8 @@ export default function Categories() {
                 </ScrollView>
               </View>
 
-              <View className="flex-row flex-wrap justify-between px-4">
+              {/* Products Grid: justify-start and gap ensures no empty middle spaces */}
+              <View className="flex-row flex-wrap justify-start gap-[2%] px-4 lg:px-4">
                 {visibleProducts.length > 0 ? (
                   visibleProducts.map((product: any) => {
                     const imageUrl =
@@ -228,26 +234,26 @@ export default function Categories() {
                         activeOpacity={0.9}
                         className="hover:-translate-y-1 transition-transform cursor-pointer group"
                       >
-                        <View className="overflow-hidden rounded-xl mb-3">
+                        <View className="overflow-hidden rounded-2xl mb-3">
                           <Image
                             source={{ uri: imageUrl }}
                             className="w-full h-64 bg-neutral-100 object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </View>
                         <Text
-                          className="text-neutral-500 text-sm font-semibold"
+                          className="text-neutral-500 text-xs font-bold tracking-widest uppercase mb-1"
                           numberOfLines={1}
                         >
                           {product.brand || "Brand"}
                         </Text>
                         <Text
-                          className="text-neutral-900 text-base font-medium mt-0.5 leading-5"
+                          className="text-neutral-900 text-base font-semibold mt-0.5 leading-5"
                           numberOfLines={1}
                         >
                           {product.name}
                         </Text>
-                        <View className="flex-row items-center mt-1">
-                          <Text className="text-neutral-900 font-bold text-base">
+                        <View className="flex-row items-center mt-1.5">
+                          <Text className="text-neutral-900 font-black text-lg">
                             ₹{product.price}
                           </Text>
                           <Text className="text-[#ce4067] text-sm font-bold ml-2">
@@ -268,7 +274,9 @@ export default function Categories() {
               </View>
             </View>
           ) : (
-            <View className="flex-row flex-wrap justify-between px-4 pt-6">
+            /* --- MAIN CATEGORIES OVERVIEW --- */
+            /* justify-start and gap ensures items flow correctly without massive side gaps */
+            <View className="flex-row flex-wrap justify-start gap-[3%] px-4 lg:px-12 pt-8">
               {filteredCategories.map((category, index) => (
                 <View 
                   key={index} 
@@ -279,15 +287,15 @@ export default function Categories() {
                     onPress={() => setSelectedCategory(category)}
                     className="group cursor-pointer"
                   >
-                    <View className="overflow-hidden rounded-2xl">
+                    <View className="overflow-hidden rounded-2xl shadow-sm border border-neutral-100">
                       <Image
                         source={{ uri: category.image }}
-                        className="w-full h-56 object-cover bg-neutral-100 group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-60 object-cover bg-neutral-100 group-hover:scale-105 transition-transform duration-500"
                       />
                     </View>
                   </TouchableOpacity>
 
-                  <Text className="text-xl font-bold text-neutral-900 mt-4 px-1">
+                  <Text className="text-xl font-black text-neutral-900 mt-5 px-1 tracking-wide">
                     {category.name}
                   </Text>
 
@@ -300,9 +308,9 @@ export default function Categories() {
                       (sub: string, subIndex: number) => (
                         <View
                           key={subIndex}
-                          className="bg-neutral-50 border border-neutral-100 px-4 py-2 rounded-full mr-2"
+                          className="bg-neutral-50 hover:bg-neutral-100 transition-colors border border-neutral-100 px-4 py-2 rounded-full mr-2 cursor-pointer"
                         >
-                          <Text className="font-semibold text-neutral-600 text-sm">
+                          <Text className="font-semibold text-neutral-600 text-xs uppercase tracking-wider">
                             {sub}
                           </Text>
                         </View>

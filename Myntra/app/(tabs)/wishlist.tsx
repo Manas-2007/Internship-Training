@@ -168,20 +168,30 @@ export default function Wishlist() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="w-full max-w-6xl mx-auto flex-1">
+      <View className="w-full flex-1">
         
-        <View className="px-5 py-5 bg-white border-b border-neutral-100 z-10">
-          <Text className="text-3xl font-bold text-neutral-900 tracking-tight">
-            Wishlist
-          </Text>
-          <Text className="text-sm font-medium text-neutral-500 mt-1.5">
-            {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"} saved
-          </Text>
-        </View>
+{!isLargeScreen && (
+  <View className="px-5 py-5 bg-white border-b border-neutral-100 z-10 flex-row items-center justify-between">
+    
+    {/* Left Side: Icon + Title */}
+    <View className="flex-row items-center">
+      <Ionicons name="heart" size={24} color="#ff3f6c" />
+      <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
+        Wishlist
+      </Text>
+    </View>
+
+    {/* Right Side: Items Count */}
+    <Text className="text-sm font-medium text-neutral-500">
+      {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"} saved
+    </Text>
+
+  </View>
+)}
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          className="flex-1 px-4 pt-6 bg-neutral-50"
+          className="flex-1 px-4 pt-3 bg-neutral-50"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
           refreshControl={
             <RefreshControl
@@ -205,7 +215,7 @@ export default function Wishlist() {
               </Text>
             </View>
           ) : (
-            <View className={isLargeScreen ? "flex-row flex-wrap justify-between" : "flex-col"}>
+            <View className={isLargeScreen ? "flex-row flex-wrap justify-start gap-x-[2%] px-4 lg:px-8" : "flex-col px-4"}>
               {wishlistItems.map((item) => {
                 const product = item.productId || {} as Product;
                 const imageUrl =

@@ -27,7 +27,16 @@ export default function SignUp() {
 
   // Screen dimension check for responsive layout
   const { height, width } = useWindowDimensions();
-  const isLargeScreen = width >= 768;
+  const isLargeScreen = width >= 768; // Tablets, Laptops, Desktops
+
+  // Cross-platform alert helper
+  const showMessage = (title: string, message: string) => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
 
   // Backend Integration Function
   const handleSignUp = async () => {
@@ -51,7 +60,7 @@ export default function SignUp() {
       });
 
       if (response.status === 201) {
-        Alert.alert("Success", "Account created successfully!");
+        showMessage("Success", "Account created successfully!");
         router.replace("/auth/login");
       }
     } catch (error: any) {
@@ -62,9 +71,9 @@ export default function SignUp() {
         });
         setErrors(fieldErrors);
       } else {
-        Alert.alert(
+        showMessage(
           "Error",
-          error.response?.data?.message || "Registration failed",
+          error.response?.data?.message || "Registration failed"
         );
       }
     }
@@ -80,6 +89,7 @@ export default function SignUp() {
       <ScrollView 
         contentContainerStyle={{ 
           flexGrow: 1, 
+          // Centers the whole card vertically on Desktop, starts from top on mobile
           justifyContent: isLargeScreen ? 'center' : 'flex-start',
           paddingBottom: isLargeScreen ? 40 : 0
         }}
@@ -88,11 +98,19 @@ export default function SignUp() {
         bounces={false}
       >
         
-        {/* Centered Card Wrapper for Web/Tablet */}
-        <View className={`w-full mx-auto bg-white ${isLargeScreen ? 'max-w-md rounded-[32px] overflow-hidden shadow-xl border border-neutral-100 my-10' : 'flex-1'}`}>
+        {/* Main Card Container */}
+        <View 
+          className={`w-full mx-auto bg-white ${
+            isLargeScreen 
+              ? 'max-w-5xl flex-row rounded-3xl overflow-hidden shadow-2xl border border-neutral-100 my-10' 
+              : 'flex-1'
+          }`}
+          style={isLargeScreen ? { minHeight: 600 } : {}}
+        >
           
-          {/* Top Image */}
-          <View style={{ height: isLargeScreen ? 280 : height * 0.35, width: '100%' }}>
+          {/* Image Section */}
+          {/* On Desktop: Takes up 50% width. On Mobile: Takes 35% of screen height */}
+          <View style={isLargeScreen ? { width: '50%' } : { height: height * 0.35, width: '100%' }}>
             <Image
               source={{
                 uri: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&auto=format&fit=crop",
@@ -101,17 +119,24 @@ export default function SignUp() {
             />
           </View>
 
-          {/* Bottom Form Section */}
-          <View className="bg-white rounded-t-[32px] px-6 pt-8 pb-6 -mt-8 flex-1">
+          {/* Form Container */}
+          {/* On Desktop: Side-by-side, vertically centered. On Mobile: Slides up over the image (-mt-8) */}
+          <View 
+            className={`bg-white ${
+              isLargeScreen 
+                ? 'w-[50%] justify-center px-14 py-12' 
+                : 'flex-1 rounded-t-[32px] -mt-8 px-6 pt-8 pb-6'
+            }`}
+          >
             <Text className="text-3xl font-bold text-neutral-800 tracking-tight mb-1">
               Create Account
             </Text>
-            <Text className="text-sm text-neutral-500 mb-6 font-medium">
+            <Text className="text-sm text-neutral-500 mb-8 font-medium">
               Join Myntra and discover amazing fashion
             </Text>
 
             {/* Inputs */}
-            <View className="gap-y-3.5">
+            <View className="gap-y-4">
               <View>
                 <TextInput
                   placeholder="Full Name"
@@ -120,11 +145,11 @@ export default function SignUp() {
                     setName(val);
                     setErrors((prev) => ({ ...prev, name: "" }));
                   }}
-                  className="bg-neutral-50 px-4 py-3 rounded-xl text-base border border-neutral-100 hover:bg-neutral-100 transition-colors"
+                  className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base border border-neutral-200 hover:border-neutral-300 focus:border-[#ff3f6c] outline-none transition-colors"
                   placeholderTextColor="#a3a3a3"
                 />
                 {errors.name && (
-                  <Text className="text-red-500 text-xs mt-1 ml-1">
+                  <Text className="text-red-500 text-xs mt-1.5 ml-1 font-medium">
                     {errors.name}
                   </Text>
                 )}
@@ -140,18 +165,18 @@ export default function SignUp() {
                   }}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  className="bg-neutral-50 px-4 py-3 rounded-xl text-base border border-neutral-100 hover:bg-neutral-100 transition-colors"
+                  className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base border border-neutral-200 hover:border-neutral-300 focus:border-[#ff3f6c] outline-none transition-colors"
                   placeholderTextColor="#a3a3a3"
                 />
                 {errors.email && (
-                  <Text className="text-red-500 text-xs mt-1 ml-1">
+                  <Text className="text-red-500 text-xs mt-1.5 ml-1 font-medium">
                     {errors.email}
                   </Text>
                 )}
               </View>
 
               <View>
-                <View className="bg-neutral-50 rounded-xl flex-row items-center px-4 border border-neutral-100 hover:bg-neutral-100 transition-colors">
+                <View className="bg-neutral-50 rounded-xl flex-row items-center px-4 border border-neutral-200 hover:border-neutral-300 focus-within:border-[#ff3f6c] transition-colors">
                   <TextInput
                     placeholder="Password"
                     value={password}
@@ -161,7 +186,7 @@ export default function SignUp() {
                     }}
                     secureTextEntry={!showPassword}
                     style={{ color: '#000000', fontFamily: Platform.OS === 'android' ? 'sans-serif' : undefined }}
-                    className="flex-1 py-3 text-base"
+                    className="flex-1 py-3.5 text-base outline-none"
                     placeholderTextColor="#a3a3a3"
                   />
                   <TouchableOpacity
@@ -176,7 +201,7 @@ export default function SignUp() {
                   </TouchableOpacity>
                 </View>
                 {errors.password && (
-                  <Text className="text-red-500 text-xs mt-1 ml-1">
+                  <Text className="text-red-500 text-xs mt-1.5 ml-1 font-medium">
                     {errors.password}
                   </Text>
                 )}
@@ -186,7 +211,7 @@ export default function SignUp() {
             {/* Sign Up Button */}
             <TouchableOpacity
               onPress={handleSignUp}
-              className="bg-[#ff3f6c] py-3 rounded-xl items-center mt-8 shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+              className="bg-[#ff3f6c] py-3.5 rounded-xl items-center mt-8 shadow-sm shadow-pink-200 hover:opacity-90 transition-opacity cursor-pointer"
             >
               <Text className="text-white font-semibold text-base tracking-wide">
                 SIGN UP
@@ -200,7 +225,7 @@ export default function SignUp() {
             >
               <Text className="text-sm text-neutral-500 font-medium">
                 Already have an account?{" "}
-                <Text className="text-[#ff3f6c] font-semibold hover:underline">Login</Text>
+                <Text className="text-[#ff3f6c] font-bold hover:underline">Login</Text>
               </Text>
             </TouchableOpacity>
             
