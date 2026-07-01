@@ -128,7 +128,7 @@ export default function Categories() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="w-full flex-1">
+      <View className="w-full max-w-[1400px] mx-auto flex-1">
         
         {/* Title Header: Hidden securely via JS when Top Navbar is present */}
         {!isLargeScreen && (

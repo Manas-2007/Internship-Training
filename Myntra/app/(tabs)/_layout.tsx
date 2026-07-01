@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 
-// --- CUSTOM TOP NAVBAR FOR DESKTOP/WEB ---
+// --- PREMIUM CUSTOM TOP NAVBAR FOR DESKTOP/WEB ---
 const TopNavbar = () => {
   const router = useRouter();
   const pathname = usePathname();
@@ -23,16 +23,20 @@ const TopNavbar = () => {
   ];
 
   return (
-    <View className="bg-white border-b border-neutral-100 z-50 shadow-sm">
-      <View className="w-full max-w-6xl lg:max-w-full mx-auto px-6 py-4 flex-row justify-between items-center">
-        {/* Logo */}
+    <View className="bg-white border-b border-neutral-50 z-50 shadow-sm w-full">
+      {/* 1400px Centering for Top Navbar */}
+      <View className="w-full max-w-[1400px] mx-auto px-6 py-4 flex-row justify-between items-center">
+        
+        {/* Premium Brand Logo */}
         <TouchableOpacity
           onPress={() => router.push("/")}
-          className="cursor-pointer hover:opacity-80 transition-opacity"
+          className="cursor-pointer flex-row items-end group"
+          activeOpacity={0.8}
         >
-          <Text className="text-3xl font-black text-[#ff3f6c] tracking-tighter uppercase">
-            Myntra
+         <Text className="text-[22px] font-black text-[#ff3f6c] tracking-widest">
+                    MYNTRA
           </Text>
+          {/* Signature Pink Dot */}
         </TouchableOpacity>
 
         {/* Navigation Links */}
@@ -44,6 +48,7 @@ const TopNavbar = () => {
                 key={item.name}
                 onPress={() => router.push(item.route as any)}
                 className="items-center justify-center cursor-pointer group"
+                activeOpacity={0.7}
               >
                 <Ionicons
                   name={
@@ -53,12 +58,12 @@ const TopNavbar = () => {
                   }
                   size={24}
                   color={isActive ? "#ff3f6c" : "#282c3f"}
-                  className="group-hover:opacity-70 transition-opacity"
+                  className="group-hover:opacity-80 transition-opacity"
                 />
                 <Text
                   className={`text-[11px] font-bold mt-1 tracking-widest uppercase ${
                     isActive ? "text-[#ff3f6c]" : "text-[#282c3f]"
-                  } group-hover:opacity-70 transition-opacity`}
+                  } group-hover:opacity-80 transition-opacity`}
                 >
                   {item.label}
                 </Text>
@@ -73,128 +78,135 @@ const TopNavbar = () => {
 
 export default function TabLayout() {
   const { width } = useWindowDimensions();
-  // If the screen is 768px or wider (Tablet/Desktop Web), we classify it as a large screen.
+  // Using 768px for Tablet/Desktop breakpoint
   const isLargeScreen = width >= 768;
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Conditionally render the Top Navbar only on large screens */}
-      {isLargeScreen && <TopNavbar />}
+    // Background color outside 1400px will be subtle neutral
+    <View className="flex-1 bg-neutral-50">
+      
+      {/* 1400px Global Wrapper for the entire layout */}
+      <View className="flex-1 w-full max-w-[1400px] mx-auto bg-white relative shadow-2xl shadow-black/5">
+        
+        {/* Render Top Navbar on large screens */}
+        {isLargeScreen && <TopNavbar />}
 
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: "#ff3f6c",
-          tabBarInactiveTintColor: "#282c3f",
-          // Conditionally hide the bottom tab bar entirely on large screens
-          tabBarStyle: isLargeScreen
-            ? { display: "none" }
-            : {
-                backgroundColor: "#ffffff",
-                borderTopWidth: 1,
-                borderTopColor: "#eaeaec",
-                height: Platform.OS === "ios" ? 88 : 68,
-                paddingBottom: Platform.OS === "ios" ? 28 : 12,
-                paddingTop: 10,
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                ...Platform.select({
-                  ios: {
-                    shadowColor: "#000",
-                    shadowOffset: { width: 0, height: -3 },
-                    shadowOpacity: 0.04,
-                    shadowRadius: 6,
-                  },
-                  android: {
-                    elevation: 4,
-                  },
-                }),
-              },
-          tabBarLabelStyle: {
-            fontSize: 10,
-            fontWeight: "800",
-            marginTop: 4,
-            letterSpacing: 0.2,
-          },
-        }}
-      >
-        {/* 1. Home Tab */}
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: "Home",
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name={focused ? "home" : "home-outline"}
-                size={23}
-                color={color}
-              />
-            ),
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            // 1. Explicitly show labels to fix the hidden text issue
+            tabBarShowLabel: true,
+            tabBarActiveTintColor: "#ff3f6c",
+            tabBarInactiveTintColor: "#535766", // Myntra's softer grey for inactive state
+            tabBarStyle: isLargeScreen
+              ? { display: "none" }
+              : {
+                  backgroundColor: "#ffffff",
+                  borderTopWidth: 1,
+                  borderTopColor: "#f1f1f4",
+                  // 2. Fixed height and padding combination to accommodate labels perfectly
+                  height: Platform.OS === "ios" ? 90 : 75,
+                  paddingBottom: Platform.OS === "ios" ? 25 : 12,
+                  paddingTop: 8,
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  ...Platform.select({
+                    ios: {
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: -4 },
+                      shadowOpacity: 0.06,
+                      shadowRadius: 8,
+                    },
+                    android: {
+                      elevation: 8,
+                    },
+                  }),
+                },
+            tabBarLabelStyle: {
+              fontSize: 10,
+              fontWeight: "700",
+              marginTop: 2, // Fine-tuned margin so text doesn't touch the icon
+              letterSpacing: 0.3,
+            },
+            // Removes the click highlight ripple on Android for a cleaner feel
+            tabBarItemStyle: {
+              padding: 0,
+            }
           }}
-        />
+        >
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: "Home",
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons
+                  name={focused ? "home" : "home-outline"}
+                  size={24}
+                  color={color}
+                />
+              ),
+            }}
+          />
 
-        {/* 2. Categories Tab */}
-        <Tabs.Screen
-          name="categories"
-          options={{
-            title: "Categories",
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name={focused ? "apps" : "apps-outline"}
-                size={23}
-                color={color}
-              />
-            ),
-          }}
-        />
+          <Tabs.Screen
+            name="categories"
+            options={{
+              title: "Categories",
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons
+                  name={focused ? "apps" : "apps-outline"}
+                  size={24}
+                  color={color}
+                />
+              ),
+            }}
+          />
 
-        {/* 3. Wishlist Tab */}
-        <Tabs.Screen
-          name="wishlist"
-          options={{
-            title: "Wishlist",
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name={focused ? "heart" : "heart-outline"}
-                size={23}
-                color={color}
-              />
-            ),
-          }}
-        />
+          <Tabs.Screen
+            name="wishlist"
+            options={{
+              title: "Wishlist",
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons
+                  name={focused ? "heart" : "heart-outline"}
+                  size={24}
+                  color={color}
+                />
+              ),
+            }}
+          />
 
-        {/* 4. Bag Tab */}
-        <Tabs.Screen
-          name="bag"
-          options={{
-            title: "Bag",
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name={focused ? "bag" : "bag-outline"}
-                size={23}
-                color={color}
-              />
-            ),
-          }}
-        />
+          <Tabs.Screen
+            name="bag"
+            options={{
+              title: "Bag",
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons
+                  name={focused ? "bag" : "bag-outline"}
+                  size={24}
+                  color={color}
+                />
+              ),
+            }}
+          />
 
-        {/* 5. Profile Tab */}
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Profile",
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name={focused ? "person" : "person-outline"}
-                size={23}
-                color={color}
-              />
-            ),
-          }}
-        />
-      </Tabs>
+          <Tabs.Screen
+            name="profile"
+            options={{
+              title: "Profile",
+              tabBarIcon: ({ color, focused }) => (
+                <Ionicons
+                  name={focused ? "person" : "person-outline"}
+                  size={24}
+                  color={color}
+                />
+              ),
+            }}
+          />
+        </Tabs>
+      </View>
     </View>
   );
 }

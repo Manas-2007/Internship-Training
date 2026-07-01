@@ -17,7 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
 import { API_URL } from "./constants/api";
 
@@ -60,13 +60,14 @@ interface Order {
 }
 
 export default function Orders() {
+  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const { width } = useWindowDimensions();
-  const isLargeScreen: boolean = width >= 1024; // Standard desktop breakpoint
+  const isLargeScreen: boolean = width >= 768; // Tablet/Desktop Breakpoint
 
   const fetchOrders = async (): Promise<void> => {
     try {
@@ -123,12 +124,12 @@ export default function Orders() {
   const getStatusColor = (status: string) => {
     const s = status?.toLowerCase();
     if (s === "delivered")
-      return { bg: "bg-emerald-50", text: "text-emerald-600", icon: "checkmark-circle" };
+      return { bg: "bg-emerald-50", text: "text-emerald-600", icon: "checkmark-circle", border: "border-emerald-100" };
     if (s === "processing" || s === "shipped")
-      return { bg: "bg-blue-50", text: "text-blue-600", icon: "time" };
+      return { bg: "bg-blue-50", text: "text-blue-600", icon: "time", border: "border-blue-100" };
     if (s === "cancelled")
-      return { bg: "bg-red-50", text: "text-red-600", icon: "close-circle" };
-    return { bg: "bg-neutral-100", text: "text-neutral-600", icon: "ellipse" };
+      return { bg: "bg-red-50", text: "text-red-600", icon: "close-circle", border: "border-red-100" };
+    return { bg: "bg-neutral-50", text: "text-neutral-600", icon: "ellipse", border: "border-neutral-200" };
   };
 
   if (loading) {
@@ -141,253 +142,274 @@ export default function Orders() {
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
-      {/* HEADER: Hidden on Large Screens, Icon Added */}
-<View className="px-5 py-5 bg-white border-b border-neutral-100 shadow-sm z-10">
-  <View className="w-full max-w-5xl mx-auto flex-row items-center">
-    <Ionicons name="cube" size={26} color="#ff3f6c" />
-    <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
-      My Orders
-    </Text>
-  </View>
-</View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        className="flex-1 px-4 pt-2"
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#ff3f6c"
-          />
-        }
-      >
-        {/* Adjusted max-width and padding for better big screen visibility */}
-        <View className={`w-full max-w-5xl mx-auto flex-1 ${isLargeScreen ? "py-4" : ""}`}>
-          {orders.length === 0 ? (
-            <View className="flex-1 items-center justify-center pt-20">
-              <View className="w-24 h-24 bg-neutral-100 rounded-full items-center justify-center mb-5">
-                <Ionicons name="cube-outline" size={40} color="#a3a3a3" />
-              </View>
-              <Text className="text-neutral-800 text-2xl font-bold mb-2">
-                No orders yet
-              </Text>
-              <Text className="text-neutral-500 text-base text-center">
-                Looks like you haven't placed an order yet.
-              </Text>
-            </View>
-          ) : (
-            orders.map((order) => {
-              const isExpanded = expandedOrderId === order._id;
-              const statusStyle = getStatusColor(order.status);
-
-              return (
-                <View
-                  key={order._id}
-                  // Added smooth transition and hover effect for Desktop
-                  className={`bg-white rounded-2xl mb-6 shadow-sm border border-neutral-100 overflow-hidden ${
-                    isLargeScreen ? "hover:shadow-md transition-all duration-300" : ""
-                  }`}
-                >
-                  <View className={`border-b border-neutral-100 ${isLargeScreen ? "p-8" : "p-4"}`}>
-                    <View className="flex-row justify-between items-start mb-5">
-                      <View>
-                        <Text className="text-neutral-900 font-bold text-lg tracking-tight">
-                          Order #ORD{order._id?.slice(-6).toUpperCase()}
-                        </Text>
-                        <Text className="text-neutral-500 text-sm mt-1 font-medium">
-                          {formatDate(order.date)}
-                        </Text>
-                      </View>
-                      <View
-                        className={`flex-row items-center px-3 py-1.5 rounded-full border border-transparent ${statusStyle.bg}`}
-                      >
-                        <Ionicons
-                          name={statusStyle.icon as any}
-                          size={14}
-                          color={statusStyle.text.split("-")[1]}
-                        />
-                        <Text
-                          className={`ml-1.5 font-bold text-xs tracking-wide uppercase ${statusStyle.text}`}
-                        >
-                          {order.status || "Pending"}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {order.items?.map((item: OrderItem, index: number) => {
-                      const product = item.productId || ({} as Product);
-                      const imageUrl =
-                        product.images?.[0] ||
-                        product.image ||
-                        "https://via.placeholder.com/100";
-                      
-                      return (
-                        <View key={index} className="flex-row mb-5 items-center">
-                          <Image
-                            source={{ uri: imageUrl }}
-                            className="w-[80px] h-[100px] rounded-lg bg-neutral-100 object-cover"
-                          />
-                          <View className="ml-4 justify-center flex-1">
-                            <Text className="text-neutral-500 text-xs font-bold tracking-widest uppercase mb-1">
-                              {product.brand}
-                            </Text>
-                            <Text
-                              className="text-neutral-900 font-semibold text-base leading-5 mb-1.5"
-                              numberOfLines={2}
-                            >
-                              {product.name}
-                            </Text>
-                            <Text className="text-neutral-500 text-sm font-medium mb-1">
-                              Size: {item.size || "M"}
-                            </Text>
-                            <Text className="text-neutral-900 font-bold text-lg">
-                              ₹{item.price}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    })}
-
-                    <View className="flex-row justify-between items-center mt-3 border-t border-dashed border-neutral-200 pt-5">
-                      <Text className="text-neutral-600 font-semibold text-base">
-                        Order Total
-                      </Text>
-                      <Text className="text-neutral-900 font-bold text-2xl tracking-tight">
-                        ₹{order.total}
-                      </Text>
-                    </View>
-
-                    <TouchableOpacity
-                      onPress={() => toggleExpand(order._id)}
-                      className="mt-6 flex-row justify-center items-center py-3 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer"
-                    >
-                      <Text className="text-[#ff3f6c] font-bold text-sm tracking-wide mr-1.5">
-                        {isExpanded ? "HIDE DETAILS" : "VIEW DETAILS"}
-                      </Text>
-                      <Ionicons
-                        name={isExpanded ? "chevron-up" : "chevron-down"}
-                        size={16}
-                        color="#ff3f6c"
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Expanded View: Properly adjusted gaps for large screens */}
-                  {isExpanded && (
-                    <View className={`bg-neutral-50 border-t border-neutral-100 ${isLargeScreen ? "p-8" : "p-4"}`}>
-                      
-                      <View className={`flex-col ${isLargeScreen ? "flex-row gap-12" : ""}`}>
-                        <View className="flex-1 mb-6">
-                          <View className="flex-row items-center mb-2.5">
-                            <Ionicons
-                              name="location"
-                              size={20}
-                              color="#404040"
-                            />
-                            <Text className="font-bold text-neutral-900 text-base ml-2 tracking-tight">
-                              Shipping Address
-                            </Text>
-                          </View>
-                          <Text className="text-neutral-600 ml-7 leading-6 font-medium text-sm">
-                            {order.shippingAddress || "N/A"}
-                          </Text>
-                        </View>
-
-                        <View className="flex-1 mb-6">
-                          <View className="flex-row items-center mb-2.5">
-                            <Ionicons
-                              name="card"
-                              size={20}
-                              color="#404040"
-                            />
-                            <Text className="font-bold text-neutral-900 text-base ml-2 tracking-tight">
-                              Payment Method
-                            </Text>
-                          </View>
-                          <Text className="text-neutral-600 ml-7 font-medium text-sm">
-                            {order.paymentMethod || "N/A"}
-                          </Text>
-                        </View>
-                      </View>
-
-                      <View>
-                        <View className="flex-row items-center mb-4">
-                          <Ionicons
-                            name="car"
-                            size={20}
-                            color="#404040"
-                          />
-                          <Text className="font-bold text-neutral-900 text-base ml-2 tracking-tight">
-                            Tracking Information
-                          </Text>
-                        </View>
-
-                        <View className="ml-7 mb-5 bg-white p-4 rounded-xl border border-neutral-100 shadow-sm">
-                          <Text className="text-neutral-500 text-sm mb-1.5 font-medium">
-                            Tracking Number:{" "}
-                            <Text className="font-bold text-neutral-900">
-                              {order.tracking?.number || "Pending"}
-                            </Text>
-                          </Text>
-                          <Text className="text-neutral-500 text-sm font-medium">
-                            Carrier:{" "}
-                            <Text className="font-bold text-neutral-900">
-                              {order.tracking?.carrier || "N/A"}
-                            </Text>
-                          </Text>
-                        </View>
-
-                        <View className="ml-7 mt-2 relative">
-                          {order.tracking?.timeline?.map(
-                            (event: any, index: number) => {
-                              const isLast =
-                                index === order.tracking!.timeline!.length - 1;
-                              const isCompleted = true;
-
-                              return (
-                                <View
-                                  key={index}
-                                  className="flex-row mb-6 relative"
-                                >
-                                  {!isLast && (
-                                    <View className="absolute left-[5px] top-[20px] bottom-[-30px] w-[2px] bg-neutral-200" />
-                                  )}
-
-                                  <View
-                                    className={`w-3 h-3 rounded-full mt-1.5 z-10 ${
-                                      isCompleted
-                                        ? "bg-emerald-500 shadow-sm shadow-emerald-200"
-                                        : "bg-neutral-300"
-                                    }`}
-                                  />
-
-                                  <View className="ml-5 flex-1">
-                                    <Text className="font-bold text-neutral-900 text-base tracking-tight">
-                                      {event.status}
-                                    </Text>
-                                    <Text className="text-neutral-500 text-sm mt-1 font-medium">
-                                      {event.location}
-                                    </Text>
-                                    <Text className="text-neutral-400 text-xs mt-1 font-medium tracking-wide">
-                                      {formatDate(event.timestamp)}
-                                    </Text>
-                                  </View>
-                                </View>
-                              );
-                            }
-                          )}
-                        </View>
-                      </View>
-                    </View>
-                  )}
-                </View>
-              );
-            })
-          )}
+      {/* 1400px Centering Wrapper */}
+      <View className="w-full max-w-[1400px] mx-auto flex-1">
+        
+        {/* HEADER */}
+        <View className="px-2 py-4 md:py-5 bg-white border-b border-neutral-100 shadow-sm z-10 flex-row items-center">
+          <View className="w-full max-w-4xl mx-auto flex-row items-center">
+            <TouchableOpacity 
+              onPress={() => router.back()} 
+              activeOpacity={0.7}
+              className="mr-3 md:mr-4 p-1.5 -ml-1.5 rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
+            >
+              <Ionicons name="arrow-back" size={24} color="#ff3f6c" />
+            </TouchableOpacity>
+            <Ionicons name="cube" size={24} color="#ff3f6c" />
+            <Text className="text-xl md:text-2xl font-bold text-neutral-900 tracking-tight ml-2.5">
+              My Orders
+            </Text>
+          </View>
         </View>
-      </ScrollView>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          className="flex-1 px-2 pt-2 md:pt-3"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#ff3f6c"
+            />
+          }
+        >
+          {/* Inner constraint for Orders List */}
+          <View className="w-full max-w-4xl mx-auto flex-1">
+            {orders.length === 0 ? (
+              /* Empty State */
+              <View className="flex-1 items-center justify-center pt-20">
+                <View className="w-24 h-24 md:w-32 md:h-32 bg-white border border-neutral-100 shadow-sm rounded-full items-center justify-center mb-6">
+                  <Ionicons name="cube-outline" size={48} color="#a3a3a3" />
+                </View>
+                <Text className="text-neutral-900 text-2xl md:text-3xl font-bold mb-3 tracking-tight">
+                  No orders yet
+                </Text>
+                <Text className="text-neutral-500 text-base md:text-lg font-medium text-center px-8">
+                  Looks like you haven't placed an order yet. Start exploring!
+                </Text>
+              </View>
+            ) : (
+              orders.map((order) => {
+                const isExpanded = expandedOrderId === order._id;
+                const statusStyle = getStatusColor(order.status);
+
+                return (
+                  <View
+                    key={order._id}
+                    className={`bg-white rounded-2xl mb-6 shadow-sm border border-neutral-100 overflow-hidden ${
+                      isLargeScreen ? "hover:shadow-md transition-shadow duration-300" : ""
+                    }`}
+                  >
+                    {/* Order Header & Items Summary */}
+                    <View className={`border-b border-neutral-100 ${isLargeScreen ? "p-6 md:p-8" : "p-4 md:p-5"}`}>
+                      
+                      <View className="flex-row justify-between items-start mb-6">
+                        <View>
+                          <Text className="text-neutral-900 font-bold text-base md:text-lg tracking-tight mb-1">
+                            Order #ORD{order._id?.slice(-6).toUpperCase()}
+                          </Text>
+                          <Text className="text-neutral-500 text-xs md:text-sm font-medium">
+                            Placed on {formatDate(order.date)}
+                          </Text>
+                        </View>
+                        
+                        {/* Status Badge */}
+                        <View
+                          className={`flex-row items-center px-3 py-1.5 md:px-4 md:py-2 rounded-full border ${statusStyle.bg} ${statusStyle.border}`}
+                        >
+                          <Ionicons
+                            name={statusStyle.icon as any}
+                            size={14}
+                            color={statusStyle.text.split("-")[1]}
+                          />
+                          <Text
+                            className={`ml-1.5 font-bold text-[10px] md:text-xs tracking-widest uppercase ${statusStyle.text}`}
+                          >
+                            {order.status || "Pending"}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Products List */}
+                      {order.items?.map((item: OrderItem, index: number) => {
+                        const product = item.productId || ({} as Product);
+                        const imageUrl =
+                          product.images?.[0] ||
+                          product.image ||
+                          "https://via.placeholder.com/150";
+                        
+                        return (
+                          <View key={index} className="flex-row mb-5 items-center">
+                            <Image
+                              source={{ uri: imageUrl }}
+                              className="w-20 h-24 md:w-24 md:h-32 rounded-xl bg-neutral-50 object-cover border border-neutral-100"
+                            />
+                            <View className="ml-4 md:ml-5 justify-center flex-1">
+                              <Text className="text-neutral-500 text-[10px] md:text-xs font-bold tracking-widest uppercase mb-1.5" numberOfLines={1}>
+                                {product.brand || "Brand"}
+                              </Text>
+                              <Text
+                                className="text-neutral-900 font-semibold text-sm md:text-base leading-5 mb-1.5"
+                                numberOfLines={2}
+                              >
+                                {product.name || "Product Name"}
+                              </Text>
+                              <Text className="text-neutral-500 text-xs md:text-sm font-medium mb-1.5">
+                                Size: <Text className="font-bold text-neutral-800">{item.size || "M"}</Text>
+                              </Text>
+                              <Text className="text-neutral-900 font-bold text-base md:text-lg tracking-tight">
+                                ₹{item.price}
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      })}
+
+                      {/* Total & Action Button */}
+                      <View className="flex-row justify-between items-center mt-3 border-t border-dashed border-neutral-200 pt-5">
+                        <Text className="text-neutral-600 font-semibold text-sm md:text-base">
+                          Order Total
+                        </Text>
+                        <Text className="text-neutral-900 font-bold text-xl md:text-2xl tracking-tight">
+                          ₹{order.total}
+                        </Text>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={() => toggleExpand(order._id)}
+                        activeOpacity={0.7}
+                        className="mt-6 flex-row justify-center items-center py-3.5 bg-neutral-50 rounded-xl hover:bg-neutral-100 transition-colors cursor-pointer border border-neutral-100"
+                      >
+                        <Text className="text-[#ff3f6c] font-bold text-xs md:text-sm tracking-widest uppercase mr-2">
+                          {isExpanded ? "Hide Details" : "View Details"}
+                        </Text>
+                        <Ionicons
+                          name={isExpanded ? "chevron-up" : "chevron-down"}
+                          size={16}
+                          color="#ff3f6c"
+                        />
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* EXPANDED VIEW: Desktop Split Layout / Mobile Stack Layout */}
+                    {isExpanded && (
+                      <View className={`bg-neutral-50 border-t border-neutral-100 ${isLargeScreen ? "p-8" : "p-5"}`}>
+                        <View className={isLargeScreen ? "flex-row gap-12" : "flex-col"}>
+                          
+                          {/* Left Column: Address & Payment */}
+                          <View className={`flex-1 ${isLargeScreen ? "" : "mb-8"}`}>
+                            {/* Shipping Address */}
+                            <View className="mb-8">
+                              <View className="flex-row items-center mb-3">
+                                <View className="w-8 h-8 rounded-full bg-white items-center justify-center border border-neutral-200 shadow-sm mr-3">
+                                  <Ionicons name="location" size={16} color="#ff3f6c" />
+                                </View>
+                                <Text className="font-bold text-[#ff3f6c] text-sm md:text-base tracking-tight">
+                                  Shipping Address
+                                </Text>
+                              </View>
+                              <Text className="text-neutral-600 leading-6 font-medium text-sm md:text-base pl-11">
+                                {order.shippingAddress || "N/A"}
+                              </Text>
+                            </View>
+
+                            {/* Payment Method */}
+                            <View>
+                              <View className="flex-row items-center mb-3">
+                                <View className="w-8 h-8 rounded-full bg-white items-center justify-center border border-neutral-200 shadow-sm mr-3">
+                                  <Ionicons name="card" size={16} color="#ff3f6c" />
+                                </View>
+                                <Text className="font-bold text-[#ff3f6c] text-sm md:text-base tracking-tight">
+                                  Payment Method
+                                </Text>
+                              </View>
+                              <Text className="text-neutral-600 font-medium text-sm md:text-base pl-11">
+                                {order.paymentMethod || "N/A"}
+                              </Text>
+                            </View>
+                          </View>
+
+                          {/* Right Column: Tracking Information */}
+                          <View className="flex-1">
+                            <View className="flex-row items-center mb-5">
+                              <View className="w-8 h-8 rounded-full bg-white items-center justify-center border border-neutral-200 shadow-sm mr-3">
+                                <Ionicons name="car" size={16} color="#ff3f6c" />
+                              </View>
+                              <Text className="font-bold text-[#ff3f6c] text-sm md:text-base tracking-tight">
+                                Tracking Information
+                              </Text>
+                            </View>
+
+                            {/* Tracking Box */}
+                            <View className="ml-0 md:ml-11 mb-6 bg-white p-4 md:p-5 rounded-xl border border-neutral-100 shadow-sm">
+                              <Text className="text-neutral-500 text-xs md:text-sm mb-2 font-medium">
+                                Tracking Number:{" "}
+                                <Text className="font-bold text-neutral-800">
+                                  {order.tracking?.number || "Pending"}
+                                </Text>
+                              </Text>
+                              <Text className="text-neutral-500 text-xs md:text-sm font-medium">
+                                Carrier:{" "}
+                                <Text className="font-bold text-neutral-800">
+                                  {order.tracking?.carrier || "N/A"}
+                                </Text>
+                              </Text>
+                            </View>
+
+                            {/* Timeline */}
+                            <View className="ml-2 md:ml-12 relative">
+                              {order.tracking?.timeline?.map(
+                                (event: any, index: number) => {
+                                  const isLast = index === order.tracking!.timeline!.length - 1;
+                                  // For UI sake, assuming events in history are completed
+                                  const isCompleted = true; 
+
+                                  return (
+                                    <View key={index} className="flex-row mb-6 relative">
+                                      {/* Vertical Connecting Line */}
+                                      {!isLast && (
+                                        <View className="absolute left-[5px] md:left-[7px] top-[24px] bottom-[-24px] w-[2px] bg-neutral-200 z-0" />
+                                      )}
+
+                                      {/* Timeline Dot */}
+                                      <View
+                                        className={`w-3 h-3 md:w-4 md:h-4 rounded-full mt-1.5 z-10 border-2 ${
+                                          isCompleted
+                                            ? "bg-[#ff3f6c] border-[#ff3f6c] shadow-sm shadow-pink-200"
+                                            : "bg-white border-neutral-300"
+                                        }`}
+                                      />
+
+                                      {/* Timeline Content */}
+                                      <View className="ml-5 flex-1">
+                                        <Text className="font-bold text-[#ff3f6c] text-sm md:text-base tracking-tight">
+                                          {event.status}
+                                        </Text>
+                                        <Text className="text-neutral-600 text-xs md:text-sm mt-1 font-medium">
+                                          {event.location}
+                                        </Text>
+                                        <Text className="text-neutral-400 text-[10px] md:text-xs mt-1.5 font-semibold tracking-wider uppercase">
+                                          {formatDate(event.timestamp)}
+                                        </Text>
+                                      </View>
+                                    </View>
+                                  );
+                                }
+                              )}
+                            </View>
+                          </View>
+
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                );
+              })
+            )}
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

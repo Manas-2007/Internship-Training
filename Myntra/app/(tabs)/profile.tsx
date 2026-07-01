@@ -32,6 +32,9 @@ export default function Profile() {
   const [isGuest, setIsGuest] = useState(false);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
+  
+  // Mobile tab bar height calculation so the logout button doesn't hide
+  const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -82,7 +85,7 @@ export default function Profile() {
         {
           text: "Logout",
           style: "destructive",
-          onPress: performLogout, // 3. Pass the helper function directly
+          onPress: performLogout,
         },
       ]);
     }
@@ -137,85 +140,96 @@ export default function Profile() {
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
-      <StatusBar style="dark" />
+      {/* 1400px Wrapper ensures consistent ultrawide centering */}
+      <View className="w-full max-w-[1400px] mx-auto flex-1">
+        <StatusBar style="dark" />
 
-      {/* Header sirf tab dikhega jab Navbar nahi hoga (Mobile/Tablet) */}
-{!isLargeScreen && (
-  <View className="bg-white border-b border-neutral-100 z-10">
-    <View className="w-full max-w-4xl mx-auto px-5 py-5 flex-row items-center">
-      <Ionicons name="person" size={28} color="#ff3f6c" />
-      <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
-        Profile
-      </Text>
-    </View>
-  </View>
-)}
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
-        <View className="w-full max-w-4xl mx-auto px-4 py-2 flex-col">
-          
-          <View className="bg-white p-5 border border-neutral-100 rounded-2xl shadow-sm flex-row items-center mb-4">
-            <View className="w-20 h-20 rounded-full bg-[#ff3f6c] items-center justify-center shadow-md shadow-pink-200">
-              <Text className="text-white text-2xl font-bold tracking-widest">
-                {getInitials(userData.name)}
-              </Text>
-            </View>
-            <View className="ml-5 flex-1 justify-center">
-              <Text
-                className="text-xl font-bold text-neutral-900 mb-1 tracking-tight"
-                numberOfLines={1}
-              >
-                {userData.name}
-              </Text>
-              <Text
-                className="text-neutral-500 text-base font-semibold"
-                numberOfLines={1}
-              >
-                {userData.email}
+        {/* Mobile Header */}
+        {!isLargeScreen && (
+          <View className="bg-white border-b border-neutral-100 z-10">
+            <View className="w-full px-5 py-5 flex-row items-center">
+              <Ionicons name="person" size={28} color="#ff3f6c" />
+              <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
+                Profile
               </Text>
             </View>
           </View>
+        )}
 
-          <View className="bg-white border border-neutral-100 rounded-2xl shadow-sm overflow-hidden mb-8">
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                className={`flex-row items-center justify-between px-4 py-6 ${
-                  index !== menuItems.length - 1
-                    ? "border-b border-neutral-50"
-                    : ""
-                } hover:bg-neutral-50 active:bg-neutral-50 transition-colors cursor-pointer group`}
-                onPress={() => router.push(item.route as any)}
-              >
-                <View className="flex-row items-center">
-                 <View className="w-10 h-10 rounded-full bg-pink-50 items-center justify-center group-hover:bg-pink-100 transition-colors">
-                     <Ionicons name={item.icon as any} size={20} color="#ff3f6c" />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          className="flex-1"
+          // Responsive padding: keeps mobile tab bar clear of the logout button
+          contentContainerStyle={{ 
+            flexGrow: 1, 
+            paddingBottom: isLargeScreen ? 40 : TABBAR_HEIGHT + 40 
+          }}
+        >
+          {/* Inner constraint (max-w-4xl) to keep lists professional on large screens */}
+          <View className="w-full max-w-4xl mx-auto px-4 py-4 md:py-8 flex-col">
+            
+            {/* User Info Card */}
+            <View className="bg-white p-5 border border-neutral-100 rounded-2xl shadow-sm flex-row items-center mb-6">
+              <View className="w-20 h-20 rounded-full bg-[#ff3f6c] items-center justify-center shadow-md shadow-pink-200">
+                <Text className="text-white text-2xl font-bold tracking-widest">
+                  {getInitials(userData.name)}
+                </Text>
+              </View>
+              <View className="ml-5 flex-1 justify-center">
+                <Text
+                  className="text-xl font-bold text-neutral-900 mb-1 tracking-tight"
+                  numberOfLines={1}
+                >
+                  {userData.name}
+                </Text>
+                <Text
+                  className="text-neutral-500 text-base font-semibold"
+                  numberOfLines={1}
+                >
+                  {userData.email}
+                </Text>
+              </View>
+            </View>
+
+            {/* Menu Items List */}
+            <View className="bg-white border border-neutral-100 rounded-2xl shadow-sm overflow-hidden mb-8">
+              {menuItems.map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  className={`flex-row items-center justify-between px-4 py-6 ${
+                    index !== menuItems.length - 1
+                      ? "border-b border-neutral-50"
+                      : ""
+                  } hover:bg-neutral-50 active:bg-neutral-50 transition-colors cursor-pointer group`}
+                  onPress={() => router.push(item.route as any)}
+                >
+                  <View className="flex-row items-center">
+                    <View className="w-10 h-10 rounded-full bg-pink-50 items-center justify-center group-hover:bg-pink-100 transition-colors">
+                      <Ionicons name={item.icon as any} size={20} color="#ff3f6c" />
+                    </View>
+                    <Text className="text-lg md:text-xl font-semibold text-neutral-800 ml-4 tracking-tight">
+                      {item.label}
+                    </Text>
                   </View>
-                  <Text className="text-lg font-bold text-neutral-800 ml-4 tracking-tight">
-                    {item.label}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="#a3a3a3" />
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <Ionicons name="chevron-forward" size={18} color="#a3a3a3" />
+                </TouchableOpacity>
+              ))}
+            </View>
 
-         <TouchableOpacity
-  className="flex-row items-center justify-center py-4 rounded-xl bg-[#ff3f6c] shadow-sm hover:opacity-90 active:opacity-90 transition-opacity cursor-pointer mb-10"
-  onPress={handleLogout}
->
-  <Ionicons name="log-out" size={22} color="#ffffff" />
-  <Text className="ml-2.5 text-base font-bold text-white tracking-wider uppercase">
-    Logout
-  </Text>
-</TouchableOpacity>
-          
-        </View>
-      </ScrollView>
+            {/* Logout Button */}
+            <TouchableOpacity
+              className="flex-row items-center justify-center py-4 rounded-xl bg-[#ff3f6c] shadow-sm hover:opacity-90 active:opacity-90 transition-opacity cursor-pointer"
+              onPress={handleLogout}
+            >
+              <Ionicons name="log-out" size={22} color="#ffffff" />
+              <Text className="ml-2.5 text-base md:text-lg font-bold text-white tracking-wider uppercase">
+                Logout
+              </Text>
+            </TouchableOpacity>
+            
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

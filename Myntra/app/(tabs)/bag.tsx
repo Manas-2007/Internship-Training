@@ -44,8 +44,15 @@ export default function Bag() {
   const router = useRouter();
 
   const { width } = useWindowDimensions();
-  const isLargeScreen: boolean = width >= 1024; // Standard desktop breakpoint
-  const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
+  const insets = useSafeAreaInsets();
+  
+  // Use 1024px for Desktop split view, 768px for Tablet width
+  const isDesktop: boolean = width >= 1024; 
+  const isTablet: boolean = width >= 768 && width < 1024;
+  const isLargeScreen = isDesktop || isTablet;
+
+  // Platform specific TabBar offset for mobile sticky footer
+  const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 75;
 
   const showMessage = (title: string, message: string): void => {
     if (Platform.OS === "web") {
@@ -147,7 +154,7 @@ export default function Bag() {
   if (loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#f43365" />
+        <ActivityIndicator size="large" color="#ff3f6c" />
       </View>
     );
   }
@@ -156,20 +163,20 @@ export default function Bag() {
     return (
       <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
         <View className="flex-1 items-center justify-center px-6 w-full max-w-md mx-auto">
-          <View className="w-24 h-24 bg-pink-50 rounded-full items-center justify-center mb-6">
-            <Ionicons name="bag-handle-outline" size={40} color="#f43365" />
+          <View className="w-24 h-24 md:w-28 md:h-28 bg-pink-50 rounded-full items-center justify-center mb-6 shadow-sm">
+            <Ionicons name="bag-handle-outline" size={44} color="#ff3f6c" />
           </View>
-          <Text className="text-3xl font-bold text-neutral-800 mb-3 text-center tracking-tight">
+          <Text className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3 text-center tracking-tight">
             Login Required
           </Text>
-          <Text className="text-base text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
+          <Text className="text-base md:text-lg text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
             Login to your account to add items to your shopping bag, apply coupons, and checkout smoothly.
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/auth/login")}
-            className="bg-[#f43365] w-full py-4 rounded-xl items-center shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+            className="bg-[#ff3f6c] w-full py-4 rounded-xl items-center shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
           >
-            <Text className="text-white font-bold text-lg tracking-wide">
+            <Text className="text-white font-bold text-lg md:text-xl tracking-wide">
               LOGIN NOW
             </Text>
           </TouchableOpacity>
@@ -179,34 +186,37 @@ export default function Bag() {
   }
 
   const DesktopOrderSummary = () => (
-    <View className="bg-neutral-50 p-6 rounded-2xl border border-neutral-100">
-      <Text className="text-xl font-bold text-neutral-900 mb-6">Price Details</Text>
-
-      <View className="flex-row justify-between mb-4">
-        <Text className="text-neutral-600 text-base">Total MRP</Text>
-        <Text className="text-neutral-900 font-medium text-base">₹{totalAmount}</Text>
+    <View className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
+      <View className="flex-row items-center mb-6">
+        <Ionicons name="receipt" size={20} color="#ff3f6c" />
+        <Text className="text-lg md:text-xl font-bold text-neutral-800 ml-2.5 tracking-tight">Price Details</Text>
       </View>
 
       <View className="flex-row justify-between mb-4">
-        <Text className="text-neutral-600 text-base">Platform Fee</Text>
-        <Text className="text-emerald-600 font-medium text-base">FREE</Text>
+        <Text className="text-neutral-600 text-sm md:text-base font-medium">Total MRP</Text>
+        <Text className="text-neutral-900 font-semibold text-sm md:text-base">₹{totalAmount}</Text>
       </View>
 
-      <View className="flex-row justify-between mb-6 pb-6 border-b border-neutral-200">
-        <Text className="text-neutral-600 text-base">Shipping Fee</Text>
-        <Text className="text-emerald-600 font-medium text-base">FREE</Text>
+      <View className="flex-row justify-between mb-4">
+        <Text className="text-neutral-600 text-sm md:text-base font-medium">Platform Fee</Text>
+        <Text className="text-emerald-600 font-semibold text-sm md:text-base">FREE</Text>
       </View>
 
-      <View className="flex-row justify-between items-center mb-8">
-        <Text className="text-neutral-900 font-bold text-xl">Total Amount</Text>
-        <Text className="text-neutral-900 font-bold text-2xl tracking-tight">₹{totalAmount}</Text>
+      <View className="flex-row justify-between mb-6 pb-6 border-b border-dashed border-neutral-200">
+        <Text className="text-neutral-600 text-sm md:text-base font-medium">Shipping Fee</Text>
+        <Text className="text-emerald-600 font-semibold text-sm md:text-base">FREE</Text>
+      </View>
+
+      <View className="flex-row justify-between items-center mb-8 pt-1">
+        <Text className="text-neutral-800 font-bold text-base md:text-lg">Total Amount</Text>
+        <Text className="text-neutral-900 font-bold text-xl md:text-2xl tracking-tight">₹{totalAmount}</Text>
       </View>
 
       <TouchableOpacity
-        className="bg-[#f43365] w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
+        className="bg-[#ff3f6c] w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
         onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
       >
-        <Text className="text-white font-bold text-lg tracking-wider">
+        <Text className="text-white font-bold text-sm md:text-base tracking-widest uppercase">
           PLACE ORDER
         </Text>
       </TouchableOpacity>
@@ -215,18 +225,18 @@ export default function Bag() {
 
   const MobileOrderSummary = () => (
     <View 
-      className="bg-white px-5 pt-4 border-t border-neutral-200 w-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
-      style={{ marginBottom: TABBAR_HEIGHT }}
+      className="absolute bottom-0 left-0 right-0 bg-white px-5 pt-4 pb-4 border-t border-neutral-100 shadow-[0_-8px_10px_-5px_rgba(0,0,0,0.05)] z-50"
+      style={{ paddingBottom: Math.max(insets.bottom + 10, TABBAR_HEIGHT + 10) }}
     >
-      <View className="flex-row justify-between items-center mb-3.5">
-        <Text className="text-neutral-600 font-semibold text-base">Total Amount</Text>
+      <View className="flex-row justify-between items-center mb-4">
+        <Text className="text-neutral-600 font-semibold text-sm">Total Amount</Text>
         <Text className="text-neutral-900 font-bold text-xl tracking-tight">₹{totalAmount}</Text>
       </View> 
       <TouchableOpacity
-        className="bg-[#f43365] w-full py-3.5 rounded-xl items-center justify-center shadow-sm shadow-pink-200"
+        className="bg-[#ff3f6c] w-full py-3.5 rounded-xl items-center justify-center shadow-sm active:opacity-90"
         onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
       >
-        <Text className="text-white font-bold text-base tracking-wider">
+        <Text className="text-white font-bold text-sm tracking-widest uppercase">
           PLACE ORDER
         </Text>
       </TouchableOpacity>
@@ -234,150 +244,154 @@ export default function Bag() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-{!isLargeScreen && (
-  <View className="px-5 py-4 bg-white border-b border-neutral-100 z-10 flex-row items-center justify-between">
-    
-    {/* Left Side: Icon + Title */}
-    <View className="flex-row items-center">
-      <Ionicons name="bag-handle" size={24} color="#f43365" />
-      <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
-        Shopping Bag
-      </Text>
-    </View>
-
-    {/* Right Side: Items Count */}
-    <Text className="text-sm font-medium text-neutral-500">
-      {bagItems.length} {bagItems.length === 1 ? "Item" : "Items"}
-    </Text>
-    
-  </View>
-)}
-
-      {/* Main Content Area */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        className="flex-1 bg-white"
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: TABBAR_HEIGHT + 100 }} // 👈 Isko change karna hai
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f43365" />
-        }
-      >
-        <View className={`w-full flex-1 px-4 lg:px-12 py-1`}>
-          {bagItems.length === 0 ? (
-            <View className="flex-1 items-center justify-center pt-20">
-              <View className="w-24 h-24 bg-neutral-50 rounded-full items-center justify-center mb-5">
-                <Ionicons name="bag-handle-outline" size={40} color="#a3a3a3" />
-              </View>
-              <Text className="text-neutral-800 text-2xl font-bold mb-2">
-                Your bag is empty!
-              </Text>
-              <Text className="text-neutral-500 text-base text-center px-10">
-                Explore our categories and add some items to your bag.
+    <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
+      <View className="w-full max-w-[1400px] mx-auto flex-1 relative">
+        
+        {/* Mobile Header */}
+        {!isLargeScreen && (
+          <View className="px-5 py-4 bg-white border-b border-neutral-100 z-10 flex-row items-center justify-between shadow-sm">
+            <View className="flex-row items-center">
+              <Ionicons name="bag-handle" size={24} color="#ff3f6c" />
+              <Text className="text-xl md:text-2xl font-bold text-neutral-900 tracking-tight ml-2.5">
+                Shopping Bag
               </Text>
             </View>
-          ) : (
-            // Side-by-Side Layout Wrapper for Desktop
-            <View className={isLargeScreen ? "flex-row w-full gap-12" : "flex-col"}>
-              
-              {/* Left Side: Items */}
-              <View className="flex-1">
-                {bagItems.map((item) => {
-                  const product = item.productId || ({} as Product);
-                  const imageUrl =
-                    product.images?.[0] || product.image || "https://via.placeholder.com/150";
+            <Text className="text-xs md:text-sm font-semibold text-neutral-500">
+              {bagItems.length} {bagItems.length === 1 ? "Item" : "Items"}
+            </Text>
+          </View>
+        )}
 
-                  return (
-                    <View
-                      key={item._id}
-                      className={`flex-row py-4 border-b border-neutral-100 ${
-                        isLargeScreen ? "hover:bg-neutral-50 transition-colors -mx-4 px-4 rounded-xl" : ""
-                      }`}
-                    >
-                      {/* Product Image + Cross Button Container */}
-                      <View className="relative">
-                        <TouchableOpacity
-                          onPress={() => router.push(`/product/${product._id}`)}
-                          className="cursor-pointer"
-                        >
-                          <Image
-                            source={{ uri: imageUrl }}
-                            className="w-[120px] h-[160px] rounded-xl object-cover bg-neutral-100"
-                          />
-                        </TouchableOpacity>
+        {/* Main Content Area */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          className="flex-1"
+          // Responsive padding: Extra padding on mobile so content doesn't hide behind absolute footer
+          contentContainerStyle={{ 
+            flexGrow: 1, 
+            paddingTop: isLargeScreen ? 24 : 16,
+            paddingBottom: isDesktop ? 60 : TABBAR_HEIGHT + 140 
+          }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ff3f6c" />
+          }
+        >
+          <View className={`w-full flex-1 px-4 md:px-6 lg:px-8`}>
+            {bagItems.length === 0 ? (
+              <View className="flex-1 items-center justify-center pt-20">
+                <View className="w-24 h-24 md:w-32 md:h-32 bg-white border border-neutral-100 shadow-sm rounded-full items-center justify-center mb-6">
+                  <Ionicons name="bag-handle-outline" size={48} color="#a3a3a3" />
+                </View>
+                <Text className="text-neutral-900 text-2xl md:text-3xl font-bold mb-3 tracking-tight">
+                  Your bag is empty!
+                </Text>
+                <Text className="text-neutral-500 text-base md:text-lg font-medium text-center px-10">
+                  Explore our categories and add some items to your bag.
+                </Text>
+              </View>
+            ) : (
+              // Side-by-Side Layout Wrapper for Desktop
+              <View className={isDesktop ? "flex-row w-full gap-8 lg:gap-12" : "flex-col"}>
+                
+                {/* Left Side: Items */}
+                <View className="flex-1">
+                  {bagItems.map((item, index) => {
+                    const product = item.productId || ({} as Product);
+                    const imageUrl = product.images?.[0] || product.image || "https://via.placeholder.com/150";
 
-                        {/* Cross Button inside the Image */}
-                        <TouchableOpacity
-                          onPress={() => removeBagItem(item._id)}
-                          className="absolute -top-2 -right-2 bg-white p-1 rounded-full shadow-md border border-neutral-100 z-10"
-                        >
-                          <Ionicons name="close" size={18} color="#404040" />
-                        </TouchableOpacity>
-                      </View>
-
-                      {/* Product Details & Quantity */}
-                      <View className="flex-1 ml-6 justify-between py-1">
-                        <View>
-                          <Text className="text-neutral-500 text-xs font-bold mb-1.5 tracking-widest uppercase">
-                            {product.brand || "Brand"}
-                          </Text>
-                          <Text
-                            className="text-neutral-900 text-2sm md:text-lg font-semibold mb-2 leading-6"
-                            numberOfLines={2}
+                    return (
+                      <View
+                        key={item._id}
+                        className={`flex-row p-4 md:p-5 bg-white rounded-2xl border border-neutral-100 mb-4 md:mb-5 shadow-sm transition-all ${
+                          isDesktop ? "hover:shadow-md" : ""
+                        }`}
+                      >
+                        {/* Product Image + Cross Button Container */}
+                        <View className="relative">
+                          <TouchableOpacity
+                            onPress={() => router.push(`/product/${product._id}`)}
+                            className="cursor-pointer"
+                            activeOpacity={0.9}
                           >
-                            {product.name || "Product Name"}
-                          </Text>
-                          <Text className="text-neutral-500 text-xs md:text-sm font-medium mb-3">
-                            Size: <Text className="text-neutral-800 font-bold">{item.size || "M"}</Text>
-                          </Text>
-                          <Text className="text-neutral-900 font-bold text-xl tracking-tight">
-                            ₹{product.price || 0}
-                          </Text>
+                            <Image
+                              source={{ uri: imageUrl }}
+                              className="w-[100px] h-[130px] md:w-[120px] md:h-[160px] rounded-xl object-cover bg-neutral-50 border border-neutral-100"
+                            />
+                          </TouchableOpacity>
+
+                          {/* Cross Button */}
+                          <TouchableOpacity
+                            onPress={() => removeBagItem(item._id)}
+                            className="absolute -top-2.5 -right-2.5 bg-white p-1.5 rounded-full shadow-sm border border-neutral-200 z-10 hover:bg-red-50 transition-colors"
+                          >
+                            <Ionicons name="close" size={16} color="#404040" />
+                          </TouchableOpacity>
                         </View>
 
-                        {/* Quantity Selector */}
-                        <View className="flex-row items-center mt-4">
-                          <View className="flex-row items-center bg-neutral-50 rounded-full border border-neutral-200">
-                            <TouchableOpacity
-                              onPress={() => updateQuantity(item._id, "dec")}
-                              className="w-10 h-10 items-center justify-center hover:bg-neutral-100 rounded-l-full transition-colors cursor-pointer"
-                            >
-                              <Ionicons name="remove" size={16} color="#404040" />
-                            </TouchableOpacity>
-
-                            <Text className="font-bold text-base w-8 text-center text-neutral-800">
-                              {item.localQuantity}
+                        {/* Product Details & Quantity */}
+                        <View className="flex-1 ml-5 md:ml-6 justify-between py-1">
+                          <View>
+                            <Text className="text-neutral-500 text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1}>
+                              {product.brand || "Brand"}
                             </Text>
-
-                            <TouchableOpacity
-                              onPress={() => updateQuantity(item._id, "inc")}
-                              className="w-10 h-10 items-center justify-center hover:bg-neutral-100 rounded-r-full transition-colors cursor-pointer"
+                            <Text
+                              className="text-neutral-900 text-sm md:text-base font-semibold mb-2 leading-5"
+                              numberOfLines={2}
                             >
-                              <Ionicons name="add" size={16} color="#404040" />
-                            </TouchableOpacity>
+                              {product.name || "Product Name"}
+                            </Text>
+                            <Text className="text-neutral-500 text-xs md:text-sm font-medium mb-2.5">
+                              Size: <Text className="text-neutral-800 font-bold">{item.size || "M"}</Text>
+                            </Text>
+                            <Text className="text-neutral-900 font-bold text-lg md:text-xl tracking-tight">
+                              ₹{product.price || 0}
+                            </Text>
+                          </View>
+
+                          {/* Quantity Selector */}
+                          <View className="flex-row items-center mt-3">
+                            <View className="flex-row items-center bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                              <TouchableOpacity
+                                onPress={() => updateQuantity(item._id, "dec")}
+                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center bg-neutral-50 hover:bg-neutral-100 transition-colors active:bg-neutral-200"
+                              >
+                                <Ionicons name="remove" size={16} color="#404040" />
+                              </TouchableOpacity>
+
+                              <Text className="font-bold text-sm md:text-base w-8 md:w-10 text-center text-neutral-800">
+                                {item.localQuantity}
+                              </Text>
+
+                              <TouchableOpacity
+                                onPress={() => updateQuantity(item._id, "inc")}
+                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center bg-neutral-50 hover:bg-neutral-100 transition-colors active:bg-neutral-200"
+                              >
+                                <Ionicons name="add" size={16} color="#404040" />
+                              </TouchableOpacity>
+                            </View>
                           </View>
                         </View>
                       </View>
-                    </View>
-                  );
-                })}
-              </View>
-
-              {/* Right Side: Order Summary (Desktop Only) */}
-              {isLargeScreen && (
-                <View className="w-[350px]">
-                  <View className="sticky top-4">
-                    <DesktopOrderSummary />
-                  </View>
+                    );
+                  })}
                 </View>
-              )}
-            </View>
-          )}
-        </View>
-      </ScrollView>
 
-      {/* Mobile/Tablet Order Summary placed at the bottom, outside the ScrollView */}
-      {(!isLargeScreen && bagItems.length > 0) && <MobileOrderSummary />}
+                {/* Right Side: Order Summary (Desktop Only) */}
+                {isDesktop && (
+                  <View className="w-[350px] lg:w-[380px]">
+                    <View className="sticky top-6">
+                      <DesktopOrderSummary />
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Mobile/Tablet Order Summary Footer */}
+        {(!isDesktop && bagItems.length > 0) && <MobileOrderSummary />}
+      </View>
     </SafeAreaView>
   );
 }
