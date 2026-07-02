@@ -19,11 +19,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_URL } from "../constants/api";
 
-// --- IMPORTING OUR NEW MODULAR COMPONENTS ---
 import Banner from "../../components/Home Tab/Banner";
 import CategoryList from "../../components/Home Tab/CategoryList";
 import DealsSection from "../../components/Home Tab/DealCard";
 import TrendingProducts from "../../components/Home Tab/TrendingProducts";
+import RecentlyViewedSection from "../../components/Home Tab/RecentlyViewedSection";
 
 export default function Home() {
   const router = useRouter();
@@ -34,7 +34,6 @@ export default function Home() {
   const isTablet = width >= 768 && width < 1024;
   const isLargeScreen = isDesktop || isTablet;
 
-  // Mobile TabBar height for bottom padding
   const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
 
   const maxContentWidth = isDesktop ? width : 1152;
@@ -49,6 +48,7 @@ export default function Home() {
     wishlistIds,
     setWishlistIds,
     fetchWishlistIds,
+    recentlyViewed,
   } = useGlobalContext();
 
   const onRefresh = async () => {
@@ -129,11 +129,9 @@ export default function Home() {
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* Centering Wrapper: 1400px lock */}
       <View className="flex-1 w-full max-w-[1400px] mx-auto">
         <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-        {/* Premium Myntra Pink Themed Header - Hidden on Large Screens */}
         {!isLargeScreen && (
           <View className="flex-row justify-between items-center px-4 py-3 bg-white border-b border-neutral-100 z-10 shadow-sm">
             <TouchableOpacity activeOpacity={1} className="flex-row items-center">
@@ -169,27 +167,28 @@ export default function Home() {
         >
           <View className="w-full pt-2">
             
-            {/* 1. Modular Banner */}
             <Banner 
               bannerData={bannerData} 
               sliderWidth={sliderWidth} 
               isLargeScreen={isLargeScreen} 
             />
 
-            {/* 2. Modular Category List */}
             <CategoryList 
               categories={categories} 
               isLargeScreen={isLargeScreen} 
             />
 
-            {/* 3. Modular Deals Section */}
             <DealsSection 
               deals={deals} 
               isLargeScreen={isLargeScreen} 
               isDesktop={isDesktop} 
             />
 
-            {/* 4. Modular Trending Products */}
+            <RecentlyViewedSection 
+              recentlyViewed={recentlyViewed} 
+              isLargeScreen={isLargeScreen} 
+            />
+
             <TrendingProducts 
               products={products} 
               wishlistIds={wishlistIds} 

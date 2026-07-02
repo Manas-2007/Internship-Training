@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -36,7 +36,7 @@ export default function ProductDetails() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { products, wishlistIds, setWishlistIds } = useGlobalContext();
+  const { products, wishlistIds, setWishlistIds, recordProductView } = useGlobalContext();
   const { width } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
 
@@ -74,6 +74,13 @@ export default function ProductDetails() {
     description: "",
     images: ["https://via.placeholder.com/600"],
   };
+
+  // --- RECENTLY VIEWED TRIGGER ---
+  useEffect(() => {
+    if (product && product.brand !== "Loading...") {
+      recordProductView(product);
+    }
+  }, [product._id, product.brand]);
 
   const productImages: string[] =
     product.images && product.images.length > 0
