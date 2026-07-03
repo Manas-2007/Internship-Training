@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import "../global.css";
 import { GlobalProvider } from "./context/GlobalContext";
 import { Stack } from "expo-router";
+import { ThemeProvider } from './context/ThemeContext';
 
 export default function Layout() {
   const [isAppReady, setIsAppReady] = useState(false);
@@ -32,7 +33,9 @@ export default function Layout() {
 
   return (
     <GlobalProvider>
+      <ThemeProvider>
        <Stack screenOptions={{ headerShown: false }} />
+       </ThemeProvider>
     </GlobalProvider>
   );
 }

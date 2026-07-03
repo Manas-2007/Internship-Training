@@ -4,6 +4,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
+
 interface CategoryListProps {
   categories: any[];
   isLargeScreen: boolean;

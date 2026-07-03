@@ -7,13 +7,16 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from "react-native";
-import React,{ useState } from "react";
+import React from "react";
+import { useTheme } from '../context/ThemeContext';
 
 // --- PREMIUM CUSTOM TOP NAVBAR FOR DESKTOP/WEB ---
 const TopNavbar = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const [isDark, setIsDark] = React.useState(false);
+  
+  // 👉 Context se isDark, changeTheme, aur colors nikaal liye
+  const { isDark, changeTheme, colors } = useTheme();
   
   const navItems = [
     { name: "index", label: "Home", icon: "home", route: "/" },
@@ -24,7 +27,11 @@ const TopNavbar = () => {
   ];
 
   return (
-    <View className="bg-white border-b border-neutral-50 z-50 shadow-sm w-full">
+    // 👉 Dynamic Background & Border applied here
+    <View 
+      className="border-b z-50 shadow-sm w-full" 
+      style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
+    >
       {/* 1400px Centering for Top Navbar */}
       <View className="w-full max-w-[1400px] mx-auto px-6 py-4 flex-row justify-between items-center">
         
@@ -34,27 +41,31 @@ const TopNavbar = () => {
           className="cursor-pointer flex-row items-end group"
           activeOpacity={0.8}
         >
-         <Text className="text-[22px] font-black text-[#ff3f6c] tracking-widest">
-                    MYNTRA
+         <Text className="text-[22px] font-black tracking-widest" style={{ color: colors.primary }}>
+            MYNTRA
           </Text>
-          {/* Signature Pink Dot */}
         </TouchableOpacity>
 
         {/* Navigation Links */}
         <View className="flex-row items-center gap-10">
+          
+          {/* THEME TOGGLE BUTTON */}
           <TouchableOpacity
-            onPress={() => setIsDark(!isDark)}
+            onPress={() => changeTheme(isDark ? "Light" : "Dark")}
             className="items-center justify-center cursor-pointer group"
             activeOpacity={0.7}
           >
             <Ionicons
               name={isDark ? "moon" : "moon-outline"}
               size={24}
-              color="#ff3f6c"
+              // 👉 Dynamic Icon Color
+              color={isDark ? colors.primary : colors.textMain}
               className="group-hover:opacity-80 transition-opacity"
             />
             <Text
-              className="text-[11px] font-bold mt-1 tracking-widest uppercase text-[#282c3f] group-hover:opacity-80 transition-opacity"
+              className="text-[11px] font-bold mt-1 tracking-widest uppercase group-hover:opacity-80 transition-opacity"
+              // 👉 Dynamic Text Color
+              style={{ color: isDark ? colors.primary : colors.textMain }}
             >
               Theme
             </Text>
@@ -76,13 +87,14 @@ const TopNavbar = () => {
                       : (`${item.icon}-outline` as any)
                   }
                   size={24}
-                  color={isActive ? "#ff3f6c" : "#282c3f"}
+                  // 👉 Dynamic Icon Color for Nav Items
+                  color={isActive ? colors.primary : colors.textMain}
                   className="group-hover:opacity-80 transition-opacity"
                 />
                 <Text
-                  className={`text-[11px] font-bold mt-1 tracking-widest uppercase ${
-                    isActive ? "text-[#ff3f6c]" : "text-[#282c3f]"
-                  } group-hover:opacity-80 transition-opacity`}
+                  className="text-[11px] font-bold mt-1 tracking-widest uppercase group-hover:opacity-80 transition-opacity"
+                  // 👉 Dynamic Text Color for Nav Items
+                  style={{ color: isActive ? colors.primary : colors.textMain }}
                 >
                   {item.label}
                 </Text>
@@ -99,13 +111,19 @@ export default function TabLayout() {
   const { width } = useWindowDimensions();
   // Using 768px for Tablet/Desktop breakpoint
   const isLargeScreen = width >= 768;
+  
+  // 👉 Extract colors for Bottom Tabs and App Background
+  const { colors } = useTheme();
 
   return (
-    // Background color outside 1400px will be subtle neutral
-    <View className="flex-1 bg-neutral-50">
+    // 👉 Dynamic App Background
+    <View className="flex-1" style={{ backgroundColor: colors.background }}>
       
       {/* 1400px Global Wrapper for the entire layout */}
-      <View className="flex-1 w-full max-w-[1400px] mx-auto bg-white relative shadow-2xl shadow-black/5">
+      <View 
+        className="flex-1 w-full max-w-[1400px] mx-auto relative shadow-2xl shadow-black/5" 
+        style={{ backgroundColor: colors.background }}
+      >
         
         {/* Render Top Navbar on large screens */}
         {isLargeScreen && <TopNavbar />}
@@ -115,14 +133,16 @@ export default function TabLayout() {
             headerShown: false,
             // 1. Explicitly show labels to fix the hidden text issue
             tabBarShowLabel: true,
-            tabBarActiveTintColor: "#ff3f6c",
-            tabBarInactiveTintColor: "#535766", // Myntra's softer grey for inactive state
+            // 👉 Dynamic Tab Tint Colors
+            tabBarActiveTintColor: colors.primary,
+            tabBarInactiveTintColor: colors.textMuted, 
             tabBarStyle: isLargeScreen
               ? { display: "none" }
               : {
-                  backgroundColor: "#ffffff",
+                  // 👉 Dynamic Bottom Tab Background & Border
+                  backgroundColor: colors.surface,
                   borderTopWidth: 1,
-                  borderTopColor: "#f1f1f4",
+                  borderTopColor: colors.border,
                   // 2. Fixed height and padding combination to accommodate labels perfectly
                   height: Platform.OS === "ios" ? 90 : 75,
                   paddingBottom: Platform.OS === "ios" ? 25 : 12,
@@ -160,11 +180,7 @@ export default function TabLayout() {
             options={{
               title: "Home",
               tabBarIcon: ({ color, focused }) => (
-                <Ionicons
-                  name={focused ? "home" : "home-outline"}
-                  size={24}
-                  color={color}
-                />
+                <Ionicons name={focused ? "home" : "home-outline"} size={24} color={color} />
               ),
             }}
           />
@@ -174,11 +190,7 @@ export default function TabLayout() {
             options={{
               title: "Categories",
               tabBarIcon: ({ color, focused }) => (
-                <Ionicons
-                  name={focused ? "apps" : "apps-outline"}
-                  size={24}
-                  color={color}
-                />
+                <Ionicons name={focused ? "apps" : "apps-outline"} size={24} color={color} />
               ),
             }}
           />
@@ -188,11 +200,7 @@ export default function TabLayout() {
             options={{
               title: "Wishlist",
               tabBarIcon: ({ color, focused }) => (
-                <Ionicons
-                  name={focused ? "heart" : "heart-outline"}
-                  size={24}
-                  color={color}
-                />
+                <Ionicons name={focused ? "heart" : "heart-outline"} size={24} color={color} />
               ),
             }}
           />
@@ -202,11 +210,7 @@ export default function TabLayout() {
             options={{
               title: "Bag",
               tabBarIcon: ({ color, focused }) => (
-                <Ionicons
-                  name={focused ? "bag" : "bag-outline"}
-                  size={24}
-                  color={color}
-                />
+                <Ionicons name={focused ? "bag" : "bag-outline"} size={24} color={color} />
               ),
             }}
           />
@@ -216,11 +220,7 @@ export default function TabLayout() {
             options={{
               title: "Profile",
               tabBarIcon: ({ color, focused }) => (
-                <Ionicons
-                  name={focused ? "person" : "person-outline"}
-                  size={24}
-                  color={color}
-                />
+                <Ionicons name={focused ? "person" : "person-outline"} size={24} color={color} />
               ),
             }}
           />
