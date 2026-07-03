@@ -18,6 +18,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import { useFocusEffect, useRouter } from "expo-router";
 import { API_URL } from "../constants/api";
+// 👉 Import ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface Product {
   _id: string;
@@ -42,6 +44,9 @@ export default function Bag() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isGuest, setIsGuest] = useState<boolean>(false);
   const router = useRouter();
+
+  // 👉 Extract colors and isDark
+  const { colors, isDark } = useTheme();
 
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -153,28 +158,32 @@ export default function Bag() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#ff3f6c" />
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (isGuest) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
         <View className="flex-1 items-center justify-center px-6 w-full max-w-md mx-auto">
-          <View className="w-24 h-24 md:w-28 md:h-28 bg-pink-50 rounded-full items-center justify-center mb-6 shadow-sm">
-            <Ionicons name="bag-handle-outline" size={44} color="#ff3f6c" />
+          <View 
+            className="w-24 h-24 md:w-28 md:h-28 rounded-full items-center justify-center mb-6 shadow-sm"
+            style={{ backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}
+          >
+            <Ionicons name="bag-handle-outline" size={44} color={colors.primary} />
           </View>
-          <Text className="text-3xl md:text-4xl font-bold text-neutral-900 mb-3 text-center tracking-tight">
+          <Text className="text-3xl md:text-4xl font-bold mb-3 text-center tracking-tight" style={{ color: colors.textMain }}>
             Login Required
           </Text>
-          <Text className="text-base md:text-lg text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
+          <Text className="text-base md:text-lg mb-10 text-center px-4 leading-6 font-medium" style={{ color: colors.textMuted }}>
             Login to your account to add items to your shopping bag, apply coupons, and checkout smoothly.
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/auth/login")}
-            className="bg-[#ff3f6c] w-full py-4 rounded-xl items-center shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+            className="w-full py-4 rounded-xl items-center shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+            style={{ backgroundColor: colors.primary }}
           >
             <Text className="text-white font-bold text-lg md:text-xl tracking-wide">
               LOGIN NOW
@@ -186,34 +195,41 @@ export default function Bag() {
   }
 
   const DesktopOrderSummary = () => (
-    <View className="bg-white p-6 rounded-2xl border border-neutral-100 shadow-sm">
+    <View 
+      className="p-6 rounded-2xl border shadow-sm"
+      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+    >
       <View className="flex-row items-center mb-6">
-        <Ionicons name="receipt" size={20} color="#ff3f6c" />
-        <Text className="text-lg md:text-xl font-bold text-neutral-800 ml-2.5 tracking-tight">Price Details</Text>
+        <Ionicons name="receipt" size={20} color={colors.primary} />
+        <Text className="text-lg md:text-xl font-bold ml-2.5 tracking-tight" style={{ color: colors.textMain }}>Price Details</Text>
       </View>
 
       <View className="flex-row justify-between mb-4">
-        <Text className="text-neutral-600 text-sm md:text-base font-medium">Total MRP</Text>
-        <Text className="text-neutral-900 font-semibold text-sm md:text-base">₹{totalAmount}</Text>
+        <Text className="text-sm md:text-base font-medium" style={{ color: colors.textMuted }}>Total MRP</Text>
+        <Text className="font-semibold text-sm md:text-base" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
       </View>
 
       <View className="flex-row justify-between mb-4">
-        <Text className="text-neutral-600 text-sm md:text-base font-medium">Platform Fee</Text>
-        <Text className="text-emerald-600 font-semibold text-sm md:text-base">FREE</Text>
+        <Text className="text-sm md:text-base font-medium" style={{ color: colors.textMuted }}>Platform Fee</Text>
+        <Text className="font-semibold text-sm md:text-base" style={{ color: isDark ? '#34d399' : '#059669' }}>FREE</Text>
       </View>
 
-      <View className="flex-row justify-between mb-6 pb-6 border-b border-dashed border-neutral-200">
-        <Text className="text-neutral-600 text-sm md:text-base font-medium">Shipping Fee</Text>
-        <Text className="text-emerald-600 font-semibold text-sm md:text-base">FREE</Text>
+      <View 
+        className="flex-row justify-between mb-6 pb-6 border-b border-dashed"
+        style={{ borderBottomColor: colors.border }}
+      >
+        <Text className="text-sm md:text-base font-medium" style={{ color: colors.textMuted }}>Shipping Fee</Text>
+        <Text className="font-semibold text-sm md:text-base" style={{ color: isDark ? '#34d399' : '#059669' }}>FREE</Text>
       </View>
 
       <View className="flex-row justify-between items-center mb-8 pt-1">
-        <Text className="text-neutral-800 font-bold text-base md:text-lg">Total Amount</Text>
-        <Text className="text-neutral-900 font-bold text-xl md:text-2xl tracking-tight">₹{totalAmount}</Text>
+        <Text className="font-bold text-base md:text-lg" style={{ color: colors.textMain }}>Total Amount</Text>
+        <Text className="font-bold text-xl md:text-2xl tracking-tight" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
       </View>
 
       <TouchableOpacity
-        className="bg-[#ff3f6c] w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
+        className="w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
+        style={{ backgroundColor: colors.primary }}
         onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
       >
         <Text className="text-white font-bold text-sm md:text-base tracking-widest uppercase">
@@ -225,15 +241,20 @@ export default function Bag() {
 
   const MobileOrderSummary = () => (
     <View 
-      className="absolute bottom-0 left-0 right-0 bg-white px-5 pt-4 pb-4 border-t border-neutral-100 shadow-[0_-8px_10px_-5px_rgba(0,0,0,0.05)] z-50"
-      style={{ paddingBottom: Math.max(insets.bottom + 10, TABBAR_HEIGHT + 10) }}
+      className="absolute bottom-0 left-0 right-0 px-5 pt-4 pb-4 border-t shadow-[0_-8px_10px_-5px_rgba(0,0,0,0.05)] z-50"
+      style={{ 
+        backgroundColor: colors.surface, 
+        borderTopColor: colors.border,
+        paddingBottom: Math.max(insets.bottom + 10, TABBAR_HEIGHT + 10) 
+      }}
     >
       <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-neutral-600 font-semibold text-sm">Total Amount</Text>
-        <Text className="text-neutral-900 font-bold text-xl tracking-tight">₹{totalAmount}</Text>
+        <Text className="font-semibold text-sm" style={{ color: colors.textMuted }}>Total Amount</Text>
+        <Text className="font-bold text-xl tracking-tight" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
       </View> 
       <TouchableOpacity
-        className="bg-[#ff3f6c] w-full py-3.5 rounded-xl items-center justify-center shadow-sm active:opacity-90"
+        className="w-full py-3.5 rounded-xl items-center justify-center shadow-sm active:opacity-90"
+        style={{ backgroundColor: colors.primary }}
         onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
       >
         <Text className="text-white font-bold text-sm tracking-widest uppercase">
@@ -244,19 +265,22 @@ export default function Bag() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="w-full max-w-[1400px] mx-auto flex-1 relative">
         
         {/* Mobile Header */}
         {!isLargeScreen && (
-          <View className="px-5 py-4 bg-white border-b border-neutral-100 z-10 flex-row items-center justify-between shadow-sm">
+          <View 
+            className="px-5 py-4 border-b z-10 flex-row items-center justify-between shadow-sm"
+            style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
+          >
             <View className="flex-row items-center">
-              <Ionicons name="bag-handle" size={24} color="#ff3f6c" />
-              <Text className="text-xl md:text-2xl font-bold text-neutral-900 tracking-tight ml-2.5">
+              <Ionicons name="bag-handle" size={24} color={colors.primary} />
+              <Text className="text-xl md:text-2xl font-bold tracking-tight ml-2.5" style={{ color: colors.textMain }}>
                 Shopping Bag
               </Text>
             </View>
-            <Text className="text-xs md:text-sm font-semibold text-neutral-500">
+            <Text className="text-xs md:text-sm font-semibold" style={{ color: colors.textMuted }}>
               {bagItems.length} {bagItems.length === 1 ? "Item" : "Items"}
             </Text>
           </View>
@@ -273,19 +297,22 @@ export default function Bag() {
             paddingBottom: isDesktop ? 60 : TABBAR_HEIGHT + 140 
           }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ff3f6c" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} colors={[colors.primary]} />
           }
         >
           <View className={`w-full flex-1 px-4 md:px-6 lg:px-8`}>
             {bagItems.length === 0 ? (
               <View className="flex-1 items-center justify-center pt-20">
-                <View className="w-24 h-24 md:w-32 md:h-32 bg-white border border-neutral-100 shadow-sm rounded-full items-center justify-center mb-6">
-                  <Ionicons name="bag-handle-outline" size={48} color="#a3a3a3" />
+                <View 
+                  className="w-24 h-24 md:w-32 md:h-32 border shadow-sm rounded-full items-center justify-center mb-6"
+                  style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                >
+                  <Ionicons name="bag-handle-outline" size={48} color={colors.textMuted} />
                 </View>
-                <Text className="text-neutral-900 text-2xl md:text-3xl font-bold mb-3 tracking-tight">
+                <Text className="text-2xl md:text-3xl font-bold mb-3 tracking-tight" style={{ color: colors.textMain }}>
                   Your bag is empty!
                 </Text>
-                <Text className="text-neutral-500 text-base md:text-lg font-medium text-center px-10">
+                <Text className="text-base md:text-lg font-medium text-center px-10" style={{ color: colors.textMuted }}>
                   Explore our categories and add some items to your bag.
                 </Text>
               </View>
@@ -302,9 +329,10 @@ export default function Bag() {
                     return (
                       <View
                         key={item._id}
-                        className={`flex-row p-4 md:p-5 bg-white rounded-2xl border border-neutral-100 mb-4 md:mb-5 shadow-sm transition-all ${
+                        className={`flex-row p-4 md:p-5 rounded-2xl border mb-4 md:mb-5 shadow-sm transition-all ${
                           isDesktop ? "hover:shadow-md" : ""
                         }`}
+                        style={{ backgroundColor: colors.surface, borderColor: colors.border }}
                       >
                         {/* Product Image + Cross Button Container */}
                         <View className="relative">
@@ -315,58 +343,69 @@ export default function Bag() {
                           >
                             <Image
                               source={{ uri: imageUrl }}
-                              className="w-[100px] h-[130px] md:w-[120px] md:h-[160px] rounded-xl object-cover bg-neutral-50 border border-neutral-100"
+                              className="w-[100px] h-[130px] md:w-[120px] md:h-[160px] rounded-xl object-cover border"
+                              style={{ backgroundColor: colors.background, borderColor: colors.border }}
                             />
                           </TouchableOpacity>
 
                           {/* Cross Button */}
                           <TouchableOpacity
                             onPress={() => removeBagItem(item._id)}
-                            className="absolute -top-2.5 -right-2.5 bg-white p-1.5 rounded-full shadow-sm border border-neutral-200 z-10 hover:bg-red-50 transition-colors"
+                            className="absolute -top-2.5 -right-2.5 p-1.5 rounded-full shadow-sm border z-10 transition-colors"
+                            style={{ 
+                              backgroundColor: isDark ? 'rgba(38,38,38,0.95)' : 'rgba(255,255,255,0.95)', 
+                              borderColor: colors.border 
+                            }}
                           >
-                            <Ionicons name="close" size={16} color="#404040" />
+                            <Ionicons name="close" size={16} color={colors.textMain} />
                           </TouchableOpacity>
                         </View>
 
                         {/* Product Details & Quantity */}
                         <View className="flex-1 ml-5 md:ml-6 justify-between py-1">
                           <View>
-                            <Text className="text-neutral-500 text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1}>
+                            <Text className="text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1} style={{ color: colors.textMuted }}>
                               {product.brand || "Brand"}
                             </Text>
                             <Text
-                              className="text-neutral-900 text-sm md:text-base font-semibold mb-2 leading-5"
+                              className="text-sm md:text-base font-semibold mb-2 leading-5"
                               numberOfLines={2}
+                              style={{ color: colors.textMain }}
                             >
                               {product.name || "Product Name"}
                             </Text>
-                            <Text className="text-neutral-500 text-xs md:text-sm font-medium mb-2.5">
-                              Size: <Text className="text-neutral-800 font-bold">{item.size || "M"}</Text>
+                            <Text className="text-xs md:text-sm font-medium mb-2.5" style={{ color: colors.textMuted }}>
+                              Size: <Text className="font-bold" style={{ color: colors.textMain }}>{item.size || "M"}</Text>
                             </Text>
-                            <Text className="text-neutral-900 font-bold text-lg md:text-xl tracking-tight">
+                            <Text className="font-bold text-lg md:text-xl tracking-tight" style={{ color: colors.textMain }}>
                               ₹{product.price || 0}
                             </Text>
                           </View>
 
                           {/* Quantity Selector */}
                           <View className="flex-row items-center mt-3">
-                            <View className="flex-row items-center bg-white rounded-lg border border-neutral-200 overflow-hidden">
+                            <View 
+                              className="flex-row items-center rounded-lg border overflow-hidden"
+                              style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                            >
                               <TouchableOpacity
                                 onPress={() => updateQuantity(item._id, "dec")}
-                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center bg-neutral-50 hover:bg-neutral-100 transition-colors active:bg-neutral-200"
+                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center transition-colors"
+                                style={{ backgroundColor: isDark ? '#1e293b' : '#f8fafc' }}
                               >
-                                <Ionicons name="remove" size={16} color="#404040" />
+                                <Ionicons name="remove" size={16} color={colors.textMain} />
                               </TouchableOpacity>
 
-                              <Text className="font-bold text-sm md:text-base w-8 md:w-10 text-center text-neutral-800">
+                              <Text className="font-bold text-sm md:text-base w-8 md:w-10 text-center" style={{ color: colors.textMain }}>
                                 {item.localQuantity}
                               </Text>
 
                               <TouchableOpacity
                                 onPress={() => updateQuantity(item._id, "inc")}
-                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center bg-neutral-50 hover:bg-neutral-100 transition-colors active:bg-neutral-200"
+                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center transition-colors"
+                                style={{ backgroundColor: isDark ? '#1e293b' : '#f8fafc' }}
                               >
-                                <Ionicons name="add" size={16} color="#404040" />
+                                <Ionicons name="add" size={16} color={colors.textMain} />
                               </TouchableOpacity>
                             </View>
                           </View>

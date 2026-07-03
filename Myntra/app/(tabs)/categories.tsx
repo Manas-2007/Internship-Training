@@ -13,6 +13,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGlobalContext } from "../context/GlobalContext";
+// 👉 Import ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface Category {
   name: string;
@@ -58,6 +60,9 @@ export default function Categories() {
   const params = useLocalSearchParams();
   const { products } = useGlobalContext();
   const insets = useSafeAreaInsets();
+
+  // 👉 Extract colors and isDark
+  const { colors, isDark } = useTheme();
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -127,27 +132,40 @@ export default function Categories() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
         {/* Title Header: Hidden securely via JS when Top Navbar is present */}
         {!isLargeScreen && (
-          <View className="px-5 py-4 bg-white flex-row items-center border-b border-neutral-100 z-10">
-            <Ionicons name="grid" size={26} color="#ff3f6c" />
-            <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
+          <View 
+            className="px-5 py-4 flex-row items-center border-b z-10"
+            style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
+          >
+            <Ionicons name="grid" size={26} color={colors.primary} />
+            <Text className="text-2xl font-bold tracking-tight ml-3" style={{ color: colors.textMain }}>
               Categories
             </Text>
           </View>
         )}
 
         {/* Search Bar */}
-        <View className={`px-4 lg:px-12 bg-white border-b border-neutral-100 ${isLargeScreen ? 'pt-4 pb-4' : 'py-3'}`}>
-          <View className="flex-row items-center bg-[#f5f5f5] px-4 py-3 rounded-xl border border-transparent hover:border-neutral-200 transition-colors">
-            <Ionicons name="search" size={20} color="#a3a3a3" />
+        <View 
+          className={`px-4 lg:px-12 border-b ${isLargeScreen ? 'pt-4 pb-4' : 'py-3'}`}
+          style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
+        >
+          <View 
+            className="flex-row items-center px-4 py-3 rounded-xl border transition-colors"
+            style={{ 
+              backgroundColor: isDark ? '#1e293b' : '#f5f5f5',
+              borderColor: isDark ? '#334155' : 'transparent' 
+            }}
+          >
+            <Ionicons name="search" size={20} color={colors.textMuted} />
             <TextInput
               placeholder="Search for categories..."
-              className="flex-1 ml-3 text-neutral-800 text-sm md:text-base outline-none"
-              placeholderTextColor="#a3a3a3"
+              className="flex-1 ml-3 text-sm md:text-base outline-none"
+              style={{ color: colors.textMain }}
+              placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
@@ -159,11 +177,12 @@ export default function Categories() {
 
         <ScrollView
           showsVerticalScrollIndicator={true}
-          className="flex-1 bg-white"
-         contentContainerStyle={{ 
-  flexGrow: 1, 
-  paddingBottom: isLargeScreen ? 60 : insets.bottom + 350 
-}}
+          className="flex-1"
+          style={{ backgroundColor: colors.background }}
+          contentContainerStyle={{ 
+            flexGrow: 1, 
+            paddingBottom: isLargeScreen ? 60 : insets.bottom + 350 
+          }}
         >
           {selectedCategory ? (
             /* --- CATEGORY DETAIL VIEW (Products) --- */
@@ -172,14 +191,14 @@ export default function Categories() {
                 className="flex-row items-center px-4 lg:px-12 mb-3 hover:opacity-70 transition-opacity cursor-pointer w-40"
                 onPress={() => setSelectedCategory(null)}
               >
-                <Ionicons name="arrow-back" size={18} color="#ce4067" />
-                <Text className="text-[#ce4067] font-semibold text-sm md:text-base ml-1.5">
+                <Ionicons name="arrow-back" size={18} color={colors.primary} />
+                <Text className="font-semibold text-sm md:text-base ml-1.5" style={{ color: colors.primary }}>
                   Back
                 </Text>
               </TouchableOpacity>
 
               {/* Reduced font weight from black to bold, responsive sizes */}
-              <Text className="text-xl md:text-2xl font-bold text-neutral-900 px-4 lg:px-12 mb-3 mt-1 tracking-tight">
+              <Text className="text-xl md:text-2xl font-bold px-4 lg:px-12 mb-3 mt-1 tracking-tight" style={{ color: colors.textMain }}>
                 {selectedCategory.name}
               </Text>
 
@@ -203,17 +222,16 @@ export default function Categories() {
                               alert(`${sub} products are coming soon!`);
                             }
                           }}
-                          className={`px-4 py-2 rounded-full mr-2 border flex-row items-center justify-center transition-colors cursor-pointer ${
-    isActive
-      ? "bg-[#ff3f6c] border-[#ff3f6c] shadow-sm"
-      : "bg-white border-neutral-200 hover:bg-neutral-50"
-  }`}
+                          className="px-4 py-2 rounded-full mr-2 border flex-row items-center justify-center transition-colors cursor-pointer shadow-sm"
+                          style={{
+                            backgroundColor: isActive ? colors.primary : colors.surface,
+                            borderColor: isActive ? colors.primary : colors.border
+                          }}
                         >
                           <Text
                             numberOfLines={1}
-                            className={`font-semibold text-sm md:text-base tracking-wide ${
-                              isActive ? "text-white" : "text-neutral-700"
-                            }`}
+                            className="font-semibold text-sm md:text-base tracking-wide"
+                            style={{ color: isActive ? '#ffffff' : colors.textMain }}
                           >
                             {sub}
                           </Text>
@@ -242,30 +260,35 @@ export default function Categories() {
                         activeOpacity={0.9}
                         className="hover:-translate-y-1 transition-transform cursor-pointer group"
                       >
-                        <View className="overflow-hidden rounded-2xl mb-3 border border-neutral-100">
+                        <View 
+                          className="overflow-hidden rounded-2xl mb-3 border"
+                          style={{ borderColor: colors.border }}
+                        >
                           <Image
                             source={{ uri: imageUrl }}
-                            className="w-full h-56 md:h-64 bg-neutral-100 object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-56 md:h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                            style={{ backgroundColor: colors.background }}
                           />
                         </View>
-                        {/* Reduced boldness to semibold, responsive text sizing */}
                         <Text
-                          className="text-neutral-500 text-[10px] md:text-xs font-semibold tracking-widest uppercase mb-1"
+                          className="text-[10px] md:text-xs font-semibold tracking-widest uppercase mb-1"
+                          style={{ color: colors.textMuted }}
                           numberOfLines={1}
                         >
                           {product.brand || "Brand"}
                         </Text>
                         <Text
-                          className="text-neutral-800 text-sm md:text-base font-semibold mt-0.5 leading-5"
+                          className="text-sm md:text-base font-semibold mt-0.5 leading-5"
+                          style={{ color: colors.textMain }}
                           numberOfLines={1}
                         >
                           {product.name}
                         </Text>
                         <View className="flex-row items-center mt-1.5">
-                          <Text className="text-neutral-900 font-bold text-base md:text-lg">
+                          <Text className="font-bold text-base md:text-lg" style={{ color: colors.textMain }}>
                             ₹{product.price}
                           </Text>
-                          <Text className="text-[#ce4067] text-xs md:text-sm font-semibold ml-2">
+                          <Text className="text-xs md:text-sm font-semibold ml-2" style={{ color: colors.primary }}>
                             {product.discount || "50% OFF"}
                           </Text>
                         </View>
@@ -274,8 +297,8 @@ export default function Categories() {
                   })
                 ) : (
                   <View className="w-full py-16 items-center justify-center">
-                    <Ionicons name="shirt-outline" size={48} color="#e5e5e5" />
-                    <Text className="text-neutral-400 font-medium mt-4 text-base md:text-lg">
+                    <Ionicons name="shirt-outline" size={48} color={colors.textMuted} />
+                    <Text className="font-medium mt-4 text-base md:text-lg" style={{ color: colors.textMuted }}>
                       More styles coming soon...
                     </Text>
                   </View>
@@ -288,23 +311,26 @@ export default function Categories() {
               {filteredCategories.map((category, index) => (
                 <View 
                   key={index} 
-                 style={{ width: getCategoryCardWidth(), marginBottom: isLargeScreen ? 36 : 1 }}
+                  style={{ width: getCategoryCardWidth(), marginBottom: isLargeScreen ? 36 : 1 }}
                 >
                   <TouchableOpacity
                     activeOpacity={0.9}
                     onPress={() => setSelectedCategory(category)}
                     className="group cursor-pointer"
                   >
-                    <View className="overflow-hidden rounded-2xl shadow-sm border border-neutral-100">
+                    <View 
+                      className="overflow-hidden rounded-2xl shadow-sm border"
+                      style={{ borderColor: colors.border }}
+                    >
                       <Image
                         source={{ uri: category.image }}
-                        className="w-full h-48 md:h-60 object-cover bg-neutral-100 group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-48 md:h-60 object-cover group-hover:scale-105 transition-transform duration-500"
+                        style={{ backgroundColor: colors.background }}
                       />
                     </View>
                   </TouchableOpacity>
 
-                  {/* Reduced from font-black to font-bold */}
-                  <Text className="text-lg md:text-xl font-bold text-neutral-900 mt-4 md:mt-5 px-1 tracking-tight">
+                  <Text className="text-lg md:text-xl font-bold mt-4 md:mt-5 px-1 tracking-tight" style={{ color: colors.textMain }}>
                     {category.name}
                   </Text>
 
@@ -317,9 +343,13 @@ export default function Categories() {
                       (sub: string, subIndex: number) => (
                         <View
                           key={subIndex}
-                          className="bg-neutral-50 hover:bg-neutral-100 transition-colors border border-neutral-100 px-3 md:px-4 py-1.5 md:py-2 rounded-full mr-2 cursor-pointer"
+                          className="transition-colors border px-3 md:px-4 py-1.5 md:py-2 rounded-full mr-2 cursor-pointer"
+                          style={{ 
+                            backgroundColor: isDark ? '#1e293b' : '#f9fafb',
+                            borderColor: colors.border
+                          }}
                         >
-                          <Text className="font-medium text-neutral-600 text-[10px] md:text-xs uppercase tracking-wider">
+                          <Text className="font-medium text-[10px] md:text-xs uppercase tracking-wider" style={{ color: colors.textMuted }}>
                             {sub}
                           </Text>
                         </View>

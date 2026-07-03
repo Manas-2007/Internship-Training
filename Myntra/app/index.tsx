@@ -2,13 +2,10 @@ import React, { useEffect } from 'react';
 import { View, Image, StatusBar, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from './context/ThemeContext';
 
 export default function SplashScreen() {
-  const { colors, isDark } = useTheme();
   const router = useRouter();
   const { width } = useWindowDimensions();
-  
   
   const isLargeScreen: boolean = width >= 768;
   const logoSize: number = isLargeScreen ? 256 : 192;
@@ -45,8 +42,8 @@ export default function SplashScreen() {
   }, [router]);
 
   return (
-    <View className="flex-1 justify-center items-center" style={{ backgroundColor: colors.background }}>
-      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+    <View className="flex-1 justify-center items-center bg-white">
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <Image
         source={require('@/assets/images/myntra.jpg')}
         style={{ width: logoSize, height: logoSize }}

@@ -19,6 +19,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_URL } from "../constants/api";
 
+// 👉 Import ThemeContext
+import { useTheme } from "../context/ThemeContext";
+
 import Banner from "../../components/Home Tab/Banner";
 import CategoryList from "../../components/Home Tab/CategoryList";
 import DealsSection from "../../components/Home Tab/DealCard";
@@ -29,6 +32,9 @@ export default function Home() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const [refreshing, setRefreshing] = useState(false);
+
+  // 👉 Extract colors and isDark
+  const { colors, isDark } = useTheme();
 
   const isDesktop = width >= 1024;
   const isTablet = width >= 768 && width < 1024;
@@ -118,9 +124,9 @@ export default function Home() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white justify-center items-center">
-        <ActivityIndicator size="large" color="#ff3f6c" />
-        <Text className="text-neutral-500 mt-4 font-medium text-sm md:text-base">
+      <View className="flex-1 justify-center items-center" style={{ backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text className="mt-4 font-medium text-sm md:text-base" style={{ color: colors.textMuted }}>
           Curating trends for you...
         </Text>
       </View>
@@ -128,30 +134,39 @@ export default function Home() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="flex-1 w-full max-w-[1400px] mx-auto">
-        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <StatusBar 
+          barStyle={isDark ? "light-content" : "dark-content"} 
+          backgroundColor={colors.background} 
+        />
 
         {!isLargeScreen && (
-          <View className="flex-row justify-between items-center px-4 py-3 bg-white border-b border-neutral-100 z-10 shadow-sm">
+          <View 
+            className="flex-row justify-between items-center px-4 py-3 border-b z-10 shadow-sm"
+            style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
+          >
             <TouchableOpacity activeOpacity={1} className="flex-row items-center">
-              <Text className="text-[22px] font-black text-[#ff3f6c] tracking-widest">
+              <Text className="text-[22px] font-black tracking-widest" style={{ color: colors.primary }}>
                 MYNTRA
               </Text>
             </TouchableOpacity>
 
             <View className="flex-row items-center gap-4">
-              <TouchableOpacity onPress={() => router.push("/categories")} activeOpacity={0.7} className="p-1.5 rounded-full hover:bg-neutral-50 transition-colors">
-                <Ionicons name="search-outline" size={24} color="#282c3f" />
+              <TouchableOpacity onPress={() => router.push("/categories")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+                <Ionicons name="search-outline" size={24} color={colors.textMain} />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => alert("Notifications coming soon!")} activeOpacity={0.7} className="p-1.5 rounded-full hover:bg-neutral-50 transition-colors relative">
-                <Ionicons name="notifications-outline" size={24} color="#282c3f" />
-                <View className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-[#ff3f6c] rounded-full border-2 border-white" />
+              <TouchableOpacity onPress={() => alert("Notifications coming soon!")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors relative" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+                <Ionicons name="notifications-outline" size={24} color={colors.textMain} />
+                <View 
+                  className="absolute top-1.5 right-2 w-2.5 h-2.5 rounded-full border-2" 
+                  style={{ backgroundColor: colors.primary, borderColor: colors.surface }}
+                />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => router.push("/profile")} activeOpacity={0.7} className="p-1.5 rounded-full hover:bg-neutral-50 transition-colors">
-                <Ionicons name="person-outline" size={24} color="#282c3f" />
+              <TouchableOpacity onPress={() => router.push("/profile")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+                <Ionicons name="person-outline" size={24} color={colors.textMain} />
               </TouchableOpacity>
             </View>
           </View>
@@ -162,7 +177,12 @@ export default function Home() {
           className="flex-1"
           contentContainerStyle={{ paddingBottom: isLargeScreen ? 60 : TABBAR_HEIGHT + 40 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ff3f6c" colors={["#ff3f6c"]} />
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh} 
+              tintColor={colors.primary} 
+              colors={[colors.primary]} 
+            />
           }
         >
           <View className="w-full pt-2">

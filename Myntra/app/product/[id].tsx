@@ -19,6 +19,8 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { API_URL } from "../constants/api";
+// 👉 Import ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface Product {
   _id: string;
@@ -35,6 +37,9 @@ export default function ProductDetails() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  // 👉 Extract colors and isDark
+  const { colors, isDark } = useTheme();
 
   const { products, wishlistIds, setWishlistIds, recordProductView } = useGlobalContext();
   const { width } = useWindowDimensions();
@@ -197,28 +202,35 @@ export default function ProductDetails() {
       className={
         isLargeScreen
           ? "flex-row justify-between items-center mt-10"
-          : "absolute bottom-0 left-0 right-0 w-full bg-white border-t border-neutral-100 px-4 pt-3 flex-row justify-between items-center shadow-[0_-8px_10px_-5px_rgba(0,0,0,0.05)] z-50"
+          : "absolute bottom-0 left-0 right-0 w-full px-4 pt-3 flex-row justify-between items-center border-t shadow-[0_-8px_10px_-5px_rgba(0,0,0,0.05)] z-50"
       }
-      style={!isLargeScreen ? { paddingBottom: Math.max(insets.bottom + 12, 16) } : {}}
+      style={!isLargeScreen ? { 
+        backgroundColor: colors.surface, 
+        borderTopColor: colors.border,
+        paddingBottom: Math.max(insets.bottom + 12, 16) 
+      } : {}}
     >
       <TouchableOpacity
         onPress={handleWishlistToggle}
-        className={`w-[18%] md:w-[15%] items-center justify-center border-[1.5px] h-14 rounded-xl cursor-pointer transition-colors ${
-          isWishlisted
-            ? "border-[#ff3f6c] bg-pink-50"
-            : "border-neutral-200 hover:bg-neutral-50"
-        }`}
+        className="w-[18%] md:w-[15%] items-center justify-center border-[1.5px] h-14 rounded-xl cursor-pointer transition-colors shadow-sm"
+        style={{
+          borderColor: isWishlisted ? colors.primary : colors.border,
+          backgroundColor: isWishlisted 
+            ? (isDark ? '#3f1d2b' : '#fdf2f8') 
+            : colors.surface,
+        }}
         activeOpacity={0.7}
       >
         <Ionicons
           name={isWishlisted ? "heart" : "heart-outline"}
           size={26}
-          color={isWishlisted ? "#ff3f6c" : "#404040"}
+          color={isWishlisted ? colors.primary : colors.textMain}
         />
       </TouchableOpacity>
 
       <TouchableOpacity
-        className="w-[78%] md:w-[82%] bg-[#ff3f6c] h-14 rounded-xl flex-row items-center justify-center shadow-sm shadow-pink-200 hover:opacity-90 active:opacity-90 transition-opacity cursor-pointer"
+        className="w-[78%] md:w-[82%] h-14 rounded-xl flex-row items-center justify-center shadow-sm shadow-pink-200 hover:opacity-90 active:opacity-90 transition-opacity cursor-pointer"
+        style={{ backgroundColor: colors.primary }}
         onPress={addToBag}
         disabled={isAddingToBag}
         activeOpacity={0.9}
@@ -238,20 +250,28 @@ export default function ProductDetails() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top", "left", "right"]}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={false} />
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top", "left", "right"]}>
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor={colors.background} 
+        translucent={false} 
+      />
       
       {/* 1400px Global Wrapper */}
-      <View className="w-full max-w-[1400px] mx-auto flex-1 relative bg-white">
+      <View className="w-full max-w-[1400px] mx-auto flex-1 relative" style={{ backgroundColor: colors.background }}>
         
         {/* Floating Back Button */}
         <View className={`absolute z-20 ${isLargeScreen ? "top-6 left-6" : "top-4 left-4"}`}>
           <TouchableOpacity
             onPress={() => router.back()}
             activeOpacity={0.8}
-            className="p-2.5 md:p-3 bg-white/90 rounded-full shadow-sm backdrop-blur-md cursor-pointer hover:bg-white transition-colors border border-neutral-100"
+            className="p-2.5 md:p-3 rounded-full shadow-sm backdrop-blur-md cursor-pointer transition-colors border"
+            style={{ 
+              backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.9)', 
+              borderColor: colors.border 
+            }}
           >
-            <Ionicons name="arrow-back" size={22} color="#171717" />
+            <Ionicons name="arrow-back" size={22} color={colors.textMain} />
           </TouchableOpacity>
         </View>
 
@@ -267,9 +287,9 @@ export default function ProductDetails() {
             {/* Image Section */}
             <View style={{ width: isLargeScreen ? currentImageWidth : "100%" }}>
               <View
-                style={{ height: currentImageHeight }}
-                className={`relative w-full bg-neutral-50 overflow-hidden ${
-                  isLargeScreen ? "rounded-3xl border border-neutral-100" : ""
+                style={{ height: currentImageHeight, backgroundColor: colors.surface, borderColor: colors.border }}
+                className={`relative w-full overflow-hidden ${
+                  isLargeScreen ? "rounded-3xl border" : ""
                 }`}
               >
                 <ScrollView
@@ -298,9 +318,10 @@ export default function ProductDetails() {
                   <TouchableOpacity
                     onPress={scrollToPrev}
                     activeOpacity={0.8}
-                    className="absolute left-4 top-1/2 -mt-6 w-10 h-10 md:w-12 md:h-12 bg-white/90 rounded-full items-center justify-center shadow-sm cursor-pointer hover:bg-white transition-colors"
+                    className="absolute left-4 top-1/2 -mt-6 w-10 h-10 md:w-12 md:h-12 rounded-full items-center justify-center shadow-sm cursor-pointer transition-colors"
+                    style={{ backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.9)' }}
                   >
-                    <Ionicons name="chevron-back" size={20} color="#171717" />
+                    <Ionicons name="chevron-back" size={20} color={colors.textMain} />
                   </TouchableOpacity>
                 )}
 
@@ -308,9 +329,10 @@ export default function ProductDetails() {
                   <TouchableOpacity
                     onPress={scrollToNext}
                     activeOpacity={0.8}
-                    className="absolute right-4 top-1/2 -mt-6 w-10 h-10 md:w-12 md:h-12 bg-white/90 rounded-full items-center justify-center shadow-sm cursor-pointer hover:bg-white transition-colors"
+                    className="absolute right-4 top-1/2 -mt-6 w-10 h-10 md:w-12 md:h-12 rounded-full items-center justify-center shadow-sm cursor-pointer transition-colors"
+                    style={{ backgroundColor: isDark ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255,255,255,0.9)' }}
                   >
-                    <Ionicons name="chevron-forward" size={20} color="#171717" />
+                    <Ionicons name="chevron-forward" size={20} color={colors.textMain} />
                   </TouchableOpacity>
                 )}
 
@@ -320,10 +342,11 @@ export default function ProductDetails() {
                     <View
                       key={i}
                       className={`h-1.5 md:h-2 rounded-full transition-all duration-300 shadow-sm ${
-                        activeImageIndex === i
-                          ? "w-5 md:w-6 bg-[#ff3f6c]"
-                          : "w-1.5 md:w-2 bg-white/80"
+                        activeImageIndex === i ? "w-5 md:w-6" : "w-1.5 md:w-2"
                       }`}
+                      style={{ 
+                        backgroundColor: activeImageIndex === i ? colors.primary : 'rgba(255,255,255,0.8)' 
+                      }}
                     />
                   ))}
                 </View>
@@ -335,35 +358,44 @@ export default function ProductDetails() {
               style={{ width: isLargeScreen ? textContainerWidth : "100%" }}
               className={isLargeScreen ? "px-2 py-4" : "p-5"}
             >
-              <Text className="text-[11px] md:text-xs font-semibold tracking-[0.2em] uppercase text-neutral-500 mb-1.5 md:mb-2">
+              <Text className="text-[11px] md:text-xs font-semibold tracking-[0.2em] uppercase mb-1.5 md:mb-2" style={{ color: colors.textMuted }}>
                 {product.brand}
               </Text>
-              <Text className="text-xl md:text-2xl lg:text-3xl font-semibold text-neutral-900 tracking-tight leading-snug">
+              <Text className="text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight leading-snug" style={{ color: colors.textMain }}>
                 {product.name}
               </Text>
 
               <View className="flex-row items-center mt-4 md:mt-5">
-                <Text className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">
+                <Text className="text-2xl md:text-3xl font-bold tracking-tight" style={{ color: colors.textMain }}>
                   ₹{product.price}
                 </Text>
                 {product.discount && (
-                  <Text className="text-[#ff3f6c] font-bold ml-3 md:ml-4 bg-pink-50 px-2.5 py-1 rounded-md text-xs md:text-sm tracking-wide">
+                  <Text 
+                    className="font-bold ml-3 md:ml-4 px-2.5 py-1 rounded-md text-xs md:text-sm tracking-wide"
+                    style={{ color: colors.primary, backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}
+                  >
                     {product.discount}
                   </Text>
                 )}
               </View>
-              <Text className="text-[10px] md:text-xs text-emerald-600 mt-1.5 font-bold uppercase tracking-widest">
+              <Text 
+                className="text-[10px] md:text-xs mt-1.5 font-bold uppercase tracking-widest"
+                style={{ color: isDark ? '#34d399' : '#059669' }}
+              >
                 Inclusive of all taxes
               </Text>
 
               {/* Size Selector */}
-              <View className="mt-8 border-t border-neutral-100 pt-6 md:pt-8">
+              <View 
+                className="mt-8 border-t pt-6 md:pt-8"
+                style={{ borderTopColor: colors.border }}
+              >
                 <View className="flex-row justify-between items-center mb-4 md:mb-5">
-                  <Text className="text-base md:text-lg font-bold text-neutral-900 tracking-tight">
+                  <Text className="text-base md:text-lg font-bold tracking-tight" style={{ color: colors.textMain }}>
                     Select Size
                   </Text>
                   <TouchableOpacity className="cursor-pointer group">
-                    <Text className="text-[#ff3f6c] font-bold text-xs md:text-sm tracking-wider uppercase group-hover:underline">
+                    <Text className="font-bold text-xs md:text-sm tracking-wider uppercase group-hover:underline" style={{ color: colors.primary }}>
                       SIZE CHART
                     </Text>
                   </TouchableOpacity>
@@ -377,16 +409,15 @@ export default function ProductDetails() {
                         key={size}
                         onPress={() => setSelectedSize(size)}
                         activeOpacity={0.8}
-                        className={`w-12 h-12 md:w-14 md:h-14 rounded-full items-center justify-center border-[1.5px] cursor-pointer transition-all ${
-                          isSelected
-                            ? "border-[#ff3f6c] bg-[#ff3f6c] shadow-sm shadow-pink-200"
-                            : "border-neutral-200 bg-white hover:border-neutral-400"
-                        }`}
+                        className="w-12 h-12 md:w-14 md:h-14 rounded-full items-center justify-center border-[1.5px] cursor-pointer transition-all"
+                        style={{
+                          backgroundColor: isSelected ? colors.primary : colors.surface,
+                          borderColor: isSelected ? colors.primary : colors.border,
+                        }}
                       >
                         <Text
-                          className={`font-bold text-sm md:text-base ${
-                            isSelected ? "text-white" : "text-neutral-700"
-                          }`}
+                          className="font-bold text-sm md:text-base"
+                          style={{ color: isSelected ? '#ffffff' : colors.textMain }}
                         >
                           {size}
                         </Text>
@@ -397,11 +428,14 @@ export default function ProductDetails() {
               </View>
 
               {/* Description */}
-              <View className="mt-8 border-t border-neutral-100 pt-6 md:pt-8">
-                <Text className="text-base md:text-lg font-bold text-neutral-900 tracking-tight mb-3">
+              <View 
+                className="mt-8 border-t pt-6 md:pt-8"
+                style={{ borderTopColor: colors.border }}
+              >
+                <Text className="text-base md:text-lg font-bold tracking-tight mb-3" style={{ color: colors.textMain }}>
                   Product Details
                 </Text>
-                <Text className="text-neutral-600 leading-relaxed text-sm md:text-base font-medium">
+                <Text className="leading-relaxed text-sm md:text-base font-medium" style={{ color: colors.textMuted }}>
                   {product.description}
                 </Text>
               </View>

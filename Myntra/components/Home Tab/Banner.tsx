@@ -2,6 +2,8 @@
 import React, { useRef, useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
+// 👉 Import ThemeContext
+import { useTheme } from "../../app/context/ThemeContext"; // Path adjust kar lena agar alag ho
 
 interface BannerProps {
   bannerData: { image: string; productId: string }[];
@@ -11,6 +13,10 @@ interface BannerProps {
 
 export default function Banner({ bannerData, sliderWidth, isLargeScreen }: BannerProps) {
   const router = useRouter();
+  
+  // 👉 Extract colors
+  const { colors } = useTheme();
+
   const scrollRef = useRef<ScrollView>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -50,10 +56,15 @@ export default function Banner({ bannerData, sliderWidth, isLargeScreen }: Banne
           >
             <Image
               source={{ uri: item.image }}
-              className={`w-full object-cover bg-neutral-100 rounded-2xl ${isLargeScreen ? "h-[450px] group-hover:scale-[1.02] transition-transform duration-500" : "h-52 md:h-64"}`}
+              className={`w-full object-cover rounded-2xl ${isLargeScreen ? "h-[450px] group-hover:scale-[1.02] transition-transform duration-500" : "h-52 md:h-64"}`}
+              style={{ backgroundColor: colors.surface }} // Placeholder bg color
             />
+            
+            {/* Image Overlay - Yeh hamesha dark rahega taaki white text visible rahe */}
             <View className="absolute inset-0 bg-black/25 rounded-2xl" />
+            
             <View className={`absolute left-6 md:left-8 ${isLargeScreen ? "bottom-16" : "bottom-8"}`}>
+              {/* Text hamesha white rakha hai kyunki overlay dark hai */}
               <Text className={`text-white font-extrabold tracking-wide ${isLargeScreen ? "text-5xl drop-shadow-md" : "text-2xl md:text-3xl"}`}>
                 SUMMER
               </Text>
@@ -65,7 +76,7 @@ export default function Banner({ bannerData, sliderWidth, isLargeScreen }: Banne
         ))}
       </ScrollView>
 
-      {/* Pagination Dots */}
+      {/* Pagination Dots - Ye bhi image ke upar hain toh white/translucent rahenge */}
       <View className="absolute bottom-6 w-full flex-row justify-center gap-2.5">
         {bannerData.map((_, i) => (
           <View
