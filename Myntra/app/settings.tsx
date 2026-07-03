@@ -19,9 +19,12 @@ export default function Settings() {
   const isLargeScreen = width >= 768;
 
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false); 
+  
+  // New States for Theme Dropdown
+  const [themeMode, setThemeMode] = useState("System"); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Cross-platform alert helper (Alert.alert sometimes fails on pure web)
+  // Cross-platform alert helper
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === "web") {
       window.alert(`${title}\n\n${message}`);
@@ -30,16 +33,10 @@ export default function Settings() {
     }
   };
 
-  const handleDarkModeToggle = (value: boolean) => {
-    if (value) {
-      showMessage(
-        "Coming Soon", 
-        "Dark Mode is currently under development. Stay tuned for the next update!"
-      );
-      setDarkMode(false); 
-    } else {
-      setDarkMode(false);
-    }
+  const handleThemeSelect = (mode: string) => {
+    setThemeMode(mode);
+    setIsDropdownOpen(false);
+    // Asli Dark/Light mode ka logic hum baad mein yahan lagayenge
   };
 
   const showTerms = () => {
@@ -81,7 +78,7 @@ export default function Settings() {
           <View className="w-full max-w-3xl mx-auto px-4">
             
             {/* Settings Card Container */}
-            <View className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+            <View className="bg-white rounded-2xl border border-neutral-100 shadow-sm z-50">
               
               {/* Notifications */}
               <View className="flex-row items-center justify-between px-5 md:px-6 py-4 md:py-5 border-b border-neutral-50">
@@ -102,23 +99,55 @@ export default function Settings() {
                 />
               </View>
 
-              {/* Dark Mode */}
-              <View className="flex-row items-center justify-between px-5 md:px-6 py-4 md:py-5 border-b border-neutral-50">
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 items-center justify-center">
-                    <Ionicons name="moon-outline" size={20} color="#475569" />
+              {/* Theme Selection (Floating Dropdown) */}
+              <View className="border-b border-neutral-50 z-50" style={{ zIndex: 50 }}>
+                
+                {/* Dropdown Header */}
+                <TouchableOpacity 
+                  onPress={() => setIsDropdownOpen(!isDropdownOpen)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-between px-5 md:px-6 py-4 md:py-5 bg-white hover:bg-neutral-50 transition-colors cursor-pointer"
+                >
+                  <View className="flex-row items-center">
+                    <View className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 items-center justify-center">
+                      <Ionicons name="color-palette-outline" size={20} color="#475569" />
+                    </View>
+                    <Text className="text-base md:text-lg font-semibold text-neutral-800 ml-4 tracking-tight">
+                      Theme
+                    </Text>
                   </View>
-                  <Text className="text-base md:text-lg font-semibold text-neutral-800 ml-4 tracking-tight">
-                    Dark Mode
-                  </Text>
-                </View>
-                <Switch 
-                  value={darkMode} 
-                  onValueChange={handleDarkModeToggle} 
-                  trackColor={{ false: "#e4e4e7", true: "#fbcfe8" }}
-                  thumbColor={darkMode ? "#ff3f6c" : "#f4f4f5"}
-                  className="cursor-pointer"
-                />
+                  
+                  <View className="flex-row items-center bg-neutral-100 px-3 py-1.5 rounded-lg">
+                    <Text className="text-sm md:text-base text-neutral-700 font-bold mr-2">
+                      {themeMode}
+                    </Text>
+                    <Ionicons name={isDropdownOpen ? "chevron-up" : "chevron-down"} size={16} color="#a3a3a3" />
+                  </View>
+                </TouchableOpacity>
+
+                {/* Floating Dropdown Menu (Absolute Position) */}
+                {isDropdownOpen && (
+                  <View 
+                    className="absolute right-5 md:right-6 top-[85%] mt-2 w-48 bg-white rounded-xl border border-neutral-100 py-2 shadow-xl cursor-default"
+                    style={{ zIndex: 100, elevation: 10 }}
+                  >
+                    {["System", "Light", "Dark"].map((option) => (
+                      <TouchableOpacity
+                        key={option}
+                        onPress={() => handleThemeSelect(option)}
+                        activeOpacity={0.7}
+                        className="flex-row items-center justify-between px-5 py-3.5 hover:bg-neutral-50 cursor-pointer"
+                      >
+                        <Text className={`text-base ${themeMode === option ? "font-semibold text-[#ff3f6c]" : "font-semibold text-neutral-600"}`}>
+                          {option}
+                        </Text>
+                        {themeMode === option && (
+                          <Ionicons name="checkmark-circle" size={20} color="#ff3f6c" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </View>
 
               {/* Terms & Conditions */}
@@ -131,7 +160,7 @@ export default function Settings() {
                   <View className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-blue-50 items-center justify-center group-hover:bg-blue-100 transition-colors">
                     <Ionicons name="document-text-outline" size={20} color="#3b82f6" />
                   </View>
-                  <Text className="text-base md:text-lg font-semi bold text-neutral-800 ml-4 tracking-tight">
+                  <Text className="text-base md:text-lg font-semibold text-neutral-800 ml-4 tracking-tight">
                     Terms & Conditions
                   </Text>
                 </View>

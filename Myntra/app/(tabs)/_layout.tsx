@@ -1,4 +1,3 @@
-import React from "react";
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -8,12 +7,14 @@ import {
   TouchableOpacity,
   useWindowDimensions,
 } from "react-native";
+import React,{ useState } from "react";
 
 // --- PREMIUM CUSTOM TOP NAVBAR FOR DESKTOP/WEB ---
 const TopNavbar = () => {
   const router = useRouter();
   const pathname = usePathname();
-
+  const [isDark, setIsDark] = React.useState(false);
+  
   const navItems = [
     { name: "index", label: "Home", icon: "home", route: "/" },
     { name: "categories", label: "Categories", icon: "apps", route: "/categories" },
@@ -41,6 +42,24 @@ const TopNavbar = () => {
 
         {/* Navigation Links */}
         <View className="flex-row items-center gap-10">
+          <TouchableOpacity
+            onPress={() => setIsDark(!isDark)}
+            className="items-center justify-center cursor-pointer group"
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={isDark ? "moon" : "moon-outline"}
+              size={24}
+              color="#ff3f6c"
+              className="group-hover:opacity-80 transition-opacity"
+            />
+            <Text
+              className="text-[11px] font-bold mt-1 tracking-widest uppercase text-[#282c3f] group-hover:opacity-80 transition-opacity"
+            >
+              Theme
+            </Text>
+          </TouchableOpacity>
+
           {navItems.map((item) => {
             const isActive = pathname === item.route;
             return (
