@@ -88,6 +88,12 @@ export const GlobalProvider = ({ children }: any) => {
     }
   };
 
+  const clearUserData = async () => {
+    await AsyncStorage.removeItem("@recently_viewed"); // Storage se delete
+    setRecentlyViewed([]); // State se delete
+    setWishlistIds([]); // Wishlist bhi clear kar do safety ke liye
+  };
+
   const recordProductView = async (product: any) => {
     try {
       if (!product || !product._id) return;
@@ -134,7 +140,8 @@ export const GlobalProvider = ({ children }: any) => {
     <GlobalContext.Provider value={{ 
       categories, deals, products, loading, fetchHomeData, 
       wishlistIds, setWishlistIds, fetchWishlistIds,
-      recentlyViewed, recordProductView, syncRecentlyViewed
+      recentlyViewed, recordProductView, syncRecentlyViewed,
+      clearUserData
     }}>
       {children}
     </GlobalContext.Provider>

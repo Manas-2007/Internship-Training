@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { StatusBar } from "expo-status-bar";
+import { useGlobalContext } from "../context/GlobalContext";
 
 const menuItems = [
   { icon: "cube", label: "Orders", route: "/orders" },
@@ -27,6 +28,7 @@ const menuItems = [
 
 export default function Profile() {
   const router = useRouter();
+  const { clearUserData } = useGlobalContext();
   const [userData, setUserData] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
@@ -67,6 +69,7 @@ export default function Profile() {
     const performLogout = async () => {
       try {
         await AsyncStorage.removeItem("userToken");
+        await clearUserData(); // Clear user data on logout
         setIsGuest(true);
         router.replace("/auth/login");
       } catch (error) {

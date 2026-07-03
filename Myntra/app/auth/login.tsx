@@ -16,9 +16,11 @@ import { StatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../constants/api';
+import { useGlobalContext } from '../context/GlobalContext';
 
 export default function Login() {
   const router = useRouter();
+  const { syncRecentlyViewed, fetchWishlistIds } = useGlobalContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -43,6 +45,8 @@ export default function Login() {
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);
+        await syncRecentlyViewed(); 
+        await fetchWishlistIds();
         router.replace('/(tabs)');
       }
     } catch (error: any) {
