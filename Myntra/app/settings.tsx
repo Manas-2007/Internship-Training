@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTheme } from './context/ThemeContext';
 
 export default function Settings() {
   const router = useRouter();
@@ -19,9 +20,11 @@ export default function Settings() {
   const isLargeScreen = width >= 768;
 
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false); 
+  
+  // 👉 Theme Context Hooks
+  const { themeMode, changeTheme, colors, isDark } = useTheme(); 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Cross-platform alert helper (Alert.alert sometimes fails on pure web)
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === "web") {
       window.alert(`${title}\n\n${message}`);
@@ -30,116 +33,145 @@ export default function Settings() {
     }
   };
 
-  const handleDarkModeToggle = (value: boolean) => {
-    if (value) {
-      showMessage(
-        "Coming Soon", 
-        "Dark Mode is currently under development. Stay tuned for the next update!"
-      );
-      setDarkMode(false); 
-    } else {
-      setDarkMode(false);
-    }
+  const handleThemeSelect = (mode: string) => {
+    changeTheme(mode);
+    setIsDropdownOpen(false);
   };
 
   const showTerms = () => {
-    showMessage(
-      "Terms & Conditions",
-      "This application is a clone project built for internship training purposes. By continuing to use this app, you agree to the standard privacy policies and usage guidelines. No real transactions are processed."
-    );
+    showMessage("Terms & Conditions", "This application is a clone project...");
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50" edges={["top"]}>
-      {/* Header Area */}
-      <View className="px-5 py-5 bg-white border-b border-neutral-100 shadow-sm z-10">
-        <View className="w-full max-w-3xl mx-auto flex-row items-center">
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            className="mr-4 p-2 -ml-2 rounded-full hover:bg-neutral-100 transition-colors cursor-pointer"
-          >
-            <Ionicons name="arrow-back" size={24} color="#171717" />
-          </TouchableOpacity>
-          <Text className="text-3xl font-bold text-neutral-900 tracking-tight">
-            Settings
-          </Text>
-        </View>
-      </View>
-
-      {/* Main Content Area */}
-      <ScrollView 
-        className="flex-1 px-4"
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="w-full max-w-3xl mx-auto mt-6">
-          
-          {/* Settings Card Container */}
-          <View className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
-            
-            {/* Notifications */}
-            <View className="flex-row items-center justify-between px-6 py-5 border-b border-neutral-100">
-              <View className="flex-row items-center">
-                <View className="w-10 h-10 rounded-full bg-pink-50 items-center justify-center">
-                  <Ionicons name="notifications-outline" size={20} color="#ff3f6c" />
-                </View>
-                <Text className="text-lg font-semibold text-neutral-800 ml-4 tracking-tight">
-                  Push Notifications
-                </Text>
-              </View>
-              <Switch 
-                value={notifications} 
-                onValueChange={setNotifications} 
-                trackColor={{ false: "#d4d4d8", true: "#fbcfe8" }}
-                thumbColor={notifications ? "#ff3f6c" : "#f4f4f5"}
-                className="cursor-pointer"
-              />
-            </View>
-
-            {/* Dark Mode */}
-            <View className="flex-row items-center justify-between px-6 py-5 border-b border-neutral-100">
-              <View className="flex-row items-center">
-                <View className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center">
-                  <Ionicons name="moon-outline" size={20} color="#475569" />
-                </View>
-                <Text className="text-lg font-semibold text-neutral-800 ml-4 tracking-tight">
-                  Dark Mode
-                </Text>
-              </View>
-              <Switch 
-                value={darkMode} 
-                onValueChange={handleDarkModeToggle} 
-                trackColor={{ false: "#d4d4d8", true: "#fbcfe8" }}
-                thumbColor={darkMode ? "#ff3f6c" : "#f4f4f5"}
-                className="cursor-pointer"
-              />
-            </View>
-
-            {/* Terms & Conditions */}
+    // 👉 Dynamic Background
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
+      <View className="w-full max-w-[1400px] mx-auto flex-1">
+        
+        {/* Header */}
+        <View 
+          className="px-5 py-4 md:py-5 border-b shadow-sm z-10 flex-row items-center"
+          style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
+        >
+          <View className="w-full max-w-3xl mx-auto flex-row items-center">
             <TouchableOpacity 
-              onPress={showTerms}
+              onPress={() => router.back()} 
               activeOpacity={0.7}
-              className="flex-row items-center justify-between px-6 py-5 hover:bg-neutral-50 transition-colors cursor-pointer"
+              className="mr-3 md:mr-4 p-1.5 -ml-1.5 rounded-full cursor-pointer"
             >
-              <View className="flex-row items-center">
-                <View className="w-10 h-10 rounded-full bg-blue-50 items-center justify-center">
-                  <Ionicons name="document-text-outline" size={20} color="#3b82f6" />
-                </View>
-                <Text className="text-lg font-semibold text-neutral-800 ml-4 tracking-tight">
-                  Terms & Conditions
-                </Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#a3a3a3" />
+              <Ionicons name="arrow-back" size={24} color={colors.primary} />
             </TouchableOpacity>
+            <Text className="text-xl md:text-2xl font-bold tracking-tight" style={{ color: colors.primary }}>
+              Settings
+            </Text>
+          </View>
+        </View>
+
+        {/* Content */}
+        <ScrollView 
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 40, paddingTop: isLargeScreen ? 32 : 16 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="w-full max-w-3xl mx-auto px-4">
+            
+            {/* Settings Card */}
+            <View 
+              className="rounded-2xl border shadow-sm z-50"
+              style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+            >
+              
+              {/* Notifications */}
+              <View className="flex-row items-center justify-between px-5 md:px-6 py-4 md:py-5 border-b" style={{ borderBottomColor: colors.border }}>
+                <View className="flex-row items-center">
+                  <View className="w-10 h-10 md:w-12 md:h-12 rounded-full items-center justify-center" style={{ backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}>
+                    <Ionicons name="notifications-outline" size={20} color={colors.primary} />
+                  </View>
+                  <Text className="text-base md:text-lg font-semibold ml-4 tracking-tight" style={{ color: colors.textMain }}>
+                    Push Notifications
+                  </Text>
+                </View>
+                <Switch 
+                  value={notifications} 
+                  onValueChange={setNotifications} 
+                  trackColor={{ false: colors.border, true: "#fbcfe8" }}
+                  thumbColor={notifications ? colors.primary : colors.textMuted}
+                />
+              </View>
+
+              {/* Theme Dropdown */}
+              <View className="border-b z-50" style={{ borderBottomColor: colors.border, zIndex: 50 }}>
+                <TouchableOpacity 
+                  onPress={() => setIsDropdownOpen(!isDropdownOpen)}
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-between px-5 md:px-6 py-4 md:py-5 cursor-pointer"
+                >
+                  <View className="flex-row items-center">
+                    <View className="w-10 h-10 md:w-12 md:h-12 rounded-full items-center justify-center" style={{ backgroundColor: isDark ? '#334155' : '#f8fafc' }}>
+                      <Ionicons name="color-palette-outline" size={20} color={isDark ? '#cbd5e1' : '#475569'} />
+                    </View>
+                    <Text className="text-base md:text-lg font-semibold ml-4 tracking-tight" style={{ color: colors.textMain }}>
+                      Theme
+                    </Text>
+                  </View>
+                  
+                  <View className="flex-row items-center px-3 py-1.5 rounded-lg" style={{ backgroundColor: colors.background }}>
+                    <Text className="text-sm md:text-base font-bold mr-2" style={{ color: colors.textMain }}>
+                      {themeMode}
+                    </Text>
+                    <Ionicons name={isDropdownOpen ? "chevron-up" : "chevron-down"} size={16} color={colors.textMuted} />
+                  </View>
+                </TouchableOpacity>
+
+                {isDropdownOpen && (
+                  <View 
+                    className="absolute right-5 md:right-6 top-[85%] mt-2 w-48 rounded-xl border py-2 shadow-xl"
+                    style={{ backgroundColor: colors.surface, borderColor: colors.border, zIndex: 100, elevation: 10 }}
+                  >
+                    {["System", "Light", "Dark"].map((option) => (
+                      <TouchableOpacity
+                        key={option}
+                        onPress={() => handleThemeSelect(option)}
+                        activeOpacity={0.7}
+                        className="flex-row items-center justify-between px-5 py-3.5 cursor-pointer"
+                      >
+                        <Text className="text-base font-semibold" style={{ color: themeMode === option ? colors.primary : colors.textMain }}>
+                          {option}
+                        </Text>
+                        {themeMode === option && (
+                          <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* Terms */}
+              <TouchableOpacity 
+                onPress={showTerms}
+                activeOpacity={0.7}
+                className="flex-row items-center justify-between px-5 md:px-6 py-4 md:py-5 cursor-pointer"
+              >
+                <View className="flex-row items-center">
+                  <View className="w-10 h-10 md:w-12 md:h-12 rounded-full items-center justify-center" style={{ backgroundColor: isDark ? '#1e3a8a' : '#eff6ff' }}>
+                    <Ionicons name="document-text-outline" size={20} color="#3b82f6" />
+                  </View>
+                  <Text className="text-base md:text-lg font-semibold ml-4 tracking-tight" style={{ color: colors.textMain }}>
+                    Terms & Conditions
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              </TouchableOpacity>
+
+            </View>
+
+            <Text className="text-center font-semibold text-xs md:text-sm mt-8 tracking-widest uppercase" style={{ color: colors.textMuted }}>
+              App Version 1.0.0
+            </Text>
 
           </View>
-
-          <Text className="text-center text-neutral-400 font-medium text-sm mt-8">
-            App Version 1.0.0
-          </Text>
-
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

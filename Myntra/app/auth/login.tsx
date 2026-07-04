@@ -16,9 +16,17 @@ import { StatusBar } from 'expo-status-bar';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../constants/api';
+import { useGlobalContext } from '../context/GlobalContext';
+// 👉 Import ThemeContext
+import { useTheme } from '../context/ThemeContext';
 
 export default function Login() {
   const router = useRouter();
+  const { syncRecentlyViewed, fetchWishlistIds } = useGlobalContext();
+  
+  // 👉 Extract colors and isDark
+  const { colors, isDark } = useTheme();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -39,10 +47,17 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+      const pushToken = await AsyncStorage.getItem('pushToken');
+      const response = await axios.post(`${API_URL}/api/auth/login`, { 
+        email, 
+        password, 
+        pushToken 
+      });
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);
+        await syncRecentlyViewed(); 
+        await fetchWishlistIds();
         router.replace('/(tabs)');
       }
     } catch (error: any) {
@@ -70,9 +85,11 @@ export default function Login() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      className="flex-1 bg-white sm:bg-neutral-50"
+      className="flex-1"
+      style={{ backgroundColor: colors.background }}
     >
-      <StatusBar style={isLargeScreen ? "dark" : "light"} />
+      {/* Dynamic Status Bar based on Theme and Screen Size */}
+      <StatusBar style={isDark ? "light" : (isLargeScreen ? "dark" : "light")} />
       
       <ScrollView 
         contentContainerStyle={{ 
@@ -88,12 +105,15 @@ export default function Login() {
         
         {/* Main Card Container */}
         <View 
-          className={`w-full mx-auto bg-white ${
+          className={`w-full mx-auto ${
             isLargeScreen 
-              ? 'max-w-5xl flex-row rounded-3xl overflow-hidden shadow-2xl border border-neutral-100 my-10' 
+              ? 'max-w-5xl flex-row rounded-3xl overflow-hidden shadow-2xl border my-10' 
               : 'flex-1'
           }`}
-          style={isLargeScreen ? { minHeight: 600 } : {}}
+          style={[
+            isLargeScreen ? { minHeight: 600 } : {},
+            { backgroundColor: colors.surface, borderColor: colors.border }
+          ]}
         >
           
           {/* Image Section */}
@@ -108,17 +128,18 @@ export default function Login() {
           {/* Form Container */}
           {/* On Desktop: Side-by-side, vertically centered. On Mobile: Slides up over the image (-mt-8) */}
           <View 
-            className={`bg-white ${
+            className={`${
               isLargeScreen 
                 ? 'w-[50%] justify-center px-14 py-12' 
                 : 'flex-1 rounded-t-[32px] -mt-8 px-6 pt-8 pb-6'
             }`}
+            style={{ backgroundColor: colors.surface }}
           >
             
-            <Text className="text-3xl font-bold text-neutral-800 mb-1 tracking-tight">
+            <Text className="text-3xl font-bold mb-1 tracking-tight" style={{ color: colors.textMain }}>
               Welcome Back
             </Text>
-            <Text className="text-sm text-neutral-500 mb-8 font-medium">
+            <Text className="text-sm mb-8 font-medium" style={{ color: colors.textMuted }}>
               Login to continue shopping
             </Text>
 
@@ -130,8 +151,13 @@ export default function Login() {
                   setEmail(val);
                   setErrors((prev) => ({ ...prev, email: "" }));
                 }}
-                className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base border border-neutral-200 hover:border-neutral-300 focus:border-[#ff3f6c] outline-none transition-colors"
-                placeholderTextColor="#a3a3a3"
+                className="px-4 py-3.5 rounded-xl text-base border outline-none transition-colors"
+                style={{ 
+                  backgroundColor: colors.background, 
+                  color: colors.textMain,
+                  borderColor: colors.border 
+                }}
+                placeholderTextColor={colors.textMuted}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -148,9 +174,14 @@ export default function Login() {
                   setPassword(val);
                   setErrors((prev) => ({ ...prev, password: "" }));
                 }}
-                style={{ color: '#000000', fontFamily: Platform.OS === 'android' ? 'sans-serif' : undefined }}
-                className="bg-neutral-50 px-4 py-3.5 rounded-xl text-base border border-neutral-200 hover:border-neutral-300 focus:border-[#ff3f6c] outline-none transition-colors"
-                placeholderTextColor="#a3a3a3"
+                style={{ 
+                  color: colors.textMain, 
+                  fontFamily: Platform.OS === 'android' ? 'sans-serif' : undefined,
+                  backgroundColor: colors.background,
+                  borderColor: colors.border
+                }}
+                className="px-4 py-3.5 rounded-xl text-base border outline-none transition-colors"
+                placeholderTextColor={colors.textMuted}
                 secureTextEntry={true}
               />
               {errors.password && (
@@ -159,8 +190,10 @@ export default function Login() {
             </View>
 
             <TouchableOpacity 
-              className="bg-[#ff3f6c] py-3.5 rounded-xl items-center shadow-sm shadow-pink-200 mb-4 hover:opacity-90 transition-opacity cursor-pointer"
+              className="py-3.5 rounded-xl items-center shadow-sm mb-4 transition-opacity cursor-pointer"
+              style={{ backgroundColor: colors.primary }}
               onPress={handleLogin} 
+              activeOpacity={0.9}
             >
               <Text className="text-white font-semibold text-base tracking-wide">
                 LOGIN
@@ -168,17 +201,19 @@ export default function Login() {
             </TouchableOpacity>
 
             <TouchableOpacity 
-              className="bg-white border border-neutral-200 py-3.5 rounded-xl items-center mb-6 hover:bg-neutral-50 transition-colors cursor-pointer"
-              onPress={handleGuestLogin} 
+              className="border py-3.5 rounded-xl items-center mb-6 transition-colors cursor-pointer"
+              style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+              onPress={handleGuestLogin}
+              activeOpacity={0.7}
             >
-              <Text className="text-neutral-700 font-semibold text-base tracking-wide">
+              <Text className="font-semibold text-base tracking-wide" style={{ color: colors.textMain }}>
                 CONTINUE AS GUEST
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity className="items-center mt-auto mb-2 cursor-pointer" onPress={()=>router.replace('/auth/signup')}>
-              <Text className="text-sm text-neutral-500 font-medium">
-                Don't have an account? <Text className="text-[#ff3f6c] font-bold hover:underline">Sign Up</Text>
+              <Text className="text-sm font-medium" style={{ color: colors.textMuted }}>
+                Don't have an account? <Text className="font-bold hover:underline" style={{ color: colors.primary }}>Sign Up</Text>
               </Text>
             </TouchableOpacity>
 

@@ -19,6 +19,8 @@ import { jwtDecode } from "jwt-decode";
 import { useGlobalContext } from "../context/GlobalContext";
 import { useFocusEffect, useRouter } from "expo-router";
 import { API_URL } from "../constants/api";
+// 👉 Import ThemeContext
+import { useTheme } from "../context/ThemeContext";
 
 interface Product {
   _id: string;
@@ -40,12 +42,18 @@ export default function Wishlist() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isGuest, setIsGuest] = useState<boolean>(false);
 
+  // 👉 Extract colors and isDark from ThemeContext
+  const { colors, isDark } = useTheme();
+
   const { setWishlistIds } = useGlobalContext();
   const router = useRouter();
   
   const { width } = useWindowDimensions();
   const isLargeScreen: boolean = width >= 768;
   const isDesktop: boolean = width >= 1024;
+  
+  // TabBar height for proper bottom padding on mobile
+  const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
 
   const showMessage = (title: string, message: string): void => {
     if (Platform.OS === "web") {
@@ -134,30 +142,35 @@ export default function Wishlist() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#ff3f6c" />
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (isGuest) {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
         <View className="flex-1 items-center justify-center px-6 w-full max-w-md mx-auto">
-          <View className="w-24 h-24 bg-pink-50 rounded-full items-center justify-center mb-6">
-            <Ionicons name="heart-outline" size={40} color="#ff3f6c" />
+          {/* 👉 Dynamic Guest Icon Background */}
+          <View 
+            className="w-24 h-24 md:w-28 md:h-28 rounded-full items-center justify-center mb-6 shadow-sm"
+            style={{ backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}
+          >
+            <Ionicons name="heart-outline" size={44} color={colors.primary} />
           </View>
-          <Text className="text-3xl font-bold text-neutral-800 mb-3 text-center tracking-tight">
+          <Text className="text-3xl md:text-4xl font-bold mb-3 text-center tracking-tight" style={{ color: colors.textMain }}>
             Login Required
           </Text>
-          <Text className="text-base text-neutral-500 mb-10 text-center px-4 leading-6 font-medium">
+          <Text className="text-base md:text-lg mb-10 text-center px-4 leading-6 md:leading-7 font-medium" style={{ color: colors.textMuted }}>
             Login to your account to save your favorite items and view them anytime, anywhere.
           </Text>
           <TouchableOpacity
             onPress={() => router.push("/auth/login")}
-            className="bg-[#ff3f6c] w-full py-4 rounded-xl items-center shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+            className="w-full py-4 rounded-xl items-center shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+            style={{ backgroundColor: colors.primary }}
           >
-            <Text className="text-white font-bold text-lg tracking-wide">
+            <Text className="text-white font-bold text-lg md:text-xl tracking-wide">
               LOGIN NOW
             </Text>
           </TouchableOpacity>
@@ -167,55 +180,66 @@ export default function Wishlist() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <View className="w-full flex-1">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
+      {/* 1400px Centering Wrapper */}
+      <View className="w-full max-w-[1400px] mx-auto flex-1">
         
-{!isLargeScreen && (
-  <View className="px-5 py-5 bg-white border-b border-neutral-100 z-10 flex-row items-center justify-between">
-    
-    {/* Left Side: Icon + Title */}
-    <View className="flex-row items-center">
-      <Ionicons name="heart" size={24} color="#ff3f6c" />
-      <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
-        Wishlist
-      </Text>
-    </View>
-
-    {/* Right Side: Items Count */}
-    <Text className="text-sm font-medium text-neutral-500">
-      {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"} saved
-    </Text>
-
-  </View>
-)}
+        {/* Header for Mobile Only */}
+        {!isLargeScreen && (
+          <View 
+            className="px-5 py-4 md:py-5 border-b z-10 flex-row items-center justify-between"
+            style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
+          >
+            <View className="flex-row items-center">
+              <Ionicons name="heart" size={24} color={colors.primary} />
+              <Text className="text-2xl font-bold tracking-tight ml-3" style={{ color: colors.textMain }}>
+                Wishlist
+              </Text>
+            </View>
+            <Text className="text-sm md:text-base font-semibold" style={{ color: colors.textMuted }}>
+              {wishlistItems.length} {wishlistItems.length === 1 ? "Item" : "Items"} saved
+            </Text>
+          </View>
+        )}
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          className="flex-1 px-4 pt-3 bg-neutral-50"
-          contentContainerStyle={{ flexGrow: 1, paddingBottom: 60 }}
+          className="flex-1"
+          style={{ backgroundColor: colors.background }}
+          contentContainerStyle={{ 
+            flexGrow: 1, 
+            paddingTop: 16,
+            // TabBar padding logic so items don't hide on mobile
+            paddingBottom: isLargeScreen ? 60 : TABBAR_HEIGHT + 40 
+          }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#ff3f6c"
-              colors={["#ff3f6c"]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
         >
           {wishlistItems.length === 0 ? (
-            <View className="flex-1 items-center justify-center">
-              <View className="w-24 h-24 bg-pink-50 rounded-full items-center justify-center mb-5">
-                <Ionicons name="heart-outline" size={40} color="#ff3f6c" />
+            /* Empty State */
+            <View className="flex-1 items-center justify-center pt-10">
+              <View 
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full items-center justify-center mb-6 shadow-sm"
+                style={{ backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}
+              >
+                <Ionicons name="heart-outline" size={48} color={colors.primary} />
               </View>
-              <Text className="text-neutral-800 text-2xl font-bold mb-2">
+              <Text className="text-2xl md:text-3xl font-bold mb-3 tracking-tight" style={{ color: colors.textMain }}>
                 It feels so light!
               </Text>
-              <Text className="text-neutral-500 text-base text-center px-10 max-w-sm">
+              <Text className="text-base md:text-lg text-center px-10 max-w-sm font-medium leading-6" style={{ color: colors.textMuted }}>
                 There is nothing in your wishlist. Let's add some items.
               </Text>
             </View>
           ) : (
-            <View className={isLargeScreen ? "flex-row flex-wrap justify-start gap-x-[2%] px-4 lg:px-8" : "flex-col px-4"}>
+            /* Wishlist Items Grid/List */
+            <View className={isLargeScreen ? "flex-row flex-wrap justify-start gap-y-8 gap-x-[2%] px-4 md:px-8" : "flex-col px-4"}>
               {wishlistItems.map((item) => {
                 const product = item.productId || {} as Product;
                 const imageUrl =
@@ -224,42 +248,52 @@ export default function Wishlist() {
                     : "https://via.placeholder.com/400";
 
                 return isLargeScreen ? (
+                  /* DESKTOP/TABLET VIEW (Grid Card) */
                   <TouchableOpacity
                     key={item._id}
                     activeOpacity={0.9}
                     onPress={() => router.push(`/product/${product._id}`)}
-                    style={{ width: getCardWidth() as any }}
-                    className="mb-8 bg-white rounded-2xl overflow-hidden shadow-sm border border-neutral-100 hover:-translate-y-1 transition-transform cursor-pointer group relative"
+                    style={{ 
+                      width: getCardWidth() as any, 
+                      backgroundColor: colors.surface, 
+                      borderColor: colors.border 
+                    }}
+                    className="rounded-2xl overflow-hidden shadow-sm border hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer group relative"
                   >
                     <Image
                       source={{ uri: imageUrl }}
-                      className="w-full h-72 object-cover bg-neutral-100 group-hover:opacity-90 transition-opacity"
+                      className="w-full h-56 md:h-64 object-cover group-hover:opacity-95 transition-opacity"
+                      style={{ backgroundColor: colors.background }}
                     />
                     
                     <TouchableOpacity
-                      className="absolute top-3 right-3 p-2.5 bg-white/90 rounded-full shadow-sm hover:bg-red-50 transition-colors z-10"
+                      className="absolute top-3 right-3 p-2.5 rounded-full shadow-sm transition-colors z-10"
+                      style={{ backgroundColor: isDark ? 'rgba(38,38,38,0.9)' : 'rgba(255,255,255,0.9)' }}
                       onPress={(e) => {
                         e.stopPropagation();
                         removeItem(item._id, product._id);
                       }}
                     >
-                      <Ionicons name="trash-outline" size={20} color="#ff3f6c" />
+                      <Ionicons name="trash-outline" size={20} color={colors.primary} />
                     </TouchableOpacity>
 
-                    <View className="p-4">
-                      <Text className="text-neutral-500 text-xs font-bold mb-1 tracking-widest uppercase" numberOfLines={1}>
+                    <View className="p-4 md:p-5">
+                      <Text className="text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1} style={{ color: colors.textMuted }}>
                         {product.brand || "Brand"}
                       </Text>
-                      <Text className="text-neutral-900 text-base font-semibold mb-2 leading-5" numberOfLines={1}>
+                      <Text className="text-sm md:text-base font-semibold mb-2.5 leading-5" numberOfLines={1} style={{ color: colors.textMain }}>
                         {product.name || "Product Name"}
                       </Text>
 
-                      <View className="flex-row items-center mt-1">
-                        <Text className="text-neutral-900 font-bold text-lg mr-2">
+                      <View className="flex-row items-center">
+                        <Text className="font-bold text-lg md:text-xl mr-2 tracking-tight" style={{ color: colors.textMain }}>
                           ₹{product.price || 0}
                         </Text>
                         {product.discount && (
-                          <Text className="text-[#ff3f6c] text-xs font-bold bg-pink-50 px-2 py-1 rounded">
+                          <Text 
+                            className="text-[10px] md:text-xs font-bold px-2 py-1 rounded"
+                            style={{ color: colors.primary, backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}
+                          >
                             {product.discount}
                           </Text>
                         )}
@@ -267,13 +301,18 @@ export default function Wishlist() {
                     </View>
                   </TouchableOpacity>
                 ) : (
+                  /* MOBILE VIEW (Horizontal Row Card) */
                   <TouchableOpacity
                     key={item._id}
                     activeOpacity={0.9}
                     onPress={() => router.push(`/product/${product._id}`)}
-                    className="flex-row items-center p-3 mb-4 bg-white rounded-2xl shadow-sm border border-neutral-100"
+                    className="flex-row items-center p-3 mb-4 rounded-2xl shadow-sm border"
+                    style={{ backgroundColor: colors.surface, borderColor: colors.border }}
                   >
-                    <View className="bg-neutral-100 rounded-xl overflow-hidden">
+                    <View 
+                      className="rounded-xl overflow-hidden border"
+                      style={{ backgroundColor: colors.background, borderColor: colors.border }}
+                    >
                       <Image
                         source={{ uri: imageUrl }}
                         className="w-24 h-32 object-cover"
@@ -281,22 +320,26 @@ export default function Wishlist() {
                     </View>
 
                     <View className="flex-1 ml-4 justify-center">
-                      <Text className="text-neutral-500 text-xs font-extrabold mb-1 tracking-widest uppercase" numberOfLines={1}>
+                      <Text className="text-[10px] font-bold mb-1 tracking-widest uppercase" numberOfLines={1} style={{ color: colors.textMuted }}>
                         {product.brand || "Brand"}
                       </Text>
                       <Text
-                        className="text-neutral-800 text-sm font-semibold mb-2 leading-5"
+                        className="text-sm font-semibold mb-2 leading-5"
                         numberOfLines={2}
+                        style={{ color: colors.textMain }}
                       >
                         {product.name || "Product Name"}
                       </Text>
 
-                      <View className="flex-row items-center">
-                        <Text className="text-neutral-900 font-bold text-lg mr-2">
+                      <View className="flex-row items-center mt-1">
+                        <Text className="font-bold text-lg mr-2 tracking-tight" style={{ color: colors.textMain }}>
                           ₹{product.price || 0}
                         </Text>
                         {product.discount && (
-                          <Text className="text-[#ff3f6c] text-xs font-bold bg-pink-50 px-2 py-1 rounded">
+                          <Text 
+                            className="text-[10px] font-bold px-2 py-0.5 rounded"
+                            style={{ color: colors.primary, backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}
+                          >
                             {product.discount}
                           </Text>
                         )}
@@ -304,13 +347,14 @@ export default function Wishlist() {
                     </View>
 
                     <TouchableOpacity
-                      className="p-3 bg-red-50 rounded-full ml-2"
+                      className="p-3 rounded-full ml-2 transition-colors"
+                      style={{ backgroundColor: isDark ? '#450a0a' : '#fef2f2' }}
                       onPress={(e) => {
                         e.stopPropagation();
                         removeItem(item._id, product._id);
                       }}
                     >
-                      <Ionicons name="trash-outline" size={20} color="#ff3f6c" />
+                      <Ionicons name="trash-outline" size={20} color={colors.primary} />
                     </TouchableOpacity>
                   </TouchableOpacity>
                 );

@@ -10,6 +10,8 @@ const productRoutes = require('./routes/productRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const bagRoutes = require('./routes/bagRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
+const { startQueue } = require('./services/queueService');
 
 // Environment setup
 dotenv.config();
@@ -24,6 +26,7 @@ app.use(express.json());
 
 // 3. Database Connection 
 connectDB();
+startQueue(); // Start the background job queue for notifications
 
 // 4. API Routes 
 app.get('/', (req, res) => res.send('Myntra Clone Backend is Working (MVC Architecture)'));
@@ -34,6 +37,7 @@ app.use('/api', productRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/bag', bagRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/recently-viewed', recentlyViewedRoutes);
 
 // 5. Start Server
 const PORT = process.env.PORT || 5000;

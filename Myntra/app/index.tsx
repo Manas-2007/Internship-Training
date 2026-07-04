@@ -43,7 +43,7 @@ export default function SplashScreen() {
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <Image
         source={require('@/assets/images/myntra.jpg')}
         style={{ width: logoSize, height: logoSize }}
