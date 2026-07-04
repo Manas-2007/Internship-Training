@@ -11,8 +11,7 @@ import {
   useWindowDimensions,
   Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
@@ -42,6 +41,8 @@ export default function Bag() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isGuest, setIsGuest] = useState<boolean>(false);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  
 
   const { width } = useWindowDimensions();
   const isLargeScreen: boolean = width >= 1024; // Standard desktop breakpoint
@@ -213,50 +214,57 @@ export default function Bag() {
   );
 
   const MobileOrderSummary = () => (
-    // "absolute bottom-0" removed. Now it sits naturally at the bottom above the TabBar!
-    <View className="bg-white px-5 py-4 border-t border-neutral-200 w-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-      <View className="flex-row justify-between items-center mb-3.5">
-        <Text className="text-neutral-600 font-semibold text-base">Total Amount</Text>
-        <Text className="text-neutral-900 font-bold text-xl tracking-tight">₹{totalAmount}</Text>
-      </View>
-      <TouchableOpacity
-        className="bg-[#f43365] w-full py-3.5 rounded-xl items-center justify-center shadow-sm shadow-pink-200"
-        onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
-      >
-        <Text className="text-white font-bold text-base tracking-wider">
-          PLACE ORDER
-        </Text>
-      </TouchableOpacity>
+  <View 
+    className="bg-white px-5 pt-4 border-t border-neutral-200 w-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+    style={{ paddingBottom: insets.bottom + 16 }} // device ki safe area ke hisaab se space legi
+  >
+    <View className="flex-row justify-between items-center mb-3.5">
+      <Text className="text-neutral-600 font-semibold text-base">Total Amount</Text>
+      <Text className="text-neutral-900 font-bold text-xl tracking-tight">₹{totalAmount}</Text>
     </View>
-  );
+    <TouchableOpacity
+      className="bg-[#ff3f6c] w-full py-3.5 rounded-xl items-center justify-center shadow-sm shadow-pink-200"
+      onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
+    >
+      <Text className="text-white font-bold text-base tracking-wider">
+        PLACE ORDER
+      </Text>
+    </TouchableOpacity>
+  </View>
+);
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* HEADER: Hidden on Large Screens */}
-      {!isLargeScreen && (
-        <View className="px-5 py-5 bg-white border-b border-neutral-100 z-10">
-          <View className="flex-row items-center">
-            <Ionicons name="bag-handle" size={24} color="#f43365" />
-            <Text className="text-3xl font-bold text-neutral-900 tracking-tight ml-3">
-              Shopping Bag
-            </Text>
-          </View>
-          <Text className="text-sm font-medium text-neutral-500 mt-1.5 ml-0.5">
-            {bagItems.length} {bagItems.length === 1 ? "Item" : "Items"}
-          </Text>
-        </View>
-      )}
+     {/* HEADER: Hidden on Large Screens */}
+{!isLargeScreen && (
+  <View className="px-5 py-5 bg-white border-b border-neutral-100 z-10 flex-row items-center justify-between">
+    
+    {/* Left Side: Icon + Title */}
+    <View className="flex-row items-center">
+      <Ionicons name="bag-handle" size={24} color="#f43365" />
+      <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
+        Shopping Bag
+      </Text>
+    </View>
+    
+    {/* Right Side: Items Count */}
+    <Text className="text-sm font-medium text-neutral-500">
+      {bagItems.length} {bagItems.length === 1 ? "Item" : "Items"}
+    </Text>
+    
+  </View>
+)}
 
       {/* Main Content Area */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         className="flex-1 bg-white"
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f43365" />
         }
       >
-        <View className={`w-full flex-1 px-4 lg:px-12 py-8`}>
+        <View className={`w-full flex-1 px-4 lg:px-12 py-0 lg:py-6`}>
           {bagItems.length === 0 ? (
             <View className="flex-1 items-center justify-center pt-20">
               <View className="w-24 h-24 bg-neutral-50 rounded-full items-center justify-center mb-5">
@@ -315,7 +323,7 @@ export default function Bag() {
                             {product.brand || "Brand"}
                           </Text>
                           <Text
-                            className="text-neutral-900 text-lg font-semibold mb-2 leading-6"
+                            className="text-neutral-900 text-2sm md:text-lg font-semibold mb-2 leading-6"
                             numberOfLines={2}
                           >
                             {product.name || "Product Name"}
@@ -323,7 +331,7 @@ export default function Bag() {
                           <Text className="text-neutral-500 text-sm font-medium mb-3">
                             Size: <Text className="text-neutral-800 font-bold">{item.size || "M"}</Text>
                           </Text>
-                          <Text className="text-neutral-900 font-bold text-2xl tracking-tight">
+                          <Text className="text-neutral-900 font-bold text-xl md:text-2xl tracking-tight">
                             ₹{product.price || 0}
                           </Text>
                         </View>
