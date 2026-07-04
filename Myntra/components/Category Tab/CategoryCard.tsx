@@ -1,5 +1,7 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+// 👉 Import ThemeContext
+import { useTheme } from "../../app/context/ThemeContext"; // Adjust path if needed
 
 interface Props {
   category: any;
@@ -7,15 +9,22 @@ interface Props {
 }
 
 export default function CategoryCard({ category, onSelectCategory }: Props) {
+  // 👉 Extract colors and isDark
+  const { colors, isDark } = useTheme();
+
   return (
     <View className="mb-8">
       {/* Banner Image */}
-      <TouchableOpacity className="px-4" onPress={() => onSelectCategory(category)}>
-        <Image source={{ uri: category.bannerImage }} className="w-full h-40 rounded-xl object-cover" />
+      <TouchableOpacity className="px-4 cursor-pointer" onPress={() => onSelectCategory(category)} activeOpacity={0.9}>
+        <Image 
+          source={{ uri: category.bannerImage }} 
+          className="w-full h-40 rounded-xl object-cover border" 
+          style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+        />
       </TouchableOpacity>
       
       {/* Category Title */}
-      <Text className="text-2xl font-black text-neutral-800 px-4 mt-4 mb-3">
+      <Text className="text-2xl font-black px-4 mt-4 mb-3 tracking-tight" style={{ color: colors.textMain }}>
         {category.name}
       </Text>
       
@@ -24,10 +33,16 @@ export default function CategoryCard({ category, onSelectCategory }: Props) {
         {category.subCategories.map((sub: string, index: number) => (
           <TouchableOpacity
             key={index}
-            className="bg-neutral-100 px-4 py-2 rounded-full mr-3"
+            className="px-4 py-2 rounded-full mr-3 border transition-colors cursor-pointer"
+            style={{ 
+              backgroundColor: isDark ? '#1e293b' : '#f5f5f5',
+              borderColor: isDark ? '#334155' : 'transparent' 
+            }}
             onPress={() => onSelectCategory(category)}
           >
-            <Text className="text-neutral-700 font-medium">{sub}</Text>
+            <Text className="font-medium" style={{ color: colors.textMuted }}>
+              {sub}
+            </Text>
           </TouchableOpacity>
         ))}
         <View className="w-4" />

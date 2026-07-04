@@ -1,15 +1,27 @@
 import React from "react";
 import { View, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+// 👉 Import ThemeContext
+import { useTheme } from "../../app/context/ThemeContext"; // Path adjust kar lena
 
 export default function SearchBar() {
+  // 👉 Extract colors and isDark
+  const { colors, isDark } = useTheme();
+
   return (
-    <View className="flex-row items-center bg-neutral-100 rounded-lg px-3 py-2 mx-4 my-3">
-      <Ionicons name="search" size={20} color="#9ca3af" />
+    <View 
+      className="flex-row items-center rounded-lg px-3 py-2 mx-4 my-3 border transition-colors"
+      style={{ 
+        backgroundColor: isDark ? '#1e293b' : '#f5f5f5', 
+        borderColor: isDark ? '#334155' : 'transparent' 
+      }}
+    >
+      <Ionicons name="search" size={20} color={colors.textMuted} />
       <TextInput
         placeholder="Search for products, brands and..."
-        className="flex-1 ml-2 text-neutral-800"
-        placeholderTextColor="#9ca3af"
+        className="flex-1 ml-2 outline-none"
+        style={{ color: colors.textMain }}
+        placeholderTextColor={colors.textMuted}
       />
     </View>
   );
