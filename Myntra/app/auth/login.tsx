@@ -47,7 +47,12 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post(`${API_URL}/api/auth/login`, { email, password });
+      const pushToken = await AsyncStorage.getItem('pushToken');
+      const response = await axios.post(`${API_URL}/api/auth/login`, { 
+        email, 
+        password, 
+        pushToken 
+      });
 
       if (response.status === 200) {
         await AsyncStorage.setItem('userToken', response.data.token);

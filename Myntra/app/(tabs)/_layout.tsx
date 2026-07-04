@@ -48,6 +48,35 @@ const TopNavbar = () => {
 
         {/* Navigation Links */}
         <View className="flex-row items-center gap-10">
+
+          {/* NOTIFICATION BUTTON */}
+          <TouchableOpacity
+            onPress={() => console.log("Notifications Clicked!")}
+            className="items-center justify-center cursor-pointer group"
+            activeOpacity={0.7}
+          >
+            <View className="relative">
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                // 👉 Dynamic Icon Color
+                color={colors.textMain}
+                className="group-hover:opacity-80 transition-opacity"
+              />
+              {/* Red Dot Indicator (Active) */}
+              <View 
+                className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#ff3f6c] rounded-full border-[1.5px]"
+                style={{ borderColor: colors.surface }} 
+              />
+            </View>
+            <Text
+              className="text-[11px] font-bold mt-1 tracking-widest uppercase group-hover:opacity-80 transition-opacity"
+              // 👉 Dynamic Text Color
+              style={{ color: colors.textMain }}
+            >
+              Alerts
+            </Text>
+          </TouchableOpacity>
           
           {/* THEME TOGGLE BUTTON */}
           <TouchableOpacity

@@ -18,6 +18,7 @@ import { API_URL } from "../constants/api";
 import axios from "axios";
 // 👉 Import ThemeContext
 import { useTheme } from "../context/ThemeContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignUp() {
   const router = useRouter();
@@ -58,11 +59,13 @@ export default function SignUp() {
       return;
     }
 
-    try {
+   try {
+      const pushToken = await AsyncStorage.getItem('pushToken');
       const response = await axios.post(`${API_URL}/api/auth/register`, {
         name,
         email,
         password,
+        pushToken 
       });
 
       if (response.status === 201) {

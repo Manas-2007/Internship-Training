@@ -6,6 +6,20 @@ import { GlobalProvider } from "./context/GlobalContext";
 import { Stack } from "expo-router";
 import { ThemeProvider } from './context/ThemeContext';
 
+// 👉 Notifications ke imports
+import * as Notifications from 'expo-notifications';
+import { registerForPushNotificationsAsync } from '../utils/notifications';
+
+// 👉 SDK 54 Handler (shouldShowAlert hata kar nayi properties laga di hain)
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true, // Notification banner dikhega
+    shouldShowList: true,   // Notification center list mein aayega
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
 export default function Layout() {
   const [isAppReady, setIsAppReady] = useState(false);
 
@@ -21,6 +35,28 @@ export default function Layout() {
     };
 
     checkAuthStatus();
+
+    // 👉 1. Setup Push Notifications
+    registerForPushNotificationsAsync().then(token => {
+      if (token) {
+        AsyncStorage.setItem('pushToken', token);
+      }
+    });
+
+    // 👉 2. Listeners ko direct variables mein assign kiya (No useRef needed)
+    const notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log("🔔 Notification Received in Foreground:", notification);
+    });
+
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log("👆 User tapped on notification:", response);
+    });
+
+    // 👉 3. Cleanup function using direct .remove()
+    return () => {
+      notificationSubscription.remove();
+      responseSubscription.remove();
+    };
   }, []);
 
   if (!isAppReady) {
