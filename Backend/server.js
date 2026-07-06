@@ -17,7 +17,7 @@ const bagRoutes = require('./routes/bagRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
 const { startQueue, enqueueRealTimeNotification } = require('./services/queueService');
-
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -36,11 +36,11 @@ app.get('/', (req, res) => res.send('Myntra Clone Backend is Working (MVC Archit
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api', productRoutes);         
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/bag', bagRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/recently-viewed', recentlyViewedRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 5. Start Server
 const PORT = process.env.PORT || 5000;

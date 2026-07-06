@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Bag = require('../models/Bag');
 const User = require('../models/User'); 
+const Notification = require('../models/Notification');
 const { enqueueRealTimeNotification } = require('../services/queueService'); 
 
 const generateRandomTracking = () => {
@@ -45,11 +46,24 @@ exports.createOrder = async (req, res) => {
             tracking: generateRandomTracking(),
         });
 
-        await newOrder.save();
+       await newOrder.save();
         await Bag.deleteMany({ userId: userid });
         
-        // Dispatch real-time order confirmation notification
+        // Dispatch real-time order confirmation notification AND save to In-App Inbox
         try {
+            console.log("1. Starting notification process for User ID:", userid);
+
+            // 1. Save to database for the In-App Notification Center
+            const newNotif = await Notification.create({
+                userId: userid,
+                title: "Order Confirmed! 🎉",
+                body: "Your order has been successfully placed and is being processed.",
+                data: { url: "/orders" }
+            });
+            
+            console.log("2. Notification successfully saved to DB:", newNotif._id);
+
+            // 2. Send the OS-level push notification
             const user = await User.findById(userid);
             if (user && user.pushToken) {
                 await enqueueRealTimeNotification(
@@ -60,15 +74,15 @@ exports.createOrder = async (req, res) => {
                 );
             }
         } catch (notificationError) {
-            console.error("Notification dispatch failed:", notificationError);
+            console.error("3. EXACT ERROR:", notificationError);
         }
         
         res.status(200).json({ message: "Order placed successfully" });
     } catch (error) {
+        console.error("General Error placing order:", error);
         res.status(500).json({ message: "Error placing order" });
     }
 };
-
 exports.getUserOrders = async (req, res) => {
     try {
         const orders = await Order.find({ userId: req.params.userid }).populate("items.productId");
