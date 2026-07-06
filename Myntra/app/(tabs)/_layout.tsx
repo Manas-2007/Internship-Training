@@ -51,7 +51,7 @@ const TopNavbar = () => {
 
           {/* NOTIFICATION BUTTON */}
           <TouchableOpacity
-            onPress={() => console.log("Notifications Clicked!")}
+            onPress={() => router.push("/notifications")}
             className="items-center justify-center cursor-pointer group"
             activeOpacity={0.7}
           >
