@@ -1,152 +1,187 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from "../constants/api"; 
 
-const GlobalContext = createContext<any>(null);
+// 1. Professional TypeScript interface for the Context
+interface GlobalContextType {
+    categories: any[];
+    deals: any[];
+    products: any[];
+    loading: boolean;
+    fetchHomeData: () => Promise<void>;
+    wishlistIds: string[];
+    setWishlistIds: React.Dispatch<React.SetStateAction<string[]>>;
+    fetchWishlistIds: () => Promise<void>;
+    recentlyViewed: any[];
+    recordProductView: (product: any) => Promise<void>;
+    syncRecentlyViewed: () => Promise<void>;
+    clearUserData: () => Promise<void>;
+}
 
-export const GlobalProvider = ({ children }: any) => {
-  const [categories, setCategories] = useState([]);
-  const [deals, setDeals] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [wishlistIds, setWishlistIds] = useState<string[]>([]); 
-  const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const GlobalContext = createContext<GlobalContextType | null>(null);
 
-  const fetchHomeData = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/home`);
-      
-      setCategories(response.data.categories);
-      setProducts(response.data.products); 
+export const GlobalProvider = ({ children }: { children: ReactNode }) => {
+    const [categories, setCategories] = useState<any[]>([]);
+    const [deals, setDeals] = useState<any[]>([]);
+    const [products, setProducts] = useState<any[]>([]);
+    const [wishlistIds, setWishlistIds] = useState<string[]>([]); 
+    const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
-      const dealProductMap: any = {
-        "FLAT 60% OFF": "6a40e542efeaeaa042b5d603", 
-        "BUY 1 GET 1": "6a41fc6587c055c8a09c323d",  
-        "UPTO 70% OFF": "6a41faa287c055c8a09c323b",
-        "STARTING ₹499": "6a41f21987c055c8a09c3230",
-      };
+    // Fetch master data for Home Screen
+    const fetchHomeData = async () => {
+        try {
+            // 👉 FIX: Updated from /api/home to /api/products/home
+            const response = await axios.get(`${API_URL}/api/products/home`);
+            
+            setCategories(response.data.categories || []);
+            setProducts(response.data.products || []); 
 
-      const mappedDeals = response.data.deals.map((deal: any) => ({
-        ...deal,
-        productId: dealProductMap[deal.title] || null
-      }));
-      
-      setDeals(mappedDeals);
-      
-    } catch (error) {
-      console.log("Global fetch error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+            const dealProductMap: Record<string, string> = {
+                "FLAT 60% OFF": "6a40e542efeaeaa042b5d603", 
+                "BUY 1 GET 1": "6a41fc6587c055c8a09c323d",  
+                "UPTO 70% OFF": "6a41faa287c055c8a09c323b",
+                "STARTING ₹499": "6a41f21987c055c8a09c3230",
+            };
 
-  const fetchWishlistIds = async () => {
-    try {
-      const token = await AsyncStorage.getItem("userToken");
-      if (!token) return;
-      
-      const response = await axios.get(`${API_URL}/api/wishlist/ids`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setWishlistIds(response.data); 
-    } catch (error) {
-      console.log("Wishlist fetch error:", error);
-    }
-  };
+            const mappedDeals = (response.data.deals || []).map((deal: any) => ({
+                ...deal,
+                productId: dealProductMap[deal.title] || null
+            }));
+            
+            setDeals(mappedDeals);
+        } catch (error) {
+            console.error("Failed to fetch home data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const loadLocalRecentlyViewed = async () => {
-    try {
-      const localData = await AsyncStorage.getItem("@recently_viewed");
-      if (localData) {
-        setRecentlyViewed(JSON.parse(localData));
-      }
-    } catch (error) {
-      console.log("Error loading local recently viewed:", error);
-    }
-  };
+    // Wishlist Management
+    const fetchWishlistIds = async () => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) return;
+            
+            const response = await axios.get(`${API_URL}/api/wishlist/ids`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setWishlistIds(response.data || []); 
+        } catch (error) {
+            console.error("Failed to fetch wishlist IDs:", error);
+        }
+    };
 
-  const syncRecentlyViewed = async () => {
-    try {
-      const token = await AsyncStorage.getItem("userToken");
-      if (!token) return;
+    // Recently Viewed Management
+    const loadLocalRecentlyViewed = async () => {
+        try {
+            const localData = await AsyncStorage.getItem("@recently_viewed");
+            if (localData) {
+                setRecentlyViewed(JSON.parse(localData));
+            }
+        } catch (error) {
+            console.error("Failed to load local recently viewed:", error);
+        }
+    };
 
-      const localData = await AsyncStorage.getItem("@recently_viewed");
-      const localItems = localData ? JSON.parse(localData) : [];
+    const syncRecentlyViewed = async () => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) return;
 
-      const response = await axios.post(
-        `${API_URL}/api/recently-viewed/sync`,
-        { localItems },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+            const localData = await AsyncStorage.getItem("@recently_viewed");
+            const localItems = localData ? JSON.parse(localData) : [];
 
-      const syncedItems = response.data;
-      await AsyncStorage.setItem("@recently_viewed", JSON.stringify(syncedItems));
-      setRecentlyViewed(syncedItems);
-    } catch (error) {
-      console.log("Error syncing recently viewed:", error);
-    }
-  };
+            const response = await axios.post(
+                `${API_URL}/api/recently-viewed/sync`,
+                { localItems },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
 
-  const clearUserData = async () => {
-    await AsyncStorage.removeItem("@recently_viewed"); // Storage se delete
-    setRecentlyViewed([]); // State se delete
-    setWishlistIds([]); // Wishlist bhi clear kar do safety ke liye
-  };
+            const syncedItems = response.data;
+            await AsyncStorage.setItem("@recently_viewed", JSON.stringify(syncedItems));
+            setRecentlyViewed(syncedItems);
+        } catch (error) {
+            console.error("Failed to sync recently viewed items:", error);
+        }
+    };
 
-  const recordProductView = async (product: any) => {
-    try {
-      if (!product || !product._id) return;
+    const recordProductView = async (product: any) => {
+        try {
+            if (!product?._id) return;
 
-      const localData = await AsyncStorage.getItem("@recently_viewed");
-      let items = localData ? JSON.parse(localData) : [];
+            const localData = await AsyncStorage.getItem("@recently_viewed");
+            let items = localData ? JSON.parse(localData) : [];
 
-      items = items.filter((item: any) => item._id !== product._id);
+            // Remove duplicates and add new item to the top
+            items = items.filter((item: any) => item._id !== product._id);
+            items.unshift({ ...product, viewedAt: Date.now() });
+            
+            // Keep only the last 20 items to save memory
+            items = items.slice(0, 20);
 
-      const newItem = { ...product, viewedAt: Date.now() };
-      items.unshift(newItem);
+            await AsyncStorage.setItem("@recently_viewed", JSON.stringify(items));
+            setRecentlyViewed(items);
 
-      items = items.slice(0, 20);
+            // Sync with backend asynchronously
+            const token = await AsyncStorage.getItem("userToken");
+            if (token) {
+                axios.post(
+                    `${API_URL}/api/recently-viewed/sync`,
+                    { localItems: items },
+                    { headers: { Authorization: `Bearer ${token}` } }
+                ).then(async (res) => {
+                    await AsyncStorage.setItem("@recently_viewed", JSON.stringify(res.data));
+                    setRecentlyViewed(res.data);
+                }).catch(() => {
+                    // Silently fail background sync to avoid disrupting the UI
+                });
+            }
+        } catch (error) {
+            console.error("Failed to record product view:", error);
+        }
+    };
 
-      await AsyncStorage.setItem("@recently_viewed", JSON.stringify(items));
-      setRecentlyViewed(items);
+    // Utility: Clear User Data on Logout
+    const clearUserData = async () => {
+        try {
+            await AsyncStorage.removeItem("@recently_viewed");
+            setRecentlyViewed([]); 
+            setWishlistIds([]); 
+        } catch (error) {
+            console.error("Failed to clear user data:", error);
+        }
+    };
 
-      const token = await AsyncStorage.getItem("userToken");
-      if (token) {
-        axios.post(
-          `${API_URL}/api/recently-viewed/sync`,
-          { localItems: items },
-          { headers: { Authorization: `Bearer ${token}` } }
-        ).then(async (res) => {
-          const syncedItems = res.data;
-          await AsyncStorage.setItem("@recently_viewed", JSON.stringify(syncedItems));
-          setRecentlyViewed(syncedItems);
-        }).catch(err => console.log("Background sync failed:", err));
-      }
-    } catch (error) {
-      console.log("Error recording product view:", error);
-    }
-  };
+    // Initialization
+    useEffect(() => {
+        loadLocalRecentlyViewed().then(() => {
+            syncRecentlyViewed();
+        });
+        fetchHomeData();
+        fetchWishlistIds();
+    }, []);
 
-  useEffect(() => {
-    loadLocalRecentlyViewed().then(() => {
-      syncRecentlyViewed();
-    });
-    fetchHomeData();
-    fetchWishlistIds();
-  }, []);
-
-  return (
-    <GlobalContext.Provider value={{ 
-      categories, deals, products, loading, fetchHomeData, 
-      wishlistIds, setWishlistIds, fetchWishlistIds,
-      recentlyViewed, recordProductView, syncRecentlyViewed,
-      clearUserData
-    }}>
-      {children}
-    </GlobalContext.Provider>
-  );
+    return (
+        <GlobalContext.Provider value={{ 
+            categories, deals, products, loading, fetchHomeData, 
+            wishlistIds, setWishlistIds, fetchWishlistIds,
+            recentlyViewed, recordProductView, syncRecentlyViewed,
+            clearUserData
+        }}>
+            {children}
+        </GlobalContext.Provider>
+    );
 };
 
-export const useGlobalContext = () => useContext(GlobalContext);
+// 2. Export a strongly-typed hook
+export const useGlobalContext = () => {
+    const context = useContext(GlobalContext);
+    if (!context) {
+        throw new Error("useGlobalContext must be used within a GlobalProvider");
+    }
+    return context;
+};
+
 export default GlobalProvider;

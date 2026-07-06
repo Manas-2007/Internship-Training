@@ -46,19 +46,38 @@ exports.createOrder = async (req, res) => {
             tracking: generateRandomTracking(),
         });
 
-       await newOrder.save();
-        await Bag.deleteMany({ userId: userid });
+        await newOrder.save();
         
         // Dispatch real-time order confirmation notification AND save to In-App Inbox
         try {
             console.log("1. Starting notification process for User ID:", userid);
 
+            // Extract product details for the notification using the first item in the bag
+            const firstItem = bag[0];
+            const product = firstItem.productId;
+            
+            // Safely get the product name and image (adjust based on your exact Product schema)
+            const productName = product?.name || "your item";
+            const productImage = (product?.images && product.images.length > 0) 
+                ? product.images[0] 
+                : (product?.image || ""); 
+
+            // Create a dynamic notification message
+            let notificationBody = `Your order for ${productName} (Qty: ${firstItem.quantity})`;
+            if (bag.length > 1) {
+                notificationBody += ` and ${bag.length - 1} other item(s)`;
+            }
+            notificationBody += ` has been placed successfully!`;
+
             // 1. Save to database for the In-App Notification Center
             const newNotif = await Notification.create({
                 userId: userid,
                 title: "Order Confirmed! 🎉",
-                body: "Your order has been successfully placed and is being processed.",
-                data: { url: "/orders" }
+                body: notificationBody,
+                data: { 
+                    url: "/orders",
+                    image: productImage // 👈 Pass the image URL to the frontend
+                }
             });
             
             console.log("2. Notification successfully saved to DB:", newNotif._id);
@@ -69,14 +88,17 @@ exports.createOrder = async (req, res) => {
                 await enqueueRealTimeNotification(
                     user.pushToken,
                     "Order Confirmed! 🎉",
-                    "Your order has been successfully placed and is being processed.",
-                    { url: "/orders" }
+                    notificationBody, // 👈 Use dynamic body for push notification too
+                    { url: "/orders", image: productImage }
                 );
             }
         } catch (notificationError) {
             console.error("3. EXACT ERROR:", notificationError);
         }
         
+        // Clear the user's bag after everything is processed
+        await Bag.deleteMany({ userId: userid });
+
         res.status(200).json({ message: "Order placed successfully" });
     } catch (error) {
         console.error("General Error placing order:", error);
