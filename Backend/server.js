@@ -1,8 +1,13 @@
 const express = require('express');
 const dotenv = require('dotenv');
+dotenv.config();
+
 const cors = require('cors');
 const helmet = require('helmet');
 const dns = require('dns');
+// Environment setup
+dns.setServers(['1.1.1.1', '8.8.8.8']);
+
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -11,11 +16,8 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const bagRoutes = require('./routes/bagRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
-const { startQueue } = require('./services/queueService');
+const { startQueue, enqueueRealTimeNotification } = require('./services/queueService');
 
-// Environment setup
-dotenv.config();
-dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 const app = express();
 
@@ -23,6 +25,7 @@ const app = express();
 app.use(helmet()); 
 app.use(cors());
 app.use(express.json()); 
+
 
 // 3. Database Connection 
 connectDB();

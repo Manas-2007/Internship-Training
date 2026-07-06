@@ -1,5 +1,7 @@
 const Order = require('../models/Order');
 const Bag = require('../models/Bag');
+const User = require('../models/User'); 
+const { enqueueRealTimeNotification } = require('../services/queueService'); 
 
 const generateRandomTracking = () => {
     const carriers = ["Delhivery", "Bluedart", "Ecom Express", "XpressBees"];
@@ -45,6 +47,21 @@ exports.createOrder = async (req, res) => {
 
         await newOrder.save();
         await Bag.deleteMany({ userId: userid });
+        
+        // Dispatch real-time order confirmation notification
+        try {
+            const user = await User.findById(userid);
+            if (user && user.pushToken) {
+                await enqueueRealTimeNotification(
+                    user.pushToken,
+                    "Order Confirmed! 🎉",
+                    "Your order has been successfully placed and is being processed.",
+                    { url: "/orders" }
+                );
+            }
+        } catch (notificationError) {
+            console.error("Notification dispatch failed:", notificationError);
+        }
         
         res.status(200).json({ message: "Order placed successfully" });
     } catch (error) {

@@ -11,12 +11,8 @@ import {
   useWindowDimensions,
   Platform,
 } from "react-native";
-<<<<<<< HEAD
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";import { Ionicons } from "@expo/vector-icons";
-=======
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
->>>>>>> 130e18e5da03865e4a9c1ddc47f97e0b62ba2c05
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
@@ -48,8 +44,6 @@ export default function Bag() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isGuest, setIsGuest] = useState<boolean>(false);
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  
 
   // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
@@ -246,15 +240,6 @@ export default function Bag() {
   );
 
   const MobileOrderSummary = () => (
-<<<<<<< HEAD
-  <View 
-    className="bg-white px-5 pt-4 border-t border-neutral-200 w-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
-    style={{ paddingBottom: insets.bottom + 16 }} // device ki safe area ke hisaab se space legi
-  >
-    <View className="flex-row justify-between items-center mb-3.5">
-      <Text className="text-neutral-600 font-semibold text-base">Total Amount</Text>
-      <Text className="text-neutral-900 font-bold text-xl tracking-tight">₹{totalAmount}</Text>
-=======
     <View 
       className="absolute bottom-0 left-0 right-0 px-5 pt-4 pb-4 border-t shadow-[0_-8px_10px_-5px_rgba(0,0,0,0.05)] z-50"
       style={{ 
@@ -276,63 +261,10 @@ export default function Bag() {
           PLACE ORDER
         </Text>
       </TouchableOpacity>
->>>>>>> 130e18e5da03865e4a9c1ddc47f97e0b62ba2c05
     </View>
-    <TouchableOpacity
-      className="bg-[#ff3f6c] w-full py-3.5 rounded-xl items-center justify-center shadow-sm shadow-pink-200"
-      onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
-    >
-      <Text className="text-white font-bold text-base tracking-wider">
-        PLACE ORDER
-      </Text>
-    </TouchableOpacity>
-  </View>
-);
+  );
 
   return (
-<<<<<<< HEAD
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-     {/* HEADER: Hidden on Large Screens */}
-{!isLargeScreen && (
-  <View className="px-5 py-5 bg-white border-b border-neutral-100 z-10 flex-row items-center justify-between">
-    
-    {/* Left Side: Icon + Title */}
-    <View className="flex-row items-center">
-      <Ionicons name="bag-handle" size={24} color="#f43365" />
-      <Text className="text-2xl font-bold text-neutral-900 tracking-tight ml-3">
-        Shopping Bag
-      </Text>
-    </View>
-    
-    {/* Right Side: Items Count */}
-    <Text className="text-sm font-medium text-neutral-500">
-      {bagItems.length} {bagItems.length === 1 ? "Item" : "Items"}
-    </Text>
-    
-  </View>
-)}
-
-      {/* Main Content Area */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        className="flex-1 bg-white"
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 50 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#f43365" />
-        }
-      >
-        <View className={`w-full flex-1 px-4 lg:px-12 py-0 lg:py-6`}>
-          {bagItems.length === 0 ? (
-            <View className="flex-1 items-center justify-center pt-20">
-              <View className="w-24 h-24 bg-neutral-50 rounded-full items-center justify-center mb-5">
-                <Ionicons name="bag-handle-outline" size={40} color="#a3a3a3" />
-              </View>
-              <Text className="text-neutral-800 text-2xl font-bold mb-2">
-                Your bag is empty!
-              </Text>
-              <Text className="text-neutral-500 text-base text-center px-10">
-                Explore our categories and add some items to your bag.
-=======
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="w-full max-w-[1400px] mx-auto flex-1 relative">
         
@@ -346,7 +278,6 @@ export default function Bag() {
               <Ionicons name="bag-handle" size={24} color={colors.primary} />
               <Text className="text-xl md:text-2xl font-bold tracking-tight ml-2.5" style={{ color: colors.textMain }}>
                 Shopping Bag
->>>>>>> 130e18e5da03865e4a9c1ddc47f97e0b62ba2c05
               </Text>
             </View>
             <Text className="text-xs md:text-sm font-semibold" style={{ color: colors.textMuted }}>
@@ -395,35 +326,6 @@ export default function Bag() {
                     const product = item.productId || ({} as Product);
                     const imageUrl = product.images?.[0] || product.image || "https://via.placeholder.com/150";
 
-<<<<<<< HEAD
-                        {/* Cross Button inside the Image */}
-                        <TouchableOpacity
-                          onPress={() => removeBagItem(item._id)}
-                          className="absolute -top-2 -right-2 bg-white p-1 rounded-full shadow-md border border-neutral-100 z-10"
-                        >
-                          <Ionicons name="close" size={18} color="#404040" />
-                        </TouchableOpacity>
-                      </View>
-
-                      {/* Product Details & Quantity */}
-                      <View className="flex-1 ml-6 justify-between py-1">
-                        <View>
-                          <Text className="text-neutral-500 text-xs font-bold mb-1.5 tracking-widest uppercase">
-                            {product.brand || "Brand"}
-                          </Text>
-                          <Text
-                            className="text-neutral-900 text-2sm md:text-lg font-semibold mb-2 leading-6"
-                            numberOfLines={2}
-                          >
-                            {product.name || "Product Name"}
-                          </Text>
-                          <Text className="text-neutral-500 text-sm font-medium mb-3">
-                            Size: <Text className="text-neutral-800 font-bold">{item.size || "M"}</Text>
-                          </Text>
-                          <Text className="text-neutral-900 font-bold text-xl md:text-2xl tracking-tight">
-                            ₹{product.price || 0}
-                          </Text>
-=======
                     return (
                       <View
                         key={item._id}
@@ -457,7 +359,6 @@ export default function Bag() {
                           >
                             <Ionicons name="close" size={16} color={colors.textMain} />
                           </TouchableOpacity>
->>>>>>> 130e18e5da03865e4a9c1ddc47f97e0b62ba2c05
                         </View>
 
                         {/* Product Details & Quantity */}
