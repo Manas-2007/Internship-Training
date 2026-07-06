@@ -9,14 +9,14 @@ import {
 } from "react-native";
 import React from "react";
 import { useTheme } from '../context/ThemeContext';
+import { useGlobalContext } from '../context/GlobalContext';
 
 // --- PREMIUM CUSTOM TOP NAVBAR FOR DESKTOP/WEB ---
 const TopNavbar = () => {
   const router = useRouter();
   const pathname = usePathname();
-  
-  // 👉 Context se isDark, changeTheme, aur colors nikaal liye
   const { isDark, changeTheme, colors } = useTheme();
+  const { hasUnreadNotifications } = useGlobalContext();
   
   const navItems = [
     { name: "index", label: "Home", icon: "home", route: "/" },
@@ -59,15 +59,16 @@ const TopNavbar = () => {
               <Ionicons
                 name="notifications-outline"
                 size={24}
-                // 👉 Dynamic Icon Color
                 color={colors.textMain}
                 className="group-hover:opacity-80 transition-opacity"
               />
-              {/* Red Dot Indicator (Active) */}
-              <View 
-                className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#ff3f6c] rounded-full border-[1.5px]"
-                style={{ borderColor: colors.surface }} 
-              />
+              {/* 👉 BAS IS CONDITION KO ADD KARNA HAI */}
+              {hasUnreadNotifications && (
+                <View 
+                  className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#ff3f6c] rounded-full border-[1.5px]"
+                  style={{ borderColor: colors.surface }} 
+                />
+              )}
             </View>
             <Text
               className="text-[11px] font-bold mt-1 tracking-widest uppercase group-hover:opacity-80 transition-opacity"

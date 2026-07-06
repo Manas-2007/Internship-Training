@@ -55,6 +55,7 @@ export default function Home() {
     setWishlistIds,
     fetchWishlistIds,
     recentlyViewed,
+    hasUnreadNotifications,
   } = useGlobalContext();
 
   const onRefresh = async () => {
@@ -157,13 +158,16 @@ export default function Home() {
                 <Ionicons name="search-outline" size={24} color={colors.textMain} />
               </TouchableOpacity>
 
-             <TouchableOpacity onPress={() => router.push("/notifications")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors relative" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
-                <Ionicons name="notifications-outline" size={24} color={colors.textMain} />
-                <View 
-                  className="absolute top-1.5 right-2 w-2.5 h-2.5 rounded-full border-2" 
-                  style={{ backgroundColor: colors.primary, borderColor: colors.surface }}
-                />
-              </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push("/notifications")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors relative" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+  <Ionicons name="notifications-outline" size={24} color={colors.textMain} />
+  
+  {hasUnreadNotifications && (
+    <View 
+      className="absolute top-1.5 right-2 w-2.5 h-2.5 rounded-full border-2" 
+      style={{ backgroundColor: colors.primary, borderColor: colors.surface }}
+    />
+  )}
+</TouchableOpacity>
 
               <TouchableOpacity onPress={() => router.push("/profile")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
                 <Ionicons name="person-outline" size={24} color={colors.textMain} />

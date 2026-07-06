@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from './context/ThemeContext'; 
 import { useRouter } from 'expo-router';
+import { useGlobalContext } from './context/GlobalContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_URL } from './constants/api'; 
@@ -34,7 +35,7 @@ interface NotificationItem {
 export default function NotificationsScreen() {
     const { colors, isDark } = useTheme();
     const router = useRouter();
-    
+    const { fetchUnreadNotificationsCount } = useGlobalContext();
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
@@ -82,6 +83,7 @@ export default function NotificationsScreen() {
             await axios.put(`${API_URL}/api/notifications/${item._id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            fetchUnreadNotificationsCount();
         } catch (error) {
             console.error("Error marking notification as read:", error);
         }

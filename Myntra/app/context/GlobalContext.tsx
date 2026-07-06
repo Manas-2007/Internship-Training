@@ -3,7 +3,6 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from "../constants/api"; 
 
-// 1. Professional TypeScript interface for the Context
 interface GlobalContextType {
     categories: any[];
     deals: any[];
@@ -17,6 +16,8 @@ interface GlobalContextType {
     recordProductView: (product: any) => Promise<void>;
     syncRecentlyViewed: () => Promise<void>;
     clearUserData: () => Promise<void>;
+    hasUnreadNotifications: boolean;
+    fetchUnreadNotificationsCount: () => Promise<void>;
 }
 
 const GlobalContext = createContext<GlobalContextType | null>(null);
@@ -28,15 +29,14 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     const [wishlistIds, setWishlistIds] = useState<string[]>([]); 
     const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [hasUnreadNotifications, setHasUnreadNotifications] = useState<boolean>(false);
 
-    // Fetch master data for Home Screen
     const fetchHomeData = async () => {
         try {
-            // 👉 FIX: Updated from /api/home to /api/products/home
             const response = await axios.get(`${API_URL}/api/products/home`);
             
-            setCategories(response.data.categories || []);
-            setProducts(response.data.products || []); 
+            setCategories(response.data?.categories || []);
+            setProducts(response.data?.products || []); 
 
             const dealProductMap: Record<string, string> = {
                 "FLAT 60% OFF": "6a40e542efeaeaa042b5d603", 
@@ -45,20 +45,19 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
                 "STARTING ₹499": "6a41f21987c055c8a09c3230",
             };
 
-            const mappedDeals = (response.data.deals || []).map((deal: any) => ({
+            const mappedDeals = (response.data?.deals || []).map((deal: any) => ({
                 ...deal,
                 productId: dealProductMap[deal.title] || null
             }));
             
             setDeals(mappedDeals);
         } catch (error) {
-            console.error("Failed to fetch home data:", error);
+            // Silently fail to maintain clean UX
         } finally {
             setLoading(false);
         }
     };
 
-    // Wishlist Management
     const fetchWishlistIds = async () => {
         try {
             const token = await AsyncStorage.getItem("userToken");
@@ -69,11 +68,26 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             });
             setWishlistIds(response.data || []); 
         } catch (error) {
-            console.error("Failed to fetch wishlist IDs:", error);
+            // Silently fail
         }
     };
 
-    // Recently Viewed Management
+    const fetchUnreadNotificationsCount = async () => {
+        try {
+            const token = await AsyncStorage.getItem("userToken");
+            if (!token) return;
+            
+            const response = await axios.get(`${API_URL}/api/notifications`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            const unreadExists = response.data?.notifications?.some((notif: any) => notif.isRead === false);
+            setHasUnreadNotifications(!!unreadExists);
+        } catch (error) {
+            // Silently fail
+        }
+    };
+
     const loadLocalRecentlyViewed = async () => {
         try {
             const localData = await AsyncStorage.getItem("@recently_viewed");
@@ -81,7 +95,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
                 setRecentlyViewed(JSON.parse(localData));
             }
         } catch (error) {
-            console.error("Failed to load local recently viewed:", error);
+            // Silently fail
         }
     };
 
@@ -103,7 +117,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             await AsyncStorage.setItem("@recently_viewed", JSON.stringify(syncedItems));
             setRecentlyViewed(syncedItems);
         } catch (error) {
-            console.error("Failed to sync recently viewed items:", error);
+            // Silently fail
         }
     };
 
@@ -114,17 +128,13 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             const localData = await AsyncStorage.getItem("@recently_viewed");
             let items = localData ? JSON.parse(localData) : [];
 
-            // Remove duplicates and add new item to the top
             items = items.filter((item: any) => item._id !== product._id);
             items.unshift({ ...product, viewedAt: Date.now() });
-            
-            // Keep only the last 20 items to save memory
             items = items.slice(0, 20);
 
             await AsyncStorage.setItem("@recently_viewed", JSON.stringify(items));
             setRecentlyViewed(items);
 
-            // Sync with backend asynchronously
             const token = await AsyncStorage.getItem("userToken");
             if (token) {
                 axios.post(
@@ -134,33 +144,31 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
                 ).then(async (res) => {
                     await AsyncStorage.setItem("@recently_viewed", JSON.stringify(res.data));
                     setRecentlyViewed(res.data);
-                }).catch(() => {
-                    // Silently fail background sync to avoid disrupting the UI
-                });
+                }).catch(() => {});
             }
         } catch (error) {
-            console.error("Failed to record product view:", error);
+            // Silently fail
         }
     };
 
-    // Utility: Clear User Data on Logout
     const clearUserData = async () => {
         try {
             await AsyncStorage.removeItem("@recently_viewed");
             setRecentlyViewed([]); 
             setWishlistIds([]); 
+            setHasUnreadNotifications(false);
         } catch (error) {
-            console.error("Failed to clear user data:", error);
+            // Silently fail
         }
     };
 
-    // Initialization
     useEffect(() => {
         loadLocalRecentlyViewed().then(() => {
             syncRecentlyViewed();
         });
         fetchHomeData();
         fetchWishlistIds();
+        fetchUnreadNotificationsCount();
     }, []);
 
     return (
@@ -168,14 +176,13 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             categories, deals, products, loading, fetchHomeData, 
             wishlistIds, setWishlistIds, fetchWishlistIds,
             recentlyViewed, recordProductView, syncRecentlyViewed,
-            clearUserData
+            clearUserData, hasUnreadNotifications, fetchUnreadNotificationsCount
         }}>
             {children}
         </GlobalContext.Provider>
     );
 };
 
-// 2. Export a strongly-typed hook
 export const useGlobalContext = () => {
     const context = useContext(GlobalContext);
     if (!context) {
