@@ -7,7 +7,8 @@ const sendPushNotification = async (pushToken, title, body, data = {}) => {
     // 1. Check karna ki token valid hai ya nahi
     if (!Expo.isExpoPushToken(pushToken)) {
         console.error(`❌ Push token ${pushToken} is not a valid Expo push token`);
-        return null;
+        // 👉 TWEAK: Throw error instead of return null, so queueService can catch it and delete it from DB!
+        throw new Error('DeviceNotRegistered: Invalid token format'); 
     }
 
     // 2. Message ka structure banana
@@ -16,7 +17,7 @@ const sendPushNotification = async (pushToken, title, body, data = {}) => {
         sound: 'default',
         title: title,
         body: body,
-        data: data, // Yeh data frontend par click handle karne ke kaam aayega (jaise redirect url)
+        data: data, 
     }];
 
     try {
