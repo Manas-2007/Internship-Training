@@ -2,6 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
+const { enqueueRealTimeNotification, scheduleDelayedNotification } = require('../services/queueService');
 
 exports.registerUser = async (req, res) => {
     const errors = validationResult(req);
@@ -82,5 +83,47 @@ exports.updatePushToken = async (req, res) => {
     } catch (error) {
         console.error("Error updating push token:", error);
         res.status(500).json({ success: false, message: "Server error while updating push token" });
+    }
+};
+
+// Test Function
+exports.testPushSystem = async (req, res) => {
+    try {
+        // 1. Logged-in user ka token database se nikalna
+        const userId = req.user.id || req.user._id; 
+        const user = await User.findById(userId);
+
+        if (!user || !user.pushToken) {
+            return res.status(400).json({ success: false, message: "Aapke account mein push token nahi mila. App par wapas login karein." });
+        }
+
+        const token = user.pushToken;
+
+        // 2. REAL-TIME NOTIFICATION (Order Placed scenario)
+        await enqueueRealTimeNotification(
+            token,
+            "Order Confirmed! 🎉",
+            "Your order has been placed successfully.",
+            { url: "/orders" } // Click karne par app is page par jayegi
+        );
+
+        // 3. SCHEDULED NOTIFICATION (Cart Abandonment scenario)
+        // Testing ke liye hum isko 1 minute baad bhej rahe hain (Asli app mein 'in 1 hour' likhenge)
+        await scheduleDelayedNotification(
+            'in 1 minute', 
+            token,
+            "Did you forget something? 🛒",
+            "Your bag is waiting! Checkout now before it goes out of stock.",
+            { url: "/bag" }
+        );
+
+        res.status(200).json({ 
+            success: true, 
+            message: "Dono notifications (Instant & 1-Min Delayed) queue mein add ho gaye!" 
+        });
+
+    } catch (error) {
+        console.error("Test notification error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
     }
 };
