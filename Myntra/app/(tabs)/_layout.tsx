@@ -1,17 +1,16 @@
+import React from "react";
+import { 
+  Platform, 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  useWindowDimensions 
+} from "react-native";
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  Platform,
-  View,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-} from "react-native";
-import React from "react";
 import { useTheme } from '../context/ThemeContext';
 import { useGlobalContext } from '../context/GlobalContext';
 
-// --- PREMIUM CUSTOM TOP NAVBAR FOR DESKTOP/WEB ---
 const TopNavbar = () => {
   const router = useRouter();
   const pathname = usePathname();
@@ -27,15 +26,13 @@ const TopNavbar = () => {
   ];
 
   return (
-    // 👉 Dynamic Background & Border applied here
     <View 
       className="border-b z-50 shadow-sm w-full" 
       style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
     >
-      {/* 1400px Centering for Top Navbar */}
       <View className="w-full max-w-[1400px] mx-auto px-6 py-4 flex-row justify-between items-center">
         
-        {/* Premium Brand Logo */}
+        {/* Brand Logo */}
         <TouchableOpacity
           onPress={() => router.push("/")}
           className="cursor-pointer flex-row items-end group"
@@ -49,7 +46,7 @@ const TopNavbar = () => {
         {/* Navigation Links */}
         <View className="flex-row items-center gap-10">
 
-          {/* NOTIFICATION BUTTON */}
+          {/* Notification Button */}
           <TouchableOpacity
             onPress={() => router.push("/notifications")}
             className="items-center justify-center cursor-pointer group"
@@ -62,7 +59,6 @@ const TopNavbar = () => {
                 color={colors.textMain}
                 className="group-hover:opacity-80 transition-opacity"
               />
-              {/* 👉 BAS IS CONDITION KO ADD KARNA HAI */}
               {hasUnreadNotifications && (
                 <View 
                   className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#ff3f6c] rounded-full border-[1.5px]"
@@ -72,14 +68,13 @@ const TopNavbar = () => {
             </View>
             <Text
               className="text-[11px] font-bold mt-1 tracking-widest uppercase group-hover:opacity-80 transition-opacity"
-              // 👉 Dynamic Text Color
               style={{ color: colors.textMain }}
             >
               Alerts
             </Text>
           </TouchableOpacity>
           
-          {/* THEME TOGGLE BUTTON */}
+          {/* Theme Toggle Button */}
           <TouchableOpacity
             onPress={() => changeTheme(isDark ? "Light" : "Dark")}
             className="items-center justify-center cursor-pointer group"
@@ -88,19 +83,18 @@ const TopNavbar = () => {
             <Ionicons
               name={isDark ? "moon" : "moon-outline"}
               size={24}
-              // 👉 Dynamic Icon Color
               color={isDark ? colors.primary : colors.textMain}
               className="group-hover:opacity-80 transition-opacity"
             />
             <Text
               className="text-[11px] font-bold mt-1 tracking-widest uppercase group-hover:opacity-80 transition-opacity"
-              // 👉 Dynamic Text Color
               style={{ color: isDark ? colors.primary : colors.textMain }}
             >
               Theme
             </Text>
           </TouchableOpacity>
 
+          {/* Dynamic Navigation Items */}
           {navItems.map((item) => {
             const isActive = pathname === item.route;
             return (
@@ -111,19 +105,13 @@ const TopNavbar = () => {
                 activeOpacity={0.7}
               >
                 <Ionicons
-                  name={
-                    isActive
-                      ? (item.icon as any)
-                      : (`${item.icon}-outline` as any)
-                  }
+                  name={isActive ? (item.icon as any) : (`${item.icon}-outline` as any)}
                   size={24}
-                  // 👉 Dynamic Icon Color for Nav Items
                   color={isActive ? colors.primary : colors.textMain}
                   className="group-hover:opacity-80 transition-opacity"
                 />
                 <Text
                   className="text-[11px] font-bold mt-1 tracking-widest uppercase group-hover:opacity-80 transition-opacity"
-                  // 👉 Dynamic Text Color for Nav Items
                   style={{ color: isActive ? colors.primary : colors.textMain }}
                 >
                   {item.label}
@@ -139,41 +127,29 @@ const TopNavbar = () => {
 
 export default function TabLayout() {
   const { width } = useWindowDimensions();
-  // Using 768px for Tablet/Desktop breakpoint
   const isLargeScreen = width >= 768;
-  
-  // 👉 Extract colors for Bottom Tabs and App Background
   const { colors } = useTheme();
 
   return (
-    // 👉 Dynamic App Background
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
-      
-      {/* 1400px Global Wrapper for the entire layout */}
       <View 
         className="flex-1 w-full max-w-[1400px] mx-auto relative shadow-2xl shadow-black/5" 
         style={{ backgroundColor: colors.background }}
       >
-        
-        {/* Render Top Navbar on large screens */}
         {isLargeScreen && <TopNavbar />}
 
         <Tabs
           screenOptions={{
             headerShown: false,
-            // 1. Explicitly show labels to fix the hidden text issue
             tabBarShowLabel: true,
-            // 👉 Dynamic Tab Tint Colors
             tabBarActiveTintColor: colors.primary,
             tabBarInactiveTintColor: colors.textMuted, 
             tabBarStyle: isLargeScreen
               ? { display: "none" }
               : {
-                  // 👉 Dynamic Bottom Tab Background & Border
                   backgroundColor: colors.surface,
                   borderTopWidth: 1,
                   borderTopColor: colors.border,
-                  // 2. Fixed height and padding combination to accommodate labels perfectly
                   height: Platform.OS === "ios" ? 90 : 75,
                   paddingBottom: Platform.OS === "ios" ? 25 : 12,
                   paddingTop: 8,
@@ -196,10 +172,9 @@ export default function TabLayout() {
             tabBarLabelStyle: {
               fontSize: 10,
               fontWeight: "700",
-              marginTop: 2, // Fine-tuned margin so text doesn't touch the icon
+              marginTop: 2, 
               letterSpacing: 0.3,
             },
-            // Removes the click highlight ripple on Android for a cleaner feel
             tabBarItemStyle: {
               padding: 0,
             }

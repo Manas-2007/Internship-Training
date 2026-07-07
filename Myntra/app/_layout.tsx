@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import React, { useEffect } from "react";
+// 👉 isAppReady hatane ki wajah se 'useState' aur 'View', 'ActivityIndicator' ki zaroorat nahi bachi yahan
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Stack, router } from "expo-router";
+import * as Notifications from 'expo-notifications';
+import axios from 'axios';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+
 import "../global.css";
 import { GlobalProvider } from "./context/GlobalContext";
-import { Stack, router } from "expo-router"; // 👈 IMPORTED router
 import { ThemeProvider } from './context/ThemeContext';
-import axios from 'axios'; // 👈 IMPORTED axios
-import { API_URL } from './constants/api'; // 👈 IMPORTED API_URL
-import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
-// Reanimated strict mode warning ko disable karne ke liye
+import { API_URL } from './constants/api';
+import { registerForPushNotificationsAsync } from '../utils/notifications';
+
+// Disable reanimated strict mode warning
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false, 
 });
-
-import * as Notifications from 'expo-notifications';
-import { registerForPushNotificationsAsync } from '../utils/notifications';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -27,56 +28,50 @@ Notifications.setNotificationHandler({
 });
 
 export default function Layout() {
-  const [isAppReady, setIsAppReady] = useState(false);
-
+  
   useEffect(() => {
+    // Ye function ab background mein bina app ko roke chalega
     const setupAppAndNotifications = async () => {
       try {
-        // 1. Get the Auth Token
         const userToken = await AsyncStorage.getItem("userToken");
-
-        // 2. Generate OS-level Push Token
         const pushToken = await registerForPushNotificationsAsync();
 
         if (pushToken) {
           await AsyncStorage.setItem('pushToken', pushToken);
 
-          // 3. 👉 SYNC WITH BACKEND: Save device token to user profile
+          // Sync token to backend
           if (userToken) {
             try {
               await axios.put(`${API_URL}/api/auth/update-push-token`, 
                 { pushToken },
                 { headers: { Authorization: `Bearer ${userToken}` } }
               );
-              console.log("✅ Device Push Token synced with backend!");
             } catch (syncError) {
-              console.log("⚠️ Failed to sync push token to backend (User might be offline)");
+              // Silently ignore sync errors (e.g., offline state)
             }
           }
         }
       } catch (error) {
         console.error("Initialization Error:", error);
-      } finally {
-        setIsAppReady(true);
       }
     };
 
     setupAppAndNotifications();
 
-    // 👉 FOREGROUND LISTENER (App is open)
+    // Foreground Listener (App is open)
     const notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
-      console.log("🔔 Notification Received in Foreground:", notification.request.content.title);
-      // Optional: We can add local alert popups here later if needed
+      // Logic for foreground local alerts can be added here
     });
 
-    // 👉 BACKGROUND / TERMINATED LISTENER (User taps the notification)
+    // Background/Terminated Listener (User taps notification)
     const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log("👆 User tapped on OS notification");
       const data = response.notification.request.content.data;
-
-      // 4. 👉 SMART ROUTING: Navigate based on notification payload
-      if (data && data.url) {
-        router.push(data.url as any);
+      
+      // Smart Routing execution with Delay (Context fix)
+      if (data?.url) {
+        setTimeout(() => {
+          router.push(data.url as any);
+        }, 500);
       }
     });
 
@@ -86,18 +81,11 @@ export default function Layout() {
     };
   }, []);
 
-  if (!isAppReady) {
-    return (
-      <View className="flex-1 justify-center items-center" style={{ backgroundColor: '#ffffff' }}>
-        <ActivityIndicator size="large" color="#ff3f6c" />
-      </View>
-    );
-  }
-
+  // ✅ DIRECT RETURN: Expo Router ab khush rahega aur context nahi bhulega!
   return (
     <GlobalProvider>
       <ThemeProvider>
-       <Stack screenOptions={{ headerShown: false }} />
+        <Stack screenOptions={{ headerShown: false }} />
       </ThemeProvider>
     </GlobalProvider>
   );

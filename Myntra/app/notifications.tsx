@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
     View, 
     Text, 
@@ -7,7 +7,9 @@ import {
     TouchableOpacity, 
     ActivityIndicator, 
     Image,
-    SafeAreaView
+    SafeAreaView,
+    Platform,
+    StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from './context/ThemeContext'; 
@@ -17,7 +19,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { API_URL } from './constants/api'; 
 
-// Structured interfaces for strict type safety
 interface NotificationData {
     url?: string;
     image?: string;
@@ -39,7 +40,6 @@ export default function NotificationsScreen() {
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
-    // Lifecycle: Fetch notifications on component mount
     useEffect(() => {
         fetchNotifications();
     }, []);
@@ -57,27 +57,24 @@ export default function NotificationsScreen() {
                 setNotifications(response.data.notifications || []);
             }
         } catch (error) {
-            console.error("Error fetching notifications:", error);
+            // Silently handle error in production
         } finally {
             setLoading(false);
         }
     };
 
     const handleNotificationClick = async (item: NotificationItem) => {
-        // 1. Dynamic Routing Route Execution
         if (item.data?.url) {
             router.push(item.data.url as any);
         }
 
-        // 2. Short-circuit evaluating backend update if already read
         if (item.isRead) return;
 
-        // 3. Optimistic Local State Update for instantaneous visual responsive design
+        // Optimistic UI Update
         setNotifications(prev => 
             prev.map(notif => notif._id === item._id ? { ...notif, isRead: true } : notif)
         );
 
-        // 4. Background Server Update sync execution
         try {
             const token = await AsyncStorage.getItem("userToken");
             await axios.put(`${API_URL}/api/notifications/${item._id}/read`, {}, {
@@ -85,11 +82,10 @@ export default function NotificationsScreen() {
             });
             fetchUnreadNotificationsCount();
         } catch (error) {
-            console.error("Error marking notification as read:", error);
+            // Silently handle error
         }
     };
 
-    // Date formatting engine helper
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { 
@@ -100,7 +96,6 @@ export default function NotificationsScreen() {
         });
     };
 
-    // Navigation Stack Guard Engine
     const handleBackPress = () => {
         if (router.canGoBack()) {
             router.back();
@@ -109,10 +104,8 @@ export default function NotificationsScreen() {
         }
     };
 
-    // Memoized keyExtractor to support performant virtualized lists
     const keyExtractor = useCallback((item: NotificationItem) => item._id, []);
 
-    // Performant Memoized List Item Renderer 
     const renderItem = useCallback(({ item }: { item: NotificationItem }) => {
         const unreadBackground = isDark ? '#3a2027' : '#ffeef1';
         const cardBg = item.isRead ? colors.surface : unreadBackground;
@@ -161,8 +154,6 @@ export default function NotificationsScreen() {
     return (
         <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
             <View className="flex-1 w-full max-w-[1400px] mx-auto">
-                
-                {/* Header Section */}
                 <View style={[styles.header, { borderBottomColor: colors.border }]}>
                     <TouchableOpacity onPress={handleBackPress} style={styles.backButton} hitSlop={15}>
                         <Ionicons name="arrow-back" size={24} color={colors.textMain} />
@@ -170,7 +161,6 @@ export default function NotificationsScreen() {
                     <Text style={[styles.headerTitle, { color: colors.textMain }]}>Notifications</Text>
                 </View>
 
-                {/* Body Content Resolver */}
                 {loading ? (
                     <View style={styles.centerContainer}>
                         <ActivityIndicator size="large" color={colors.primary} />
@@ -206,7 +196,9 @@ export default function NotificationsScreen() {
 
 const styles = StyleSheet.create({
     safeArea: { 
-        flex: 1 
+        flex: 1,
+        // 👉 Android header overlapping fix:
+        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     },
     header: { 
         flexDirection: 'row', 

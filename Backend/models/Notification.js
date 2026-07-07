@@ -16,12 +16,12 @@ const notificationSchema = new mongoose.Schema({
     },
     isRead: {
         type: Boolean,
-        default: false // All new notifications start as unread
+        default: false 
     },
     data: {
-        type: Object, // Optional: to store deep links (e.g., { url: "/bag" })
+        type: Object,
         default: {}
     }
-}, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
+}, { timestamps: true });
 
 module.exports = mongoose.model('Notification', notificationSchema);

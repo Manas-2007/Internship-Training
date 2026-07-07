@@ -179,8 +179,14 @@ export default function Orders() {
           style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
         >
           <View className="w-full max-w-4xl mx-auto flex-row items-center">
-            <TouchableOpacity 
-              onPress={() => router.back()} 
+           <TouchableOpacity 
+              onPress={() => {
+                if (router.canGoBack()) {
+                  router.back();
+                } else {
+                  router.replace("/"); 
+                }
+              }} 
               activeOpacity={0.7}
               className="mr-3 md:mr-4 p-1.5 -ml-1.5 rounded-full cursor-pointer"
             >

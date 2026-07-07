@@ -1,6 +1,6 @@
 const Bag = require('../models/Bag');
-const User = require('../models/User'); // Required to fetch the user's push token
-const { scheduleDelayedNotification } = require('../services/queueService'); // Required to schedule the job
+const User = require('../models/User'); 
+const { scheduleDelayedNotification } = require('../services/queueService'); 
 
 exports.addToBag = async (req, res) => {
     try {
@@ -9,17 +9,17 @@ exports.addToBag = async (req, res) => {
 
         // Schedule an abandoned cart notification for 2 hours later
         try {
-            const userId = req.body.userId; // Assuming userId is passed in the request body
+            const userId = req.body.userId; 
             if (userId) {
                 const user = await User.findById(userId);
                 
                 if (user && user.pushToken) {
                     await scheduleDelayedNotification(
-                        'in 2 hours', // Agenda syntax for scheduling
+                        'in 2 hours', 
                         user.pushToken,
                         "Forgot something? 🛒",
                         "You left great items in your bag. Complete your purchase before they sell out!",
-                        { url: "/bag" } // Deep link to redirect the user back to the cart
+                        { url: "/bag" } 
                     );
                 }
             }

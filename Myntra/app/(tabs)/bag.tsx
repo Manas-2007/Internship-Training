@@ -16,9 +16,8 @@ import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { API_URL } from "../constants/api";
-// 👉 Import ThemeContext
 import { useTheme } from "../context/ThemeContext";
 
 interface Product {
@@ -45,18 +44,14 @@ export default function Bag() {
   const [isGuest, setIsGuest] = useState<boolean>(false);
   const router = useRouter();
 
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   
-  // Use 1024px for Desktop split view, 768px for Tablet width
   const isDesktop: boolean = width >= 1024; 
   const isTablet: boolean = width >= 768 && width < 1024;
   const isLargeScreen = isDesktop || isTablet;
 
-  // Platform specific TabBar offset for mobile sticky footer
   const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 75;
 
   const showMessage = (title: string, message: string): void => {
@@ -230,7 +225,8 @@ export default function Bag() {
       <TouchableOpacity
         className="w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
         style={{ backgroundColor: colors.primary }}
-        onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
+        // 👉 FIX 2: Convert Number to String before passing to router.push
+        onPress={() => router.push({ pathname: "/checkout", params: { totalAmount: String(totalAmount) } })}
       >
         <Text className="text-white font-bold text-sm md:text-base tracking-widest uppercase">
           PLACE ORDER
@@ -255,7 +251,8 @@ export default function Bag() {
       <TouchableOpacity
         className="w-full py-3.5 rounded-xl items-center justify-center shadow-sm active:opacity-90"
         style={{ backgroundColor: colors.primary }}
-        onPress={() => router.push({ pathname: "/checkout", params: { totalAmount } })}
+        // 👉 FIX 2: Convert Number to String here as well
+        onPress={() => router.push({ pathname: "/checkout", params: { totalAmount: String(totalAmount) } })}
       >
         <Text className="text-white font-bold text-sm tracking-widest uppercase">
           PLACE ORDER
@@ -290,7 +287,6 @@ export default function Bag() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          // Responsive padding: Extra padding on mobile so content doesn't hide behind absolute footer
           contentContainerStyle={{ 
             flexGrow: 1, 
             paddingTop: isLargeScreen ? 24 : 16,
