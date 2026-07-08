@@ -22,6 +22,7 @@ import { useTheme } from "../context/ThemeContext";
 
 const menuItems = [
   { icon: "cube", label: "Orders", route: "/orders" },
+  { icon: "receipt-outline", label: "My Transactions", route: "/transactions" },
   { icon: "heart", label: "Wishlist", route: "/(tabs)/wishlist" },
   { icon: "card", label: "Payment Methods", route: "/payments" },
   { icon: "location", label: "Addresses", route: "/addresses" },

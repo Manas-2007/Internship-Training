@@ -18,6 +18,8 @@ const orderRoutes = require('./routes/orderRoutes');
 const recentlyViewedRoutes = require('./routes/recentlyViewedRoutes');
 const { startQueue, enqueueRealTimeNotification } = require('./services/queueService');
 const notificationRoutes = require('./routes/notificationRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use('/api/bag', bagRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/recently-viewed', recentlyViewedRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 // 5. Start Server
 const PORT = process.env.PORT || 5000;
