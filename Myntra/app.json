@@ -25,6 +25,10 @@
     },
     "android": {
       "package": "com.manas2007.Myntra"
+    },
+    "notifications": {
+      "icon": "./assets/icon.png",
+      "color": "#ff3f6c"
     }
   }
 }

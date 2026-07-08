@@ -184,7 +184,7 @@ export default function Orders() {
                 if (router.canGoBack()) {
                   router.back();
                 } else {
-                  router.replace("/"); 
+                  router.push("/"); 
                 }
               }} 
               activeOpacity={0.7}

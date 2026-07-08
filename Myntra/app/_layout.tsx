@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-// 👉 isAppReady hatane ki wajah se 'useState' aur 'View', 'ActivityIndicator' ki zaroorat nahi bachi yahan
+import { LogBox } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, router } from "expo-router";
 import * as Notifications from 'expo-notifications';
@@ -11,6 +11,11 @@ import { GlobalProvider } from "./context/GlobalContext";
 import { ThemeProvider } from './context/ThemeContext';
 import { API_URL } from './constants/api';
 import { registerForPushNotificationsAsync } from '../utils/notifications';
+
+// Suppress Expo Go Push Notification Red Screen Error
+LogBox.ignoreLogs([
+  'expo-notifications: Android Push notifications'
+]);
 
 // Disable reanimated strict mode warning
 configureReanimatedLogger({
@@ -28,26 +33,30 @@ Notifications.setNotificationHandler({
 });
 
 export default function Layout() {
-  
   useEffect(() => {
-    // Ye function ab background mein bina app ko roke chalega
     const setupAppAndNotifications = async () => {
       try {
         const userToken = await AsyncStorage.getItem("userToken");
-        const pushToken = await registerForPushNotificationsAsync();
+        let pushToken = null;
+        
+        try {
+          pushToken = await registerForPushNotificationsAsync();
+        } catch (e) {
+          console.warn("Notification setup bypassed for Expo Go.");
+        }
 
         if (pushToken) {
           await AsyncStorage.setItem('pushToken', pushToken);
 
-          // Sync token to backend
           if (userToken) {
             try {
-              await axios.put(`${API_URL}/api/auth/update-push-token`, 
+              await axios.put(
+                `${API_URL}/api/auth/update-push-token`,
                 { pushToken },
                 { headers: { Authorization: `Bearer ${userToken}` } }
               );
             } catch (syncError) {
-              // Silently ignore sync errors (e.g., offline state)
+              // Silently ignore offline sync errors
             }
           }
         }
@@ -58,20 +67,17 @@ export default function Layout() {
 
     setupAppAndNotifications();
 
-    // Foreground Listener (App is open)
-    const notificationSubscription = Notifications.addNotificationReceivedListener(notification => {
-      // Logic for foreground local alerts can be added here
+    const notificationSubscription = Notifications.addNotificationReceivedListener((notification) => {
+      // Foreground notification logic
     });
 
-    // Background/Terminated Listener (User taps notification)
-    const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+    const responseSubscription = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data;
       
-      // Smart Routing execution with Delay (Context fix)
       if (data?.url) {
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           router.push(data.url as any);
-        }, 500);
+        });
       }
     });
 
@@ -81,7 +87,6 @@ export default function Layout() {
     };
   }, []);
 
-  // ✅ DIRECT RETURN: Expo Router ab khush rahega aur context nahi bhulega!
   return (
     <GlobalProvider>
       <ThemeProvider>
