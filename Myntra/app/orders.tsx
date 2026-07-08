@@ -11,6 +11,7 @@ import {
   Platform,
   UIManager,
   useWindowDimensions,
+  BackHandler
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -106,6 +107,22 @@ export default function Orders() {
     }, [])
   );
 
+   useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // Physical back dabane par crash hone ke bajay seedha Home par bhej do
+        router.navigate("/profile"); 
+        return true; // Iska matlab humne back button handle kar liya hai
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        subscription.remove();
+      };
+    }, [])
+  );
+
   const onRefresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
     await fetchOrders();
@@ -173,32 +190,28 @@ export default function Orders() {
       {/* 1400px Centering Wrapper */}
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
-        {/* HEADER */}
+       {/* HEADER */}
         <View 
           className="px-2 py-4 md:py-5 border-b shadow-sm z-10 flex-row items-center"
           style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
         >
           <View className="w-full max-w-4xl mx-auto flex-row items-center">
-           <TouchableOpacity 
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.push("/"); 
-                }
-              }} 
+            
+            {/* ✅ UPDATED BACK BUTTON: 100% Crash-Proof */}
+            <TouchableOpacity 
+              onPress={() => router.navigate("/profile")} 
               activeOpacity={0.7}
               className="mr-3 md:mr-4 p-1.5 -ml-1.5 rounded-full cursor-pointer"
             >
               <Ionicons name="arrow-back" size={24} color={colors.primary} />
             </TouchableOpacity>
+
             <Ionicons name="cube" size={24} color={colors.primary} />
             <Text className="text-xl md:text-2xl font-bold tracking-tight ml-2.5" style={{ color: colors.textMain }}>
               My Orders
             </Text>
           </View>
         </View>
-
         <ScrollView
           showsVerticalScrollIndicator={false}
           className="flex-1 px-2 pt-2 md:pt-3"

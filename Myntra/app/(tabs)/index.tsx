@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   ScrollView,
   View,
@@ -10,16 +10,15 @@ import {
   useWindowDimensions,
   Alert,
   Platform,
+  BackHandler,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useGlobalContext } from "../context/GlobalContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_URL } from "../constants/api";
-
-// 👉 Import ThemeContext
 import { useTheme } from "../context/ThemeContext";
 
 import Banner from "../../components/Home Tab/Banner";
@@ -133,6 +132,25 @@ export default function Home() {
       </View>
     );
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // Sirf Android par exit app chalega, iOS/Web par crash nahi karega
+        if (Platform.OS === 'android') {
+          BackHandler.exitApp();
+        }
+        return true; 
+      };
+
+      // Modern way to add and remove event listeners
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        subscription.remove(); // Safely removes the listener
+      };
+    }, [])
+  );
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>

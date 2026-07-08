@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
   useWindowDimensions,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -22,7 +22,6 @@ import { API_URL } from "./constants/api";
 import { useTheme } from "./context/ThemeContext";
 
 export default function Checkout() {
-  const router = useRouter();
   
   // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
@@ -96,8 +95,24 @@ export default function Checkout() {
         paymentMethod: paymentMethodInfo,
       });
 
-      showMessage("Success!", "Your order has been placed successfully.");
-      router.replace("/orders"); 
+      if (Platform.OS === "web") {
+        window.alert("Success!\n\nYour order has been placed successfully.");
+        router.replace("/orders"); // ✅ Seedha orders par
+      } else {
+        Alert.alert(
+          "Success!", 
+          "Your order has been placed successfully.", 
+          [
+            { 
+              text: "OK", 
+              onPress: () => {
+                // 'replace' Checkout ko history se hata dega aur Orders dikhayega
+                router.replace("/orders"); 
+              }
+            }
+          ]
+        );
+      }
       
     } catch (error) {
       console.log("Checkout Error:", error);
