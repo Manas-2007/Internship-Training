@@ -3,37 +3,32 @@ const Transaction = require('../models/Transaction');
 exports.getTransactions = async (req, res) => {
     try {
         const userId = req.user.id || req.user._id || req.user.userId;
-
-        // 1. Pagination Parameters (Default: Page 1, 10 items per page)
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
-
-        // 2. Sorting Parameters (Default: Date descending - newest first)
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
 
-        // 3. Filtering Logic
         let query = { userId: userId };
-
-        // Agar user ne status filter lagaya hai (e.g., ?status=Success)
         if (req.query.status && req.query.status !== 'All') {
             query.status = req.query.status;
         }
-
-        // Agar user ne payment mode filter lagaya hai (e.g., ?paymentMode=UPI)
         if (req.query.paymentMode && req.query.paymentMode !== 'All') {
             query.paymentMode = req.query.paymentMode;
         }
 
-        // 4. Database Query with Pagination
         const transactions = await Transaction.find(query)
             .sort({ [sortBy]: sortOrder })
             .skip(skip)
             .limit(limit)
-            .populate('orderId', 'total date'); // Order details bhi le aayenge
+           .populate({
+                path: 'orderId',
+                populate: {
+                    path: 'items.productId',
+                    select: 'name images image' 
+                }
+            }); 
 
-        // 5. Total count for frontend pagination UI
         const totalTransactions = await Transaction.countDocuments(query);
         const totalPages = Math.ceil(totalTransactions / limit);
 
@@ -52,5 +47,32 @@ exports.getTransactions = async (req, res) => {
     } catch (error) {
         console.error("Get Transactions Error:", error);
         res.status(500).json({ success: false, message: 'Server Error fetching transactions' });
+    }
+};
+
+exports.seedMockTransactions = async (req, res) => {
+    try {
+        const userId = req.user.id || req.user._id || req.user.userId;
+        const statuses = ['Success', 'Failed', 'Refunded', 'Pending'];
+        const modes = ['UPI', 'Credit Card', 'Debit Card', 'Net Banking'];
+
+        const dummyData = [];
+        for (let i = 0; i < 15; i++) {
+            dummyData.push({
+                userId: userId,
+                providerTransactionId: `MOCK_TXN_${Date.now()}_${i}`,
+                amount: Math.floor(Math.random() * 5000) + 500,
+                paymentMode: modes[Math.floor(Math.random() * modes.length)],
+                status: statuses[Math.floor(Math.random() * statuses.length)],
+                createdAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000)
+            });
+        }
+
+        await Transaction.insertMany(dummyData);
+
+        res.status(200).json({ success: true, message: "15 Dummy transactions added successfully!" });
+    } catch (error) {
+        console.error("Seed Error:", error);
+        res.status(500).json({ success: false, message: "Error adding dummy data" });
     }
 };

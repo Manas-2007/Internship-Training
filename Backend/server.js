@@ -23,17 +23,17 @@ const webhookRoutes = require('./routes/webhookRoutes');
 
 const app = express();
 
-// 2. Middlewares
+// Middlewares
 app.use(helmet()); 
 app.use(cors());
 app.use(express.json()); 
 
 
-// 3. Database Connection 
+// Database Connection 
 connectDB();
-startQueue(); // Start the background job queue for notifications
+startQueue(); 
 
-// 4. API Routes 
+//  API Routes 
 app.get('/', (req, res) => res.send('Myntra Clone Backend is Working (MVC Architecture)'));
 
 app.use('/api/auth', authRoutes);
@@ -46,7 +46,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/webhooks', webhookRoutes);
 
-// 5. Start Server
+// Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is Live at PORT ${PORT}`);

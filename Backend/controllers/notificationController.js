@@ -2,14 +2,11 @@ const Notification = require('../models/Notification');
 
 exports.getUserNotifications = async (req, res) => {
     try {
-        // Extract user ID
         const userId = req.user.id || req.user._id || req.user.userId;
-
         if (!userId) {
             return res.status(400).json({ success: false, message: "User ID missing from token" });
         }
 
-        // Fetch user notifications (newest first)
         const notifications = await Notification.find({ userId: userId }).sort({ createdAt: -1 });
 
         res.status(200).json({ success: true, notifications });
@@ -22,8 +19,6 @@ exports.getUserNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
     try {
         const { id } = req.params;
-        
-        // Update read status
         const notification = await Notification.findByIdAndUpdate(
             id, 
             { isRead: true },
