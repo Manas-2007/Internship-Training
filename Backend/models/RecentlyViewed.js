@@ -16,7 +16,8 @@ const recentlyViewedSchema = new mongoose.Schema({
       },
       viewedAt: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index: { expires: '30d' }
       }
     }
   ]

@@ -4,7 +4,7 @@ const protect = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 router.post('/', protect, addToWishlist); 
-router.get('/:userid', getWishlist);
+router.get('/:userid',protect, getWishlist);
 router.delete('/product/:productId', protect, removeFromWishlist);
 
 module.exports = router;

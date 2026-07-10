@@ -5,21 +5,17 @@ const { scheduleDelayedNotification } = require('../services/queueService');
 exports.addToBag = async (req, res) => {
     try {
         const { userId, productId, size, quantity } = req.body;
-
-        // Check if item already exists in cart to prevent duplicates
         let existingItem = await Bag.findOne({ userId, productId, size });
 
         if (existingItem) {
             existingItem.quantity += (quantity || 1);
-            existingItem.status = 'active'; // Move back to active if it was saved
-            await existingItem.save(); // Triggers optimistic locking check
+            existingItem.status = 'active'; 
+            await existingItem.save(); 
             return res.status(200).json(existingItem);
         }
 
         const newBagItem = new Bag(req.body);
         const savedItem = await newBagItem.save();
-
-        // Schedule an abandoned cart notification for 2 hours later
         try {
             if (userId) {
                 const user = await User.findById(userId);
@@ -47,11 +43,8 @@ exports.addToBag = async (req, res) => {
 exports.getBag = async (req, res) => {
     try {
         const bag = await Bag.find({ userId: req.params.userid }).populate("productId");
-        
-        // Segregate Active and Saved Items for the Frontend
         const activeItems = bag.filter(item => item.status === 'active');
         const savedItems = bag.filter(item => item.status === 'saved');
-
         res.status(200).json({ 
             activeItems, 
             savedItems, 
@@ -63,7 +56,6 @@ exports.getBag = async (req, res) => {
     }
 };
 
-// 👇 NAYA FUNCTION: Toggle Save for Later
 exports.toggleItemStatus = async (req, res) => {
     try {
         const item = await Bag.findById(req.params.itemid);
@@ -71,11 +63,10 @@ exports.toggleItemStatus = async (req, res) => {
 
         item.status = item.status === 'active' ? 'saved' : 'active';
         
-        await item.save(); // Triggers optimistic concurrency check
+        await item.save(); 
         res.status(200).json({ message: `Item moved to ${item.status}`, item });
         
     } catch (error) {
-        // Handle Concurrency Conflict
         if (error.name === 'VersionError') {
             return res.status(409).json({ message: "Conflict: Cart was updated in another session. Please refresh." });
         }
@@ -92,19 +83,16 @@ exports.removeFromBag = async (req, res) => {
     }
 };
 
-// 👇 UPDATED: Concurrency-Safe Quantity Update
 exports.updateQuantity = async (req, res) => {
     try {
-        // findByIdAndUpdate use nahi karenge, warna lock bypass ho jayega
         const item = await Bag.findById(req.params.itemid);
         if (!item) return res.status(404).json({ message: "Item not found" });
 
         item.quantity = req.body.quantity;
-        await item.save(); // Triggers __v version check
+        await item.save(); 
 
         res.status(200).json({ message: "Quantity updated successfully", item });
     } catch (error) {
-        // Handle Concurrency Conflict
         if (error.name === 'VersionError') {
             return res.status(409).json({ message: "Conflict: Quantity was changed by another device. Please refresh." });
         }
@@ -112,7 +100,6 @@ exports.updateQuantity = async (req, res) => {
     }
 };
 
-// 👇 NAYA FUNCTION: Cart Validation Before Checkout
 exports.validateCheckout = async (req, res) => {
     try {
         const activeItems = await Bag.find({ userId: req.params.userid, status: 'active' }).populate("productId");
@@ -127,20 +114,16 @@ exports.validateCheckout = async (req, res) => {
         for (const item of activeItems) {
             const product = item.productId;
             
-            // 1. Detect Discontinued/Deleted Products
             if (!product) {
                 issues.push("An item in your cart is no longer available and has been removed.");
-                await Bag.findByIdAndDelete(item._id); // Graceful cleanup
+                await Bag.findByIdAndDelete(item._id); 
                 continue; 
             }
 
-            // 2. Validate Stock (Assumes product schema has 'stock' or handles lack of it)
-            const stockLimit = product.stock !== undefined ? product.stock : 10; // dummy fallback
+            const stockLimit = product.stock !== undefined ? product.stock : 10; 
             if (item.quantity > stockLimit) {
                 issues.push(`${product.name || 'Product'} only has ${stockLimit} units left in stock.`);
             }
-
-            // Calculate active total safely using the LATEST price from the Product DB
             validTotal += (product.price * item.quantity);
         }
 

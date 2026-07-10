@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   ScrollView,
   View,
@@ -26,11 +26,16 @@ import CategoryList from "../../components/Home Tab/CategoryList";
 import DealsSection from "../../components/Home Tab/DealCard";
 import TrendingProducts from "../../components/Home Tab/TrendingProducts";
 import RecentlyViewedSection from "../../components/Home Tab/RecentlyViewedSection";
+// 👉 1. Naya Component Import kiya
+import RecommendationsSection from "../../components/Home Tab/RecommendationsSection";
 
 export default function Home() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const [refreshing, setRefreshing] = useState(false);
+
+  // 👉 2. Recommendations save karne ke liye local state
+  const [recommendations, setRecommendations] = useState<any[]>([]);
 
   // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
@@ -57,10 +62,34 @@ export default function Home() {
     hasUnreadNotifications,
   } = useGlobalContext();
 
+  // 👉 3. API se Task-6 Recommendations fetch karne ka function
+  const fetchRecommendations = async () => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) return; // Guest hai toh skip karo (usko khali trending dikhega)
+      
+      const response = await axios.get(`${API_URL}/api/recently-viewed/recommendations`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setRecommendations(response.data.recommendations);
+      }
+    } catch (error) {
+      console.error("Failed to fetch recommendations:", error);
+    }
+  };
+
+  // Jab page load ho tab recommendations le aao
+  useEffect(() => {
+    fetchRecommendations();
+  }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchHomeData();
     await fetchWishlistIds();
+    await fetchRecommendations(); // 👉 Refresh pe recommendations bhi update hongi
     setRefreshing(false);
   };
 
@@ -136,18 +165,16 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-        // Sirf Android par exit app chalega, iOS/Web par crash nahi karega
         if (Platform.OS === 'android') {
           BackHandler.exitApp();
         }
         return true; 
       };
 
-      // Modern way to add and remove event listeners
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
       return () => {
-        subscription.remove(); // Safely removes the listener
+        subscription.remove(); 
       };
     }, [])
   );
@@ -176,16 +203,15 @@ export default function Home() {
                 <Ionicons name="search-outline" size={24} color={colors.textMain} />
               </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => router.push("/notifications")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors relative" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
-  <Ionicons name="notifications-outline" size={24} color={colors.textMain} />
-  
-  {hasUnreadNotifications && (
-    <View 
-      className="absolute top-1.5 right-2 w-2.5 h-2.5 rounded-full border-2" 
-      style={{ backgroundColor: colors.primary, borderColor: colors.surface }}
-    />
-  )}
-</TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push("/notifications")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors relative" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+                <Ionicons name="notifications-outline" size={24} color={colors.textMain} />
+                {hasUnreadNotifications && (
+                  <View 
+                    className="absolute top-1.5 right-2 w-2.5 h-2.5 rounded-full border-2" 
+                    style={{ backgroundColor: colors.primary, borderColor: colors.surface }}
+                  />
+                )}
+              </TouchableOpacity>
 
               <TouchableOpacity onPress={() => router.push("/profile")} activeOpacity={0.7} className="p-1.5 rounded-full transition-colors" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
                 <Ionicons name="person-outline" size={24} color={colors.textMain} />
@@ -228,6 +254,12 @@ export default function Home() {
 
             <RecentlyViewedSection 
               recentlyViewed={recentlyViewed} 
+              isLargeScreen={isLargeScreen} 
+            />
+
+            {/* 👉 4. AAKHRI TUKDA (TASK 6 COMPLETED!) */}
+            <RecommendationsSection 
+              recommendations={recommendations} 
               isLargeScreen={isLargeScreen} 
             />
 

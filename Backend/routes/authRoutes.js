@@ -4,7 +4,6 @@ const { registerUser, loginUser, getUserProfile } = require('../controllers/auth
 const protect = require('../middlewares/authMiddleware'); 
 const router = express.Router();
 const { updatePushToken } = require('../controllers/authController');
-const { testPushSystem } = require('../controllers/authController');
 
 router.post('/register', [
     body('name', 'Name is required').notEmpty(),

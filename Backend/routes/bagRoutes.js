@@ -1,5 +1,4 @@
 const express = require('express');
-// 👇 Naye functions ko yahan import list mein add kiya
 const { 
     addToBag, 
     getBag, 
@@ -8,17 +7,15 @@ const {
     toggleItemStatus, 
     validateCheckout 
 } = require('../controllers/bagController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
-// 🟢 Specific routes hamesha upar aate hain
-router.put('/toggle-status/:itemid', toggleItemStatus);
-router.get('/validate/:userid', validateCheckout);
-
-// 🔵 Dynamic ID wale routes uske neeche aate hain
-router.post('/', addToBag);
-router.get('/:userid', getBag);
-router.delete('/:itemid', removeFromBag);
-router.put('/:itemid', updateQuantity);
+router.put('/toggle-status/:itemid', authMiddleware, toggleItemStatus);
+router.get('/validate/:userid', authMiddleware, validateCheckout);
+router.post('/', authMiddleware, addToBag);
+router.get('/:userid', authMiddleware, getBag);
+router.delete('/:itemid', authMiddleware, removeFromBag);
+router.put('/:itemid', authMiddleware, updateQuantity);
 
 module.exports = router;

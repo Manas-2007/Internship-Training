@@ -23,7 +23,7 @@ const generateRandomTracking = () => {
 
 exports.createOrder = async (req, res) => {
     try {
-        const userId = req.params.userId;
+        const userId = req.params.userId;   
 
         const bag = await Bag.find({ userId }).populate("productId");
         if (!bag || bag.length === 0) {
@@ -109,7 +109,7 @@ exports.createOrder = async (req, res) => {
                 );
             }
         } catch (notificationError) {
-           
+            console.error("Notification failed:", notificationError);           
         }
 
         await Bag.deleteMany({ userId });
