@@ -13,8 +13,13 @@ const sendPushNotification = async (pushToken, title, body, data = {}) => {
         body: body,
         data: data, 
     }];
-
-    return await expo.sendPushNotificationsAsync(messages);
+try {
+        const tickets = await expo.sendPushNotificationsAsync(messages);
+        return tickets; 
+    } catch (error) {
+        console.error("Expo Service Error:", error.message);
+        throw error; 
+    }
 };
 
 module.exports = { sendPushNotification };
