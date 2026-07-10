@@ -13,18 +13,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// 👉 Import ThemeContext
 import { useTheme } from "./context/ThemeContext";
 
 export default function Addresses() {
   const router = useRouter();
-  
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-
   const [addresses, setAddresses] = useState<string[]>([]);
   const [defaultAddress, setDefaultAddress] = useState<string>("");
   const [newAddress, setNewAddress] = useState("");
@@ -33,7 +28,6 @@ export default function Addresses() {
     loadAddresses();
   }, []);
 
-  // Cross-platform alert helper to prevent crashes on web
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === "web") {
       window.alert(`${title}\n\n${message}`);
@@ -49,7 +43,7 @@ export default function Addresses() {
       if (savedAddresses) setAddresses(JSON.parse(savedAddresses));
       if (savedDefault) setDefaultAddress(savedDefault);
     } catch (error) {
-      console.log("Error loading addresses", error);
+      console.error("Error loading addresses", error);
     }
   };
 
@@ -63,7 +57,7 @@ export default function Addresses() {
     setNewAddress("");
     
     if (updatedAddresses.length === 1) {
-      handleSetDefault(newAddress, false); // Pass false to avoid spamming alerts on first add
+      handleSetDefault(newAddress, false); 
     }
     await AsyncStorage.setItem("userAddresses", JSON.stringify(updatedAddresses));
   };
@@ -77,9 +71,7 @@ export default function Addresses() {
   };
 
   return (
-    // 👉 Dynamic Main Background
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
-      {/* 1400px Centering Wrapper for the Entire Screen */}
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
         {/* Header Area */}
@@ -107,10 +99,7 @@ export default function Addresses() {
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40, paddingTop: isLargeScreen ? 32 : 16 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Inner constraint (max-w-3xl) prevents stretching on ultrawide monitors */}
           <View className="w-full max-w-3xl mx-auto px-4">
-            
-            {/* Add New Address Card */}
             <View 
               className="p-5 md:p-6 rounded-2xl mb-8 shadow-sm border"
               style={{ backgroundColor: colors.surface, borderColor: colors.border }}
@@ -122,13 +111,11 @@ export default function Addresses() {
                 >
                   <Ionicons name="location" size={20} color={colors.primary} />
                 </View>
-                {/* Bold only on main title */}
                 <Text className="text-lg md:text-xl font-bold tracking-tight" style={{ color: colors.textMain }}>
                   Add New Address
                 </Text>
               </View>
               
-              {/* 👉 Dynamic Input Field */}
               <TextInput
                 className="px-4 md:px-5 py-3.5 md:py-4 rounded-xl text-sm md:text-base font-medium mb-5 outline-none border"
                 style={{ 
@@ -153,13 +140,11 @@ export default function Addresses() {
               </TouchableOpacity>
             </View>
 
-            {/* Saved Addresses List */}
             <Text className="font-bold mb-4 ml-1 uppercase tracking-widest text-xs" style={{ color: colors.textMuted }}>
               Saved Addresses
             </Text>
             
             {addresses.length === 0 ? (
-              // 👉 Dynamic Empty State
               <View 
                 className="p-8 md:p-10 rounded-2xl border items-center justify-center border-dashed"
                 style={{ backgroundColor: colors.surface, borderColor: colors.border }}
@@ -179,7 +164,6 @@ export default function Addresses() {
                 const isDefault = defaultAddress === addr;
                 
                 return (
-                  // 👉 Dynamic List Item Layout
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleSetDefault(addr)}
@@ -221,7 +205,6 @@ export default function Addresses() {
                       </View>
                     </View>
                     
-                    {/* 👉 Dynamic Radio Button UI */}
                     <View 
                       className="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 items-center justify-center ml-4 transition-colors"
                       style={{ borderColor: isDefault ? colors.primary : colors.border }}

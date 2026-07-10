@@ -12,7 +12,6 @@ export default function RecommendationsSection({ recommendations, isLargeScreen 
   const router = useRouter();
   const { colors } = useTheme();
 
-  // Agar data nahi hai toh space na le
   if (!recommendations || recommendations.length === 0) return null;
 
   return (

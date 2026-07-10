@@ -34,8 +34,7 @@ export async function registerForPushNotificationsAsync() {
         
       token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     } catch (error) {
-      // Safely catches Expo Go push errors without crashing the app
-      console.log("⚠️ Push notifications bypassed (Expected in Expo Go).");
+      console.error("⚠️ Push notifications bypassed (Expected in Expo Go).");
       return null;
     }
   }

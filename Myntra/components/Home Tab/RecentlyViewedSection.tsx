@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-// 👉 Import ThemeContext
 import { useTheme } from "../../app/context/ThemeContext";
 
 interface RecentlyViewedProps {
@@ -11,8 +10,6 @@ interface RecentlyViewedProps {
 
 export default function RecentlyViewedSection({ recentlyViewed, isLargeScreen }: RecentlyViewedProps) {
   const router = useRouter();
-  
-  // 👉 Extract colors
   const { colors } = useTheme();
 
   if (!recentlyViewed || recentlyViewed.length === 0) return null;
@@ -42,7 +39,7 @@ export default function RecentlyViewedSection({ recentlyViewed, isLargeScreen }:
           >
             <View 
               className={`w-full ${isLargeScreen ? "h-48" : "h-36"}`}
-              style={{ backgroundColor: colors.background }} // Placeholder background
+              style={{ backgroundColor: colors.background }}
             >
               <Image 
                 source={{ uri: product.images?.[0] || product.image }} 

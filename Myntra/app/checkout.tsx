@@ -18,25 +18,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { API_URL } from "./constants/api";
-// 👉 Import ThemeContext
 import { useTheme } from "./context/ThemeContext";
 
 export default function Checkout() {
   
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const { totalAmount } = useLocalSearchParams(); 
   const subTotal = totalAmount ? Number(totalAmount) : 0;
   const shipping = subTotal > 0 ? 99 : 0;
   const tax = Math.round(subTotal * 0.05); 
   const finalTotal = subTotal + shipping + tax;
-
   const { width } = useWindowDimensions();
   const isLargeScreen: boolean = width >= 1024;
   const isTablet: boolean = width >= 768 && width < 1024;
   const isDesktopOrTablet = isLargeScreen || isTablet;
-
   const [fullName, setFullName] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -54,7 +49,7 @@ export default function Checkout() {
         if (addr) setAddress(addr);
         if (card) setCardNumber(card);
       } catch (error) {
-        console.log("Error loading defaults:", error);
+        console.error("Error loading default data", error);
       }
     };
     loadDefaultData();
@@ -97,7 +92,7 @@ export default function Checkout() {
 
       if (Platform.OS === "web") {
         window.alert("Success!\n\nYour order has been placed successfully.");
-        router.replace("/orders"); // ✅ Seedha orders par
+        router.replace("/orders"); 
       } else {
         Alert.alert(
           "Success!", 
@@ -106,7 +101,6 @@ export default function Checkout() {
             { 
               text: "OK", 
               onPress: () => {
-                // 'replace' Checkout ko history se hata dega aur Orders dikhayega
                 router.replace("/orders"); 
               }
             }
@@ -115,7 +109,7 @@ export default function Checkout() {
       }
       
     } catch (error) {
-      console.log("Checkout Error:", error);
+      console.error("Checkout Error:", error);
       showMessage("Error", "Something went wrong while placing your order.");
     } finally {
       setIsProcessing(false);

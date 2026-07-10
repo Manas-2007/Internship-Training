@@ -1,11 +1,8 @@
 import React from "react";
 import { View, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-// 👉 Import ThemeContext
-import { useTheme } from "../../app/context/ThemeContext"; // Path adjust kar lena
-
+import { useTheme } from "../../app/context/ThemeContext"; 
 export default function SearchBar() {
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
 
   return (

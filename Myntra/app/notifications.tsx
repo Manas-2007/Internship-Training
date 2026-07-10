@@ -23,7 +23,7 @@ interface NotificationData {
     url?: string;
     image?: string;
 }
-
+ 
 interface NotificationItem {
     _id: string;
     title: string;

@@ -1,10 +1,8 @@
-// components/Home/CategoryList.tsx
 import React from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-// 👉 Import ThemeContext
-import { useTheme } from "../../app/context/ThemeContext"; // Path adjust kar lena agar alag ho
+import { useTheme } from "../../app/context/ThemeContext";
 
 interface CategoryListProps {
   categories: any[];
@@ -13,8 +11,6 @@ interface CategoryListProps {
 
 export default function CategoryList({ categories, isLargeScreen }: CategoryListProps) {
   const router = useRouter();
-  
-  // 👉 Extract colors
   const { colors } = useTheme();
 
   if (!categories || categories.length === 0) return null;
@@ -22,7 +18,6 @@ export default function CategoryList({ categories, isLargeScreen }: CategoryList
   return (
     <View className="mt-8 md:mt-12 w-full">
       <View className="max-w-6xl mx-auto w-full px-4 lg:px-4">
-        {/* Header Section */}
         <View className="flex-row justify-between items-center mb-5 md:mb-6 px-1 lg:px-0">
           <Text className="text-lg md:text-xl font-bold tracking-wide" style={{ color: colors.textMain }}>
             SHOP BY CATEGORY
@@ -36,7 +31,6 @@ export default function CategoryList({ categories, isLargeScreen }: CategoryList
           </TouchableOpacity>
         </View>
 
-        {/* Categories Layout (Grid for Desktop, Scroll for Mobile) */}
         {isLargeScreen ? (
           <View className="flex-row flex-wrap justify-center gap-x-12 lg:gap-x-16 gap-y-8 px-4">
             {categories.map((cat: any) => (

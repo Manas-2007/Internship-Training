@@ -32,14 +32,11 @@ interface Transaction {
 export default function Transactions() {
   const router = useRouter();
   const { colors, isDark } = useTheme();
-
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
-  // Dropdown States
   const [statusFilter, setStatusFilter] = useState("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const filterOptions = ['All', 'Success', 'Pending', 'Failed'];
@@ -61,7 +58,7 @@ export default function Transactions() {
       else setTransactions((prev) => [...prev, ...data]);
       setTotalPages(pagination.totalPages);
     } catch (error) {
-      console.log("Fetch Transactions Error:", error);
+      console.error("Fetch Transactions Error:", error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -81,14 +78,14 @@ export default function Transactions() {
     }
   };
 
-  // 👇 Global CSV Export Logic
+  // Global CSV Export Logic
   const handleExportCSV = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken");
       if (!token) return;
       Linking.openURL(`${API_URL}/api/transactions/export/csv?token=${token}`);
     } catch (error) {
-      console.log("Error exporting CSV:", error);
+      console.error("Error exporting CSV:", error);
     }
   };
 
@@ -99,7 +96,7 @@ export default function Transactions() {
       if (!token) return;
       Linking.openURL(`${API_URL}/api/transactions/export/pdf/${transactionId}?token=${token}`);
     } catch (error) {
-      console.log("Error opening receipt:", error);
+      console.error("Error opening receipt:", error);
     }
   };
 
@@ -186,7 +183,6 @@ export default function Transactions() {
           
           {/* Action Row: Dropdown + Export Button */}
           <View className="flex-row justify-between items-center px-4 py-4 z-20">
-            {/* Custom Dropdown Trigger */}
             <TouchableOpacity 
               activeOpacity={0.8}
               onPress={() => setIsDropdownOpen(true)}
@@ -239,7 +235,6 @@ export default function Transactions() {
           )}
         </View>
 
-        {/* Dropdown Modal overlay */}
         <Modal visible={isDropdownOpen} transparent={true} animationType="fade">
           <TouchableWithoutFeedback onPress={() => setIsDropdownOpen(false)}>
             <View className="flex-1 justify-center items-center" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>

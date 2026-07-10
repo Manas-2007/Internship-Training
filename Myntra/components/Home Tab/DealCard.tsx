@@ -1,8 +1,6 @@
-// components/Home/DealsSection.tsx
 import React from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
-// 👉 Import ThemeContext
 import { useTheme } from "../../app/context/ThemeContext";
 
 interface DealsSectionProps {
@@ -13,10 +11,7 @@ interface DealsSectionProps {
 
 export default function DealsSection({ deals, isLargeScreen, isDesktop }: DealsSectionProps) {
   const router = useRouter();
-  
-  // 👉 Extract colors
   const { colors } = useTheme();
-
   const showMessage = (title: string, message: string): void => {
     if (Platform.OS === "web") {
       window.alert(`${title}\n\n${message}`);
@@ -55,10 +50,9 @@ export default function DealsSection({ deals, isLargeScreen, isDesktop }: DealsS
               <Image
                 source={{ uri: deal.image }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                style={{ backgroundColor: colors.background }} // Placeholder background
+                style={{ backgroundColor: colors.background }}
               />
               
-              {/* Overlay elements - remain white for contrast against image */}
               <View className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-6 justify-end">
                 <View className="bg-white/20 self-start px-3 py-1.5 rounded border border-white/30 backdrop-blur-md mb-2">
                   <Text className="text-white text-xs font-bold tracking-widest uppercase">
@@ -94,10 +88,9 @@ export default function DealsSection({ deals, isLargeScreen, isDesktop }: DealsS
               <Image
                 source={{ uri: deal.image }}
                 className="w-full h-full object-cover"
-                style={{ backgroundColor: colors.background }} // Placeholder background
+                style={{ backgroundColor: colors.background }}
               />
               
-              {/* Overlay elements - remain white for contrast against image */}
               <View className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 md:p-5 justify-end">
                 <View className="bg-white/20 self-start px-2 py-1 rounded border border-white/30 backdrop-blur-md mb-1.5">
                   <Text className="text-white text-[10px] font-bold tracking-widest uppercase">

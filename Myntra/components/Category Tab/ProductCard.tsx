@@ -1,14 +1,12 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-// 👉 Import ThemeContext
-import { useTheme } from "../../app/context/ThemeContext"; // Adjust path as per your folder structure
+import { useTheme } from "../../app/context/ThemeContext";
 
 interface Props {
   product: any;
 }
 
 export default function ProductCard({ product }: Props) {
-  // 👉 Extract colors
   const { colors } = useTheme();
 
   return (
@@ -20,7 +18,7 @@ export default function ProductCard({ product }: Props) {
       <Image 
         source={{ uri: product.image }} 
         className="w-full h-48 object-cover" 
-        style={{ backgroundColor: colors.background }} // Placeholder background
+        style={{ backgroundColor: colors.background }} 
       />
       <View className="p-3">
         <Text className="text-xs font-bold mb-1" style={{ color: colors.textMuted }}>

@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
-// 👉 Import ThemeContext
-import { useTheme } from "../../app/context/ThemeContext"; // Adjust path if needed
+import { useTheme } from "../../app/context/ThemeContext";
 
 interface Props {
   category: any;
@@ -9,12 +8,10 @@ interface Props {
 }
 
 export default function CategoryCard({ category, onSelectCategory }: Props) {
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
 
   return (
     <View className="mb-8">
-      {/* Banner Image */}
       <TouchableOpacity className="px-4 cursor-pointer" onPress={() => onSelectCategory(category)} activeOpacity={0.9}>
         <Image 
           source={{ uri: category.bannerImage }} 
@@ -23,12 +20,10 @@ export default function CategoryCard({ category, onSelectCategory }: Props) {
         />
       </TouchableOpacity>
       
-      {/* Category Title */}
       <Text className="text-2xl font-black px-4 mt-4 mb-3 tracking-tight" style={{ color: colors.textMain }}>
         {category.name}
       </Text>
       
-      {/* Simple navigation pills for main list */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
         {category.subCategories.map((sub: string, index: number) => (
           <TouchableOpacity

@@ -19,7 +19,6 @@ import { jwtDecode } from "jwt-decode";
 import { useGlobalContext } from "../context/GlobalContext";
 import { useFocusEffect, useRouter } from "expo-router";
 import { API_URL } from "../constants/api";
-// 👉 Import ThemeContext
 import { useTheme } from "../context/ThemeContext";
 
 interface Product {
@@ -41,20 +40,13 @@ export default function Wishlist() {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isGuest, setIsGuest] = useState<boolean>(false);
-
-  // 👉 Extract colors and isDark from ThemeContext
   const { colors, isDark } = useTheme();
-
   const { setWishlistIds } = useGlobalContext();
   const router = useRouter();
-  
   const { width } = useWindowDimensions();
   const isLargeScreen: boolean = width >= 768;
   const isDesktop: boolean = width >= 1024;
-  
-  // TabBar height for proper bottom padding on mobile
   const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
-
   const showMessage = (title: string, message: string): void => {
     if (Platform.OS === "web") {
       window.alert(`${title}\n\n${message}`);
@@ -152,7 +144,6 @@ export default function Wishlist() {
     return (
       <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
         <View className="flex-1 items-center justify-center px-6 w-full max-w-md mx-auto">
-          {/* 👉 Dynamic Guest Icon Background */}
           <View 
             className="w-24 h-24 md:w-28 md:h-28 rounded-full items-center justify-center mb-6 shadow-sm"
             style={{ backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}
@@ -181,7 +172,6 @@ export default function Wishlist() {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
-      {/* 1400px Centering Wrapper */}
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
         {/* Header for Mobile Only */}
@@ -209,7 +199,6 @@ export default function Wishlist() {
           contentContainerStyle={{ 
             flexGrow: 1, 
             paddingTop: 16,
-            // TabBar padding logic so items don't hide on mobile
             paddingBottom: isLargeScreen ? 60 : TABBAR_HEIGHT + 40 
           }}
           refreshControl={
@@ -248,7 +237,6 @@ export default function Wishlist() {
                     : "https://via.placeholder.com/400";
 
                 return isLargeScreen ? (
-                  /* DESKTOP/TABLET VIEW (Grid Card) */
                   <TouchableOpacity
                     key={item._id}
                     activeOpacity={0.9}
@@ -301,7 +289,6 @@ export default function Wishlist() {
                     </View>
                   </TouchableOpacity>
                 ) : (
-                  /* MOBILE VIEW (Horizontal Row Card) */
                   <TouchableOpacity
                     key={item._id}
                     activeOpacity={0.9}

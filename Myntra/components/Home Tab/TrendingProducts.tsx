@@ -1,11 +1,8 @@
-// components/Home/TrendingProducts.tsx
 import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-// 👉 Import ThemeContext
-import { useTheme } from "../../app/context/ThemeContext"; // Adjust path if needed
-
+import { useTheme } from "../../app/context/ThemeContext"; 
 interface TrendingProductsProps {
   products: any[];
   wishlistIds: string[];
@@ -22,12 +19,9 @@ export default function TrendingProducts({
   isLargeScreen,
 }: TrendingProductsProps) {
   const router = useRouter();
-  
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
 
   if (!products || products.length === 0) return null;
-
   return (
     <View className="mt-10 md:mt-14 px-4 lg:px-8">
       <Text className="text-lg md:text-xl font-bold tracking-wide mb-6" style={{ color: colors.textMain }}>
@@ -49,7 +43,7 @@ export default function TrendingProducts({
           >
             <View 
               className={`relative w-full overflow-hidden ${isLargeScreen ? "h-72" : "h-56 md:h-64"}`}
-              style={{ backgroundColor: colors.background }} // Image placeholder color
+              style={{ backgroundColor: colors.background }}
             >
               <Image
                 source={{ uri: product.images?.[0] }}

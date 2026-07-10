@@ -13,7 +13,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGlobalContext } from "../context/GlobalContext";
-// 👉 Import ThemeContext
 import { useTheme } from "../context/ThemeContext";
 
 interface Category {
@@ -60,29 +59,24 @@ export default function Categories() {
   const params = useLocalSearchParams();
   const { products } = useGlobalContext();
   const insets = useSafeAreaInsets();
-
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-
   const { width } = useWindowDimensions();
-  // Using 768 as the breakpoint to perfectly match your TabLayout's Navbar logic
   const isLargeScreen = width >= 768; 
   const isTablet = width >= 768 && width < 1024;
   const isDesktop = width >= 1024;
 
   const getCategoryCardWidth = () => {
-    if (isDesktop) return "31%"; // 3 per row
-    if (isTablet) return "48%";  // 2 per row
-    return "100%";               // 1 per row
+    if (isDesktop) return "31%"; 
+    if (isTablet) return "48%";  
+    return "100%";               
   };
 
   const getProductCardWidth = () => {
-    if (isDesktop) return "23.5%"; // 4 per row
-    if (isTablet) return "31%";    // 3 per row
-    return "48%";                  // 2 per row
+    if (isDesktop) return "23.5%"; 
+    if (isTablet) return "31%";   
+    return "48%";                  
   };
 
   useEffect(() => {
@@ -135,7 +129,6 @@ export default function Categories() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
-        {/* Title Header: Hidden securely via JS when Top Navbar is present */}
         {!isLargeScreen && (
           <View 
             className="px-5 py-4 flex-row items-center border-b z-10"
@@ -185,7 +178,6 @@ export default function Categories() {
           }}
         >
           {selectedCategory ? (
-            /* --- CATEGORY DETAIL VIEW (Products) --- */
             <View className="pt-4 lg:pt-6">
               <TouchableOpacity
                 className="flex-row items-center px-4 lg:px-12 mb-3 hover:opacity-70 transition-opacity cursor-pointer w-40"
@@ -197,12 +189,10 @@ export default function Categories() {
                 </Text>
               </TouchableOpacity>
 
-              {/* Reduced font weight from black to bold, responsive sizes */}
               <Text className="text-xl md:text-2xl font-bold px-4 lg:px-12 mb-3 mt-1 tracking-tight" style={{ color: colors.textMain }}>
                 {selectedCategory.name}
               </Text>
 
-              {/* Subcategories Scroll */}
               <View className="mb-8">
                 <ScrollView
                   horizontal

@@ -17,23 +17,18 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL } from '../constants/api';
 import { useGlobalContext } from '../context/GlobalContext';
-// 👉 Import ThemeContext
 import { useTheme } from '../context/ThemeContext';
 
 export default function Login() {
   const router = useRouter();
   const { syncRecentlyViewed, fetchWishlistIds } = useGlobalContext();
-  
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   
   const { height, width } = useWindowDimensions();
-  const isLargeScreen = width >= 768; // Tablets, Laptops, Desktops
-
+  const isLargeScreen = width >= 768; 
   const handleLogin = async () => {
     setErrors({}); 
 
@@ -88,13 +83,11 @@ export default function Login() {
       className="flex-1"
       style={{ backgroundColor: colors.background }}
     >
-      {/* Dynamic Status Bar based on Theme and Screen Size */}
       <StatusBar style={isDark ? "light" : (isLargeScreen ? "dark" : "light")} />
       
       <ScrollView 
         contentContainerStyle={{ 
           flexGrow: 1, 
-          // Centers the whole card vertically on Desktop, starts from top on mobile
           justifyContent: isLargeScreen ? 'center' : 'flex-start',
           paddingBottom: isLargeScreen ? 40 : 0
         }}
@@ -103,7 +96,6 @@ export default function Login() {
         bounces={false}
       >
         
-        {/* Main Card Container */}
         <View 
           className={`w-full mx-auto ${
             isLargeScreen 
@@ -116,8 +108,6 @@ export default function Login() {
           ]}
         >
           
-          {/* Image Section */}
-          {/* On Desktop: Takes up 50% width. On Mobile: Takes 45% of screen height */}
           <View style={isLargeScreen ? { width: '50%' } : { height: height * 0.45, width: '100%' }}>
             <Image 
               source={{ uri: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&auto=format&fit=crop" }} 
@@ -125,8 +115,6 @@ export default function Login() {
             />
           </View>
 
-          {/* Form Container */}
-          {/* On Desktop: Side-by-side, vertically centered. On Mobile: Slides up over the image (-mt-8) */}
           <View 
             className={`${
               isLargeScreen 

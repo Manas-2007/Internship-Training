@@ -25,7 +25,7 @@ export default function SplashScreen() {
           }
         }, 3000);
       } catch (error) {
-        console.log("Error checking token:", error);
+        console.error("Error checking token:", error);
         timer = setTimeout(() => {
           router.replace('/auth/login');
         }, 3000);

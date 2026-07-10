@@ -1,7 +1,6 @@
 import React from "react";
 import { ScrollView, TouchableOpacity, Text, View } from "react-native";
-// 👉 Import ThemeContext
-import { useTheme } from "../../app/context/ThemeContext"; // Path adjust kar lena agar alag ho
+import { useTheme } from "../../app/context/ThemeContext";
 
 interface Props {
   subCategories: string[];
@@ -10,7 +9,6 @@ interface Props {
 }
 
 export default function SubcategoryPills({ subCategories, selectedSubCategory, onSelect }: Props) {
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
 
   return (

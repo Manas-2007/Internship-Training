@@ -52,7 +52,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             
             setDeals(mappedDeals);
         } catch (error) {
-            // Silently fail to maintain clean UX
         } finally {
             setLoading(false);
         }
@@ -68,7 +67,8 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             });
             setWishlistIds(response.data || []); 
         } catch (error) {
-            // Silently fail
+            console.error("Error fetching wishlist IDs:", error);
+            
         }
     };
 
@@ -84,7 +84,8 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             const unreadExists = response.data?.notifications?.some((notif: any) => notif.isRead === false);
             setHasUnreadNotifications(!!unreadExists);
         } catch (error) {
-            // Silently fail
+            console.error("Error fetching notifications:", error);
+            
         }
     };
 
@@ -95,7 +96,8 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
                 setRecentlyViewed(JSON.parse(localData));
             }
         } catch (error) {
-            // Silently fail
+            console.error("Error loading local recently viewed:", error);
+            
         }
     };
 
@@ -117,7 +119,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             await AsyncStorage.setItem("@recently_viewed", JSON.stringify(syncedItems));
             setRecentlyViewed(syncedItems);
         } catch (error) {
-            // Silently fail
+            console.error("Error syncing recently viewed items:", error);
         }
     };
 
@@ -147,7 +149,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
                 }).catch(() => {});
             }
         } catch (error) {
-            // Silently fail
+            console.error("Error recording product view:", error);
         }
     };
 
@@ -158,7 +160,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             setWishlistIds([]); 
             setHasUnreadNotifications(false);
         } catch (error) {
-            // Silently fail
+            console.error("Error clearing user data:", error);
         }
     };
 

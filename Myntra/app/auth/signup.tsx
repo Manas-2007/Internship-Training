@@ -16,25 +16,19 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { API_URL } from "../constants/api";
 import axios from "axios";
-// 👉 Import ThemeContext
 import { useTheme } from "../context/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function SignUp() {
   const router = useRouter();
-  
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Screen dimension check for responsive layout
   const { height, width } = useWindowDimensions();
-  const isLargeScreen = width >= 768; // Tablets, Laptops, Desktops
+  const isLargeScreen = width >= 768;
 
   // Cross-platform alert helper
   const showMessage = (title: string, message: string) => {
@@ -45,7 +39,6 @@ export default function SignUp() {
     }
   };
 
-  // Backend Integration Function
   const handleSignUp = async () => {
     setErrors({});
 
@@ -99,7 +92,6 @@ export default function SignUp() {
       <ScrollView 
         contentContainerStyle={{ 
           flexGrow: 1, 
-          // Centers the whole card vertically on Desktop, starts from top on mobile
           justifyContent: isLargeScreen ? 'center' : 'flex-start',
           paddingBottom: isLargeScreen ? 40 : 0
         }}
@@ -122,7 +114,6 @@ export default function SignUp() {
         >
           
           {/* Image Section */}
-          {/* On Desktop: Takes up 50% width. On Mobile: Takes 35% of screen height */}
           <View style={isLargeScreen ? { width: '50%' } : { height: height * 0.35, width: '100%' }}>
             <Image
               source={{
@@ -133,7 +124,6 @@ export default function SignUp() {
           </View>
 
           {/* Form Container */}
-          {/* On Desktop: Side-by-side, vertically centered. On Mobile: Slides up over the image (-mt-8) */}
           <View 
             className={`${
               isLargeScreen 
@@ -149,7 +139,6 @@ export default function SignUp() {
               Join Myntra and discover amazing fashion
             </Text>
 
-            {/* Inputs */}
             <View className="gap-y-4">
               <View>
                 <TextInput

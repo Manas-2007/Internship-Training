@@ -17,7 +17,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { StatusBar } from "expo-status-bar";
 import { useGlobalContext } from "../context/GlobalContext";
-// 👉 Import ThemeContext
 import { useTheme } from "../context/ThemeContext";
 
 const menuItems = [
@@ -32,17 +31,12 @@ const menuItems = [
 export default function Profile() {
   const router = useRouter();
   const { clearUserData } = useGlobalContext();
-  
-  // 👉 Extract colors and isDark from ThemeContext
   const { colors, isDark } = useTheme();
-
   const [userData, setUserData] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-  
-  // Mobile tab bar height calculation so the logout button doesn't hide
   const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
 
   useEffect(() => {
@@ -76,11 +70,11 @@ export default function Profile() {
     const performLogout = async () => {
       try {
         await AsyncStorage.removeItem("userToken");
-        await clearUserData(); // Clear user data on logout
+        await clearUserData();
         setIsGuest(true);
         router.replace("/auth/login");
       } catch (error) {
-        console.log("Logout Error:", error);
+        console.error("Logout Error:", error);
       }
     };
 
@@ -115,7 +109,6 @@ export default function Profile() {
 
   if (loading) {
     return (
-      // 👉 Dynamic Background for loading
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
@@ -124,11 +117,9 @@ export default function Profile() {
 
   if (isGuest) {
     return (
-      // 👉 Dynamic Background for Guest Mode
       <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
         <StatusBar style={isDark ? "light" : "dark"} />
         <View className="flex-1 items-center justify-center px-6 w-full max-w-md mx-auto">
-          {/* Guest Icon with dynamic subtle background */}
           <View className="w-24 h-24 rounded-full items-center justify-center mb-6 shadow-sm" style={{ backgroundColor: isDark ? '#3f1d2b' : '#fdf2f8' }}>
             <Ionicons name="person-outline" size={40} color={colors.primary} />
           </View>
@@ -153,9 +144,7 @@ export default function Profile() {
   }
 
   return (
-    // 👉 Dynamic Background for Logged-In Mode
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
-      {/* 1400px Wrapper ensures consistent ultrawide centering */}
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         <StatusBar style={isDark ? "light" : "dark"} />
 
@@ -174,13 +163,11 @@ export default function Profile() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          // Responsive padding: keeps mobile tab bar clear of the logout button
           contentContainerStyle={{ 
             flexGrow: 1, 
             paddingBottom: isLargeScreen ? 40 : TABBAR_HEIGHT + 40 
           }}
         >
-          {/* Inner constraint (max-w-4xl) to keep lists professional on large screens */}
           <View className="w-full max-w-4xl mx-auto px-4 py-4 md:py-8 flex-col">
             
             {/* User Info Card */}

@@ -32,7 +32,6 @@ const TopNavbar = () => {
     >
       <View className="w-full max-w-[1400px] mx-auto px-6 py-4 flex-row justify-between items-center">
         
-        {/* Brand Logo */}
         <TouchableOpacity
           onPress={() => router.push("/")}
           className="cursor-pointer flex-row items-end group"
@@ -43,7 +42,6 @@ const TopNavbar = () => {
           </Text>
         </TouchableOpacity>
 
-        {/* Navigation Links */}
         <View className="flex-row items-center gap-10">
 
           {/* Notification Button */}
@@ -94,7 +92,6 @@ const TopNavbar = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* Dynamic Navigation Items */}
           {navItems.map((item) => {
             const isActive = pathname === item.route;
             return (

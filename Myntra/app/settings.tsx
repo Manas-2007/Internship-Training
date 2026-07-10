@@ -18,13 +18,9 @@ export default function Settings() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
-
   const [notifications, setNotifications] = useState(true);
-  
-  // 👉 Theme Context Hooks
   const { themeMode, changeTheme, colors, isDark } = useTheme(); 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
   const showMessage = (title: string, message: string) => {
     if (Platform.OS === "web") {
       window.alert(`${title}\n\n${message}`);
@@ -43,7 +39,6 @@ export default function Settings() {
   };
 
   return (
-    // 👉 Dynamic Background
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         

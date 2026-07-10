@@ -5,19 +5,16 @@ import { Stack, router } from "expo-router";
 import * as Notifications from 'expo-notifications';
 import axios from 'axios';
 import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
-
 import "../global.css";
 import { GlobalProvider } from "./context/GlobalContext";
 import { ThemeProvider } from './context/ThemeContext';
 import { API_URL } from './constants/api';
 import { registerForPushNotificationsAsync } from '../utils/notifications';
 
-// Suppress Expo Go Push Notification Red Screen Error
 LogBox.ignoreLogs([
   'expo-notifications: Android Push notifications'
 ]);
 
-// Disable reanimated strict mode warning
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false, 

@@ -20,35 +20,25 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { API_URL } from "../constants/api";
 import { useTheme } from "../context/ThemeContext";
-
 import Banner from "../../components/Home Tab/Banner";
 import CategoryList from "../../components/Home Tab/CategoryList";
 import DealsSection from "../../components/Home Tab/DealCard";
 import TrendingProducts from "../../components/Home Tab/TrendingProducts";
 import RecentlyViewedSection from "../../components/Home Tab/RecentlyViewedSection";
-// 👉 1. Naya Component Import kiya
 import RecommendationsSection from "../../components/Home Tab/RecommendationsSection";
 
 export default function Home() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const [refreshing, setRefreshing] = useState(false);
-
-  // 👉 2. Recommendations save karne ke liye local state
   const [recommendations, setRecommendations] = useState<any[]>([]);
-
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const isDesktop = width >= 1024;
   const isTablet = width >= 768 && width < 1024;
   const isLargeScreen = isDesktop || isTablet;
-
   const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
-
   const maxContentWidth = isDesktop ? width : 1152;
   const sliderWidth = Math.min(width, maxContentWidth);
-
   const {
     categories,
     deals,
@@ -62,11 +52,10 @@ export default function Home() {
     hasUnreadNotifications,
   } = useGlobalContext();
 
-  // 👉 3. API se Task-6 Recommendations fetch karne ka function
   const fetchRecommendations = async () => {
     try {
       const token = await AsyncStorage.getItem("userToken");
-      if (!token) return; // Guest hai toh skip karo (usko khali trending dikhega)
+      if (!token) return; 
       
       const response = await axios.get(`${API_URL}/api/recently-viewed/recommendations`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -80,7 +69,6 @@ export default function Home() {
     }
   };
 
-  // Jab page load ho tab recommendations le aao
   useEffect(() => {
     fetchRecommendations();
   }, []);
@@ -89,7 +77,7 @@ export default function Home() {
     setRefreshing(true);
     await fetchHomeData();
     await fetchWishlistIds();
-    await fetchRecommendations(); // 👉 Refresh pe recommendations bhi update hongi
+    await fetchRecommendations();
     setRefreshing(false);
   };
 
@@ -125,7 +113,7 @@ export default function Home() {
         );
       }
     } catch (error) {
-      console.log("Wishlist Toggle Error:", error);
+      console.error("Wishlist Toggle Error:", error);
       fetchWishlistIds();
     }
   };
@@ -257,7 +245,6 @@ export default function Home() {
               isLargeScreen={isLargeScreen} 
             />
 
-            {/* 👉 4. AAKHRI TUKDA (TASK 6 COMPLETED!) */}
             <RecommendationsSection 
               recommendations={recommendations} 
               isLargeScreen={isLargeScreen} 

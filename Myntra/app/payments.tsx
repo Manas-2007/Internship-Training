@@ -13,21 +13,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// 👉 Import ThemeContext
 import { useTheme } from "./context/ThemeContext";
 
 export default function Payments() {
   const router = useRouter();
-  
-  // 👉 Extract colors and isDark
   const { colors, isDark } = useTheme();
-
   const [cards, setCards] = useState<string[]>([]);
   const [defaultCard, setDefaultCard] = useState<string>("");
   const [newCard, setNewCard] = useState<string>("");
   const { width } = useWindowDimensions();
   const isLargeScreen: boolean = width >= 768;
-
   const showMessage = (title: string, message: string): void => {
     if (Platform.OS === "web") {
       window.alert(`${title}\n\n${message}`);
@@ -47,7 +42,7 @@ export default function Payments() {
       if (savedCards) setCards(JSON.parse(savedCards));
       if (savedDefault) setDefaultCard(savedDefault);
     } catch (error) {
-      console.log("Error loading cards:", error);
+      console.error("Error loading cards:", error);
     }
   };
 
@@ -72,9 +67,7 @@ export default function Payments() {
   };
 
   return (
-    // 👉 Dynamic Main Background
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
-      {/* 1400px Centering Wrapper for the Entire Screen */}
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
         {/* Header Area */}
@@ -102,7 +95,6 @@ export default function Payments() {
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40, paddingTop: isLargeScreen ? 32 : 16 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Inner constraint (max-w-3xl) to match Addresses & Settings pages */}
           <View className="w-full max-w-3xl mx-auto px-4">
             
             {/* Add New Card Box */}
@@ -122,7 +114,6 @@ export default function Payments() {
                 </Text>
               </View>
               
-              {/* 👉 Dynamic Input Field */}
               <TextInput
                 className="px-4 md:px-5 py-3.5 md:py-4 rounded-xl text-sm md:text-base font-medium mb-5 outline-none tracking-[0.15em] border"
                 style={{ 
@@ -156,7 +147,6 @@ export default function Payments() {
             </Text>
             
             {cards.length === 0 ? (
-              // 👉 Dynamic Empty State
               <View 
                 className="p-8 md:p-10 rounded-2xl border items-center justify-center border-dashed"
                 style={{ backgroundColor: colors.surface, borderColor: colors.border }}
@@ -176,7 +166,6 @@ export default function Payments() {
                 const isDefault = defaultCard === card;
 
                 return (
-                  // 👉 Dynamic Card Item Layout
                   <TouchableOpacity
                     key={index}
                     onPress={() => handleSetDefault(card)}
@@ -217,7 +206,6 @@ export default function Payments() {
                       </View>
                     </View>
                     
-                    {/* 👉 Dynamic Radio Button UI */}
                     <View 
                       className="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 items-center justify-center ml-4 transition-colors"
                       style={{ borderColor: isDefault ? colors.primary : colors.border }}
