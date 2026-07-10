@@ -35,10 +35,16 @@ interface BagItem {
   size?: string;
   quantity?: number;
   localQuantity: number;
+  // 👉 NAYA: Status batayega ki item cart mein hai ya save for later mein
+  status?: 'active' | 'saved'; 
 }
 
 export default function Bag() {
-  const [bagItems, setBagItems] = useState<BagItem[]>([]);
+  // 👉 UPDATED: bagItems ki jagah 2 alag states bana di hain
+  const [activeItems, setActiveItems] = useState<BagItem[]>([]);
+  const [savedItems, setSavedItems] = useState<BagItem[]>([]);
+  const [isValidating, setIsValidating] = useState<boolean>(false);
+  
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [isGuest, setIsGuest] = useState<boolean>(false);
@@ -85,15 +91,11 @@ export default function Bag() {
       if (!userId) return;
 
       const response = await axios.get(`${API_URL}/api/bag/${userId}`);
-      if (Array.isArray(response.data)) {
-        const itemsWithLocalQty = response.data.map((item: any) => ({
-          ...item,
-          localQuantity: item.quantity || 1,
-        }));
-        setBagItems(itemsWithLocalQty);
-      } else {
-        setBagItems([]);
-      }
+      const mapQty = (items: any[]) => items.map((item: any) => ({ ...item, localQuantity: item.quantity || 1 }));
+      
+      // 👉 UPDATED: Backend se aayi dono lists set kar di
+      setActiveItems(mapQty(response.data.activeItems || []));
+      setSavedItems(mapQty(response.data.savedItems || []));
     } catch (error) {
       console.log("Bag Fetch Error:", error);
     } finally {
@@ -115,38 +117,76 @@ export default function Bag() {
 
   const removeBagItem = async (itemId: string): Promise<void> => {
     try {
-      setBagItems((prev) => prev.filter((item) => item._id !== itemId));
+      // 👉 UPDATED: Dono lists se remove karna handle kiya
+      setActiveItems((prev) => prev.filter((item) => item._id !== itemId));
+      setSavedItems((prev) => prev.filter((item) => item._id !== itemId));
       await axios.delete(`${API_URL}/api/bag/${itemId}`);
     } catch (error) {
-      showMessage("Error", "Could not remove item from bag.");
+      showMessage("Error", "Could not remove item.");
       fetchBagItems();
+    }
+  };
+
+  // 👉 NAYA FUNCTION: Active se Saved For Later mein move karna
+  const toggleItemStatus = async (itemId: string): Promise<void> => {
+    try {
+      await axios.put(`${API_URL}/api/bag/toggle-status/${itemId}`);
+      fetchBagItems(); // Refresh items to show new list
+    } catch (error: any) {
+      if (error.response?.status === 409) showMessage("Conflict", error.response.data.message);
     }
   };
 
   const updateQuantity = async (itemId: string, type: "inc" | "dec"): Promise<void> => {
     let newQty = 1;
+    const updateLogic = (prevItems: BagItem[]) => prevItems.map((item) => {
+      if (item._id === itemId) {
+        newQty = item.localQuantity;
+        if (type === "inc") newQty += 1;
+        if (type === "dec" && newQty > 1) newQty -= 1;
+        return { ...item, localQuantity: newQty, quantity: newQty };
+      }
+      return item;
+    });
 
-    setBagItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item._id === itemId) {
-          newQty = item.localQuantity;
-          if (type === "inc") newQty += 1;
-          if (type === "dec" && newQty > 1) newQty -= 1;
-          return { ...item, localQuantity: newQty, quantity: newQty };
-        }
-        return item;
-      })
-    );
+    // 👉 UPDATED: Update quantity in both active and saved views
+    setActiveItems(updateLogic);
+    setSavedItems(updateLogic);
 
     try {
       await axios.put(`${API_URL}/api/bag/${itemId}`, { quantity: newQty });
-    } catch (error) {
-      console.log("Error updating quantity in DB:", error);
+    } catch (error: any) {
+      if (error.response?.status === 409) showMessage("Notice", error.response.data.message);
       fetchBagItems();
     }
   };
 
-  const totalAmount: number = bagItems.reduce((sum, item) => {
+  // 👉 NAYA FUNCTION: Checkout se pehle validation and price check
+  const handleCheckout = async () => {
+    setIsValidating(true);
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      const decoded: any = jwtDecode(token!);
+      const userId = decoded.id || decoded._id;
+
+      const res = await axios.get(`${API_URL}/api/bag/validate/${userId}`);
+      if (res.data.success) {
+        router.push({ pathname: "/checkout", params: { totalAmount: String(res.data.cartTotal) } });
+      }
+    } catch (error: any) {
+      if (error.response?.status === 409) {
+        showMessage("Cart Updated", error.response.data.issues.join("\n\n"));
+        fetchBagItems(); 
+      } else {
+        showMessage("Error", "Validation failed. Please try again.");
+      }
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  // 👉 UPDATED: Total amount sirf 'active' items ka count hoga
+  const totalAmount: number = activeItems.reduce((sum, item) => {
     const price = item.productId?.price || 0;
     return sum + price * item.localQuantity;
   }, 0);
@@ -222,15 +262,19 @@ export default function Bag() {
         <Text className="font-bold text-xl md:text-2xl tracking-tight" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
       </View>
 
-      <TouchableOpacity
+     <TouchableOpacity
         className="w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
-        style={{ backgroundColor: colors.primary }}
-        // 👉 FIX 2: Convert Number to String before passing to router.push
-        onPress={() => router.push({ pathname: "/checkout", params: { totalAmount: String(totalAmount) } })}
+        style={{ backgroundColor: (isValidating || activeItems.length === 0) ? colors.border : colors.primary }}
+        onPress={handleCheckout}
+        disabled={isValidating || activeItems.length === 0}
       >
-        <Text className="text-white font-bold text-sm md:text-base tracking-widest uppercase">
-          PLACE ORDER
-        </Text>
+        {isValidating ? (
+           <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text className="text-white font-bold text-sm md:text-base tracking-widest uppercase">
+            PLACE ORDER
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -248,15 +292,19 @@ export default function Bag() {
         <Text className="font-semibold text-sm" style={{ color: colors.textMuted }}>Total Amount</Text>
         <Text className="font-bold text-xl tracking-tight" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
       </View> 
-      <TouchableOpacity
-        className="w-full py-3.5 rounded-xl items-center justify-center shadow-sm active:opacity-90"
-        style={{ backgroundColor: colors.primary }}
-        // 👉 FIX 2: Convert Number to String here as well
-        onPress={() => router.push({ pathname: "/checkout", params: { totalAmount: String(totalAmount) } })}
+     <TouchableOpacity
+        className="w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
+        style={{ backgroundColor: (isValidating || activeItems.length === 0) ? colors.border : colors.primary }}
+        onPress={handleCheckout}
+        disabled={isValidating || activeItems.length === 0}
       >
-        <Text className="text-white font-bold text-sm tracking-widest uppercase">
-          PLACE ORDER
-        </Text>
+        {isValidating ? (
+           <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text className="text-white font-bold text-sm tracking-widest uppercase">
+            PLACE ORDER
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -278,7 +326,7 @@ export default function Bag() {
               </Text>
             </View>
             <Text className="text-xs md:text-sm font-semibold" style={{ color: colors.textMuted }}>
-              {bagItems.length} {bagItems.length === 1 ? "Item" : "Items"}
+              {activeItems.length} {activeItems.length === 1 ? "Item" : "Items"}
             </Text>
           </View>
         )}
@@ -297,7 +345,7 @@ export default function Bag() {
           }
         >
           <View className={`w-full flex-1 px-4 md:px-6 lg:px-8`}>
-            {bagItems.length === 0 ? (
+            {activeItems.length === 0 && savedItems.length === 0 ? (
               <View className="flex-1 items-center justify-center pt-20">
                 <View 
                   className="w-24 h-24 md:w-32 md:h-32 border shadow-sm rounded-full items-center justify-center mb-6"
@@ -318,97 +366,200 @@ export default function Bag() {
                 
                 {/* Left Side: Items */}
                 <View className="flex-1">
-                  {bagItems.map((item, index) => {
-                    const product = item.productId || ({} as Product);
-                    const imageUrl = product.images?.[0] || product.image || "https://via.placeholder.com/150";
+                  
+                  {/* ===================== ACTIVE BAG SECTION ===================== */}
+                  {activeItems.length > 0 && (
+                    <View>
+                      <Text className="font-bold text-base uppercase tracking-widest mb-4 mt-2" style={{ color: colors.textMain }}>
+                        Active Bag ({activeItems.length})
+                      </Text>
 
-                    return (
-                      <View
-                        key={item._id}
-                        className={`flex-row p-4 md:p-5 rounded-2xl border mb-4 md:mb-5 shadow-sm transition-all ${
-                          isDesktop ? "hover:shadow-md" : ""
-                        }`}
-                        style={{ backgroundColor: colors.surface, borderColor: colors.border }}
-                      >
-                        {/* Product Image + Cross Button Container */}
-                        <View className="relative">
-                          <TouchableOpacity
-                            onPress={() => router.push(`/product/${product._id}`)}
-                            className="cursor-pointer"
-                            activeOpacity={0.9}
+                      {activeItems.map((item, index) => {
+                        const product = item.productId || ({} as Product);
+                        const imageUrl = product.images?.[0] || product.image || "https://via.placeholder.com/150";
+
+                        return (
+                          <View
+                            key={item._id}
+                            className={`flex-row p-4 md:p-5 rounded-2xl border mb-4 md:mb-5 shadow-sm transition-all ${
+                              isDesktop ? "hover:shadow-md" : ""
+                            }`}
+                            style={{ backgroundColor: colors.surface, borderColor: colors.border }}
                           >
-                            <Image
-                              source={{ uri: imageUrl }}
-                              className="w-[100px] h-[130px] md:w-[120px] md:h-[160px] rounded-xl object-cover border"
-                              style={{ backgroundColor: colors.background, borderColor: colors.border }}
-                            />
-                          </TouchableOpacity>
-
-                          {/* Cross Button */}
-                          <TouchableOpacity
-                            onPress={() => removeBagItem(item._id)}
-                            className="absolute -top-2.5 -right-2.5 p-1.5 rounded-full shadow-sm border z-10 transition-colors"
-                            style={{ 
-                              backgroundColor: isDark ? 'rgba(38,38,38,0.95)' : 'rgba(255,255,255,0.95)', 
-                              borderColor: colors.border 
-                            }}
-                          >
-                            <Ionicons name="close" size={16} color={colors.textMain} />
-                          </TouchableOpacity>
-                        </View>
-
-                        {/* Product Details & Quantity */}
-                        <View className="flex-1 ml-5 md:ml-6 justify-between py-1">
-                          <View>
-                            <Text className="text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1} style={{ color: colors.textMuted }}>
-                              {product.brand || "Brand"}
-                            </Text>
-                            <Text
-                              className="text-sm md:text-base font-semibold mb-2 leading-5"
-                              numberOfLines={2}
-                              style={{ color: colors.textMain }}
-                            >
-                              {product.name || "Product Name"}
-                            </Text>
-                            <Text className="text-xs md:text-sm font-medium mb-2.5" style={{ color: colors.textMuted }}>
-                              Size: <Text className="font-bold" style={{ color: colors.textMain }}>{item.size || "M"}</Text>
-                            </Text>
-                            <Text className="font-bold text-lg md:text-xl tracking-tight" style={{ color: colors.textMain }}>
-                              ₹{product.price || 0}
-                            </Text>
-                          </View>
-
-                          {/* Quantity Selector */}
-                          <View className="flex-row items-center mt-3">
-                            <View 
-                              className="flex-row items-center rounded-lg border overflow-hidden"
-                              style={{ backgroundColor: colors.surface, borderColor: colors.border }}
-                            >
+                            <View className="relative">
                               <TouchableOpacity
-                                onPress={() => updateQuantity(item._id, "dec")}
-                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center transition-colors"
-                                style={{ backgroundColor: isDark ? '#1e293b' : '#f8fafc' }}
+                                onPress={() => router.push(`/product/${product._id}`)}
+                                className="cursor-pointer"
+                                activeOpacity={0.9}
                               >
-                                <Ionicons name="remove" size={16} color={colors.textMain} />
+                                <Image
+                                  source={{ uri: imageUrl }}
+                                  className="w-[100px] h-[130px] md:w-[120px] md:h-[160px] rounded-xl object-cover border"
+                                  style={{ backgroundColor: colors.background, borderColor: colors.border }}
+                                />
                               </TouchableOpacity>
 
-                              <Text className="font-bold text-sm md:text-base w-8 md:w-10 text-center" style={{ color: colors.textMain }}>
-                                {item.localQuantity}
-                              </Text>
-
                               <TouchableOpacity
-                                onPress={() => updateQuantity(item._id, "inc")}
-                                className="w-8 h-8 md:w-10 md:h-10 items-center justify-center transition-colors"
-                                style={{ backgroundColor: isDark ? '#1e293b' : '#f8fafc' }}
+                                onPress={() => removeBagItem(item._id)}
+                                className="absolute -top-2.5 -right-2.5 p-1.5 rounded-full shadow-sm border z-10 transition-colors"
+                                style={{ 
+                                  backgroundColor: isDark ? 'rgba(38,38,38,0.95)' : 'rgba(255,255,255,0.95)', 
+                                  borderColor: colors.border 
+                                }}
                               >
-                                <Ionicons name="add" size={16} color={colors.textMain} />
+                                <Ionicons name="close" size={16} color={colors.textMain} />
                               </TouchableOpacity>
                             </View>
+
+                            <View className="flex-1 ml-5 md:ml-6 justify-between py-1">
+                              <View>
+                                <Text className="text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1} style={{ color: colors.textMuted }}>
+                                  {product.brand || "Brand"}
+                                </Text>
+                                <Text
+                                  className="text-sm md:text-base font-semibold mb-2 leading-5"
+                                  numberOfLines={2}
+                                  style={{ color: colors.textMain }}
+                                >
+                                  {product.name || "Product Name"}
+                                </Text>
+                                <Text className="text-xs md:text-sm font-medium mb-2.5" style={{ color: colors.textMuted }}>
+                                  Size: <Text className="font-bold" style={{ color: colors.textMain }}>{item.size || "M"}</Text>
+                                </Text>
+                                <Text className="font-bold text-lg md:text-xl tracking-tight" style={{ color: colors.textMain }}>
+                                  ₹{product.price || 0}
+                                </Text>
+                              </View>
+
+                              {/* 👉 NAYA ROW: Quantity aur Save for Later button ek sath */}
+                              <View className="flex-row items-center justify-between mt-3">
+                                <View 
+                                  className="flex-row items-center rounded-lg border overflow-hidden"
+                                  style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                                >
+                                  <TouchableOpacity
+                                    onPress={() => updateQuantity(item._id, "dec")}
+                                    className="w-8 h-8 md:w-10 md:h-10 items-center justify-center transition-colors"
+                                    style={{ backgroundColor: isDark ? '#1e293b' : '#f8fafc' }}
+                                  >
+                                    <Ionicons name="remove" size={16} color={colors.textMain} />
+                                  </TouchableOpacity>
+
+                                  <Text className="font-bold text-sm md:text-base w-8 md:w-10 text-center" style={{ color: colors.textMain }}>
+                                    {item.localQuantity}
+                                  </Text>
+
+                                  <TouchableOpacity
+                                    onPress={() => updateQuantity(item._id, "inc")}
+                                    className="w-8 h-8 md:w-10 md:h-10 items-center justify-center transition-colors"
+                                    style={{ backgroundColor: isDark ? '#1e293b' : '#f8fafc' }}
+                                  >
+                                    <Ionicons name="add" size={16} color={colors.textMain} />
+                                  </TouchableOpacity>
+                                </View>
+
+                                <TouchableOpacity 
+                                  onPress={() => toggleItemStatus(item._id)}
+                                  className="px-3 py-1.5 rounded-lg border border-dashed"
+                                  style={{ borderColor: colors.border }}
+                                >
+                                  <Text className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.textMuted }}>
+                                    Save
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+
+                            </View>
                           </View>
-                        </View>
-                      </View>
-                    );
-                  })}
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* ===================== SAVED FOR LATER SECTION ===================== */}
+                  {savedItems.length > 0 && (
+                    <View className="mt-4 pt-6 border-t border-dashed" style={{ borderTopColor: colors.border }}>
+                      <Text className="font-bold text-base uppercase tracking-widest mb-4" style={{ color: colors.textMuted }}>
+                        Saved For Later ({savedItems.length})
+                      </Text>
+
+                      {savedItems.map((item, index) => {
+                        const product = item.productId || ({} as Product);
+                        const imageUrl = product.images?.[0] || product.image || "https://via.placeholder.com/150";
+
+                        return (
+                          <View
+                            key={item._id}
+                            className={`flex-row p-4 md:p-5 rounded-2xl border mb-4 md:mb-5 shadow-sm transition-all ${
+                              isDesktop ? "hover:shadow-md" : ""
+                            }`}
+                            // 👉 Save for later items slightly faded
+                            style={{ backgroundColor: colors.surface, borderColor: colors.border, opacity: 0.85 }}
+                          >
+                            <View className="relative">
+                              <TouchableOpacity
+                                onPress={() => router.push(`/product/${product._id}`)}
+                                className="cursor-pointer"
+                                activeOpacity={0.9}
+                              >
+                                <Image
+                                  source={{ uri: imageUrl }}
+                                  className="w-[100px] h-[130px] md:w-[120px] md:h-[160px] rounded-xl object-cover border"
+                                  style={{ backgroundColor: colors.background, borderColor: colors.border }}
+                                />
+                              </TouchableOpacity>
+
+                              <TouchableOpacity
+                                onPress={() => removeBagItem(item._id)}
+                                className="absolute -top-2.5 -right-2.5 p-1.5 rounded-full shadow-sm border z-10 transition-colors"
+                                style={{ 
+                                  backgroundColor: isDark ? 'rgba(38,38,38,0.95)' : 'rgba(255,255,255,0.95)', 
+                                  borderColor: colors.border 
+                                }}
+                              >
+                                <Ionicons name="close" size={16} color={colors.textMain} />
+                              </TouchableOpacity>
+                            </View>
+
+                            <View className="flex-1 ml-5 md:ml-6 justify-between py-1">
+                              <View>
+                                <Text className="text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1} style={{ color: colors.textMuted }}>
+                                  {product.brand || "Brand"}
+                                </Text>
+                                <Text
+                                  className="text-sm md:text-base font-semibold mb-2 leading-5"
+                                  numberOfLines={2}
+                                  style={{ color: colors.textMain }}
+                                >
+                                  {product.name || "Product Name"}
+                                </Text>
+                                <Text className="text-xs md:text-sm font-medium mb-2.5" style={{ color: colors.textMuted }}>
+                                  Size: <Text className="font-bold" style={{ color: colors.textMain }}>{item.size || "M"}</Text>
+                                </Text>
+                                <Text className="font-bold text-lg md:text-xl tracking-tight" style={{ color: colors.textMain }}>
+                                  ₹{product.price || 0}
+                                </Text>
+                              </View>
+
+                              {/* 👉 Move to Bag Button */}
+                              <View className="flex-row items-center justify-end mt-3">
+                                <TouchableOpacity 
+                                  onPress={() => toggleItemStatus(item._id)}
+                                  className="px-4 py-2 rounded-lg border"
+                                  style={{ borderColor: colors.primary, backgroundColor: isDark ? 'rgba(236,72,153,0.1)' : 'rgba(236,72,153,0.05)' }}
+                                >
+                                  <Text className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.primary }}>
+                                    Move to Bag
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+
                 </View>
 
                 {/* Right Side: Order Summary (Desktop Only) */}
@@ -425,7 +576,7 @@ export default function Bag() {
         </ScrollView>
 
         {/* Mobile/Tablet Order Summary Footer */}
-        {(!isDesktop && bagItems.length > 0) && <MobileOrderSummary />}
+        {(!isDesktop && activeItems.length > 0) && <MobileOrderSummary />}
       </View>
     </SafeAreaView>
   );
