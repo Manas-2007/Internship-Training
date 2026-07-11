@@ -39,6 +39,7 @@ export default function Home() {
   const TABBAR_HEIGHT = Platform.OS === "ios" ? 88 : 68;
   const maxContentWidth = isDesktop ? width : 1152;
   const sliderWidth = Math.min(width, maxContentWidth);
+  
   const {
     categories,
     deals,
@@ -139,17 +140,7 @@ export default function Home() {
     return "48%";
   };
 
-  if (loading) {
-    return (
-      <View className="flex-1 justify-center items-center" style={{ backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text className="mt-4 font-medium text-sm md:text-base" style={{ color: colors.textMuted }}>
-          Curating trends for you...
-        </Text>
-      </View>
-    );
-  }
-
+  // 👉 FIXED: Hook early return ke theek UPAR aa gaya hai
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -166,6 +157,18 @@ export default function Home() {
       };
     }, [])
   );
+
+  // 👉 Early return hooks ke BAAD hai
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center" style={{ backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text className="mt-4 font-medium text-sm md:text-base" style={{ color: colors.textMuted }}>
+          Curating trends for you...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>

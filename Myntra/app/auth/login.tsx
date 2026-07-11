@@ -199,12 +199,14 @@ export default function Login() {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="items-center mt-auto mb-2 cursor-pointer" onPress={()=>router.replace('/auth/signup')}>
-              <Text className="text-sm font-medium" style={{ color: colors.textMuted }}>
-                Don't have an account? <Text className="font-bold hover:underline" style={{ color: colors.primary }}>Sign Up</Text>
-              </Text>
-            </TouchableOpacity>
-
+            <TouchableOpacity 
+  style={{ marginTop: 24, marginBottom: 24, alignItems: 'center' }} 
+  onPress={() => router.push('/auth/signup')}
+>
+  <Text className="text-sm font-medium" style={{ color: colors.textMuted }}>
+    Don't have an account? <Text className="font-bold" style={{ color: colors.primary }}>Sign Up</Text>
+  </Text>
+</TouchableOpacity>
           </View>
         </View>
       </ScrollView>

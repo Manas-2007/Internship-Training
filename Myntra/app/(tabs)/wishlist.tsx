@@ -82,7 +82,10 @@ export default function Wishlist() {
       const userId = decodedToken?.id || decodedToken?._id;
       if (!userId) return;
 
-      const response = await axios.get(`${API_URL}/api/wishlist/${userId}`);
+      const response = await axios.get(
+        `${API_URL}/api/wishlist/${userId}?t=${new Date().getTime()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       if (Array.isArray(response.data)) {
         setWishlistItems(response.data);
@@ -90,7 +93,7 @@ export default function Wishlist() {
         setWishlistItems([]);
       }
     } catch (error: any) {
-      console.log("Frontend API Error:", error?.response?.data || error.message);
+      console.error("Frontend API Error:", error?.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -123,7 +126,7 @@ export default function Wishlist() {
         );
       }
 
-      await axios.delete(`${API_URL}/api/wishlist/product/${productId}`, {
+     await axios.delete(`${API_URL}/api/wishlist/product/${productId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (error) {
