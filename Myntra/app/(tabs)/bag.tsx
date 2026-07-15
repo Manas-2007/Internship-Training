@@ -48,13 +48,16 @@ export default function Bag() {
       const userId = decodedToken?.id || decodedToken?._id;
       if (!userId) return;
 
-      const response = await axios.get(`${API_URL}/api/bag/${userId}`);
+     const response = await axios.get(
+        `${API_URL}/api/bag/${userId}?t=${new Date().getTime()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const mapQty = (items: any[]) => items.map((item: any) => ({ ...item, localQuantity: item.quantity || 1 }));
       
       setActiveItems(mapQty(response.data.activeItems || []));
       setSavedItems(mapQty(response.data.savedItems || []));
     } catch (error) {
-      console.log("Bag Fetch Error:", error);
+      console.error("Bag Fetch Error:", error);
     } finally {
       setLoading(false);
     }
@@ -70,9 +73,13 @@ export default function Bag() {
 
   const removeBagItem = async (itemId: string) => {
     try {
+      const token = await AsyncStorage.getItem("userToken"); 
       setActiveItems((prev) => prev.filter((item) => item._id !== itemId));
       setSavedItems((prev) => prev.filter((item) => item._id !== itemId));
-      await axios.delete(`${API_URL}/api/bag/${itemId}`);
+      
+      await axios.delete(`${API_URL}/api/bag/${itemId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
     } catch (error) {
       showMessage("Error", "Could not remove item.");
       fetchBagItems();
@@ -81,7 +88,10 @@ export default function Bag() {
 
   const toggleItemStatus = async (itemId: string) => {
     try {
-      await axios.put(`${API_URL}/api/bag/toggle-status/${itemId}`);
+      const token = await AsyncStorage.getItem("userToken");
+      await axios.put(`${API_URL}/api/bag/toggle-status/${itemId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       fetchBagItems(); 
     } catch (error: any) {
       if (error.response?.status === 409) showMessage("Conflict", error.response.data.message);
@@ -103,22 +113,28 @@ export default function Bag() {
     setActiveItems(updateLogic);
     setSavedItems(updateLogic);
 
-    try {
-      await axios.put(`${API_URL}/api/bag/${itemId}`, { quantity: newQty });
+   try {
+      const token = await AsyncStorage.getItem("userToken");
+      await axios.put(`${API_URL}/api/bag/${itemId}`, { quantity: newQty }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
     } catch (error: any) {
       if (error.response?.status === 409) showMessage("Notice", error.response.data.message);
       fetchBagItems();
     }
   };
 
-  const handleCheckout = async () => {
+ const handleCheckout = async () => {
     setIsValidating(true);
     try {
       const token = await AsyncStorage.getItem("userToken");
       const decoded: any = jwtDecode(token!);
       const userId = decoded.id || decoded._id;
 
-      const res = await axios.get(`${API_URL}/api/bag/validate/${userId}`);
+      const res = await axios.get(
+        `${API_URL}/api/bag/validate/${userId}?t=${new Date().getTime()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       if (res.data.success) {
         router.push({ pathname: "/checkout", params: { totalAmount: String(res.data.cartTotal) } });
       }
