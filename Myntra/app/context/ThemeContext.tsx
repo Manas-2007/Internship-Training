@@ -1,6 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const lightTheme = {
+  background: "#ffffff",
+  surface: "#f8fafc",
+  textMain: "#171717",
+  textMuted: "#737373",
+  primary: "#ff3f6c",
+  border: "#f1f1f4",
+};
+
+const darkTheme = {
+  background: "#171717",
+  surface: "#262626",
+  textMain: "#f5f5f5",
+  textMuted: "#a3a3a3",
+  primary: "#ff3f6c",
+  border: "#404040",
+};
+
 const ThemeContext = createContext<any>(null);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
@@ -41,14 +60,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const colors = {
-    background: isDark ? "#171717" : "#ffffff",
-    surface: isDark ? "#262626" : "#f8fafc",    
-    textMain: isDark ? "#f5f5f5" : "#171717",  
-    textMuted: isDark ? "#a3a3a3" : "#737373",  
-    primary: "#ff3f6c",                         
-    border: isDark ? "#404040" : "#f1f1f4",    
-  };
+  const colors = isDark ? darkTheme : lightTheme;
 
   return (
     <ThemeContext.Provider value={{ themeMode, isDark, changeTheme, colors }}>
