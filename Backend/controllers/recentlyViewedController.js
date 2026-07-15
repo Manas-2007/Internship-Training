@@ -41,7 +41,7 @@ exports.syncRecentlyViewed = async (req, res) => {
     }))
       .filter((item) => item.viewedAt > cutoffTime)
       .sort((a, b) => b.viewedAt - a.viewedAt)
-      .slice(0, 50);
+      .slice(0, 20);
 
     userHistory.items = mergedArray;
     await userHistory.save();
@@ -78,7 +78,7 @@ exports.getRecommendations = async (req, res) => {
 
     let combinedCategories = new Set();
     
-    if (history) {
+    if (history) {  
       history.items.forEach(
         (item) =>
           item.product?.category &&
