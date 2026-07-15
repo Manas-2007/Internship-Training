@@ -20,15 +20,26 @@ exports.addToWishlist = async (req, res) => {
 
 exports.getWishlist = async (req, res) => {
     try {
-        const uid = req.params.userid;
-        const wishlist = await Wishlist.find({ 
-            userId: new mongoose.Types.ObjectId(uid) 
-        }).populate("productId");
-        
+        let uid = req.params.userid;
+
+        if (uid === "ids" || !uid) {
+            uid = req.user.id;
+        }
+        if (!uid) {
+            return res.status(200).json([]);
+        }
+
+        const wishlist = await Wishlist.find({ userId: uid });
+        if (req.params.userid === "ids") {
+            const idsArray = wishlist.map(item => item.productId.toString());
+            return res.status(200).json(idsArray);
+        }
+        await Wishlist.populate(wishlist, { path: "productId" });
         res.status(200).json(wishlist);
+
     } catch (error) {
         console.error("Error fetching wishlist:", error);
-        res.status(500).json({ message: "Error fetching wishlist" });
+        res.status(200).json([]);
     }
 };
 
