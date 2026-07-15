@@ -36,7 +36,10 @@ export default function Orders() {
       const userId = decodedToken?.id || decodedToken?._id;
       if (!userId) return;
 
-      const response = await axios.get(`${API_URL}/api/orders/user/${userId}`);
+     const response = await axios.get(
+        `${API_URL}/api/orders/user/${userId}?t=${new Date().getTime()}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setOrders(Array.isArray(response.data) ? response.data.reverse() : []);
     } catch (error) {
       console.log("Fetch Orders Error:", error);

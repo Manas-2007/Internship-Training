@@ -85,10 +85,14 @@ export default function Checkout() {
       const fullShippingAddress = `${fullName}, ${address}, ${city}, Postal: ${postalCode}`;
       const paymentMethodInfo = `Card ending in ${cardNumber.slice(-4) || 'XXXX'}`;
 
-      await axios.post(`${API_URL}/api/orders/create/${userId}`, {
-        shippingAddress: fullShippingAddress,
-        paymentMethod: paymentMethodInfo,
-      });
+      await axios.post(
+        `${API_URL}/api/orders/create/${userId}`, 
+        {
+          shippingAddress: fullShippingAddress,
+          paymentMethod: paymentMethodInfo,
+        },
+        { headers: { Authorization: `Bearer ${token}` } } 
+      );
 
       if (Platform.OS === "web") {
         window.alert("Success!\n\nYour order has been placed successfully.");
