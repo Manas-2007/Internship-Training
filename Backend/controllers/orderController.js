@@ -25,7 +25,7 @@ exports.createOrder = async (req, res) => {
     try {
         const userId = req.params.userId;   
 
-        const bag = await Bag.find({ userId }).populate("productId");
+        const bag = await Bag.find({ userId, status: 'active' }).populate("productId")
         if (!bag || bag.length === 0) {
             return res.status(400).json({ message: "Bag is empty" });
         }
@@ -112,7 +112,7 @@ exports.createOrder = async (req, res) => {
             console.error("Notification failed:", notificationError);           
         }
 
-        await Bag.deleteMany({ userId });
+        await Bag.deleteMany({ userId, status: 'active' });
 
         res.status(200).json({ message: "Order placed successfully" });
     } catch (error) {
