@@ -62,13 +62,12 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             const token = await AsyncStorage.getItem("userToken");
             if (!token) return;
             
-            const response = await axios.get(`${API_URL}/api/wishlist/ids`, {
+            const response = await axios.get(`${API_URL}/api/wishlist/ids?t=${new Date().getTime()}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setWishlistIds(response.data || []); 
         } catch (error) {
             console.error("Error fetching wishlist IDs:", error);
-            
         }
     };
 
@@ -85,7 +84,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             setHasUnreadNotifications(!!unreadExists);
         } catch (error) {
             console.error("Error fetching notifications:", error);
-            
         }
     };
 
@@ -97,7 +95,6 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             }
         } catch (error) {
             console.error("Error loading local recently viewed:", error);
-            
         }
     };
 

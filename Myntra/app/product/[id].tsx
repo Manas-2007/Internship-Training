@@ -91,7 +91,11 @@ export default function ProductDetails() {
       const decodedToken: any = jwtDecode(token);
       const userId = decodedToken?.id || decodedToken?._id;
 
-      await axios.post(`${API_URL}/api/bag`, { userId, productId: product._id, size: selectedSize, quantity: 1 });
+      await axios.post(
+        `${API_URL}/api/bag`, 
+        { userId, productId: product._id, size: selectedSize, quantity: 1 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       showMessage("Success", "Added to your bag!");
     } catch (error) {
       showMessage("Error", "Could not add item to bag.");
@@ -145,7 +149,7 @@ export default function ProductDetails() {
                 setSelectedSize={setSelectedSize}
               />
 
-              {/* Corrected Product Details Section */}
+              {/* Product Details Section */}
               <View className="mt-8 border-t pt-6 md:pt-8" style={{ borderTopColor: colors.border }}>
                 <Text className="text-base md:text-lg font-bold tracking-tight mb-3" style={{ color: colors.textMain }}>
                   Product Details
