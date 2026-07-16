@@ -21,7 +21,6 @@ import { API_URL } from "./constants/api";
 import { useTheme } from "./context/ThemeContext";
 
 export default function Checkout() {
-  
   const { colors, isDark } = useTheme();
   const { totalAmount } = useLocalSearchParams(); 
   const subTotal = totalAmount ? Number(totalAmount) : 0;
@@ -32,11 +31,15 @@ export default function Checkout() {
   const isLargeScreen: boolean = width >= 1024;
   const isTablet: boolean = width >= 768 && width < 1024;
   const isDesktopOrTablet = isLargeScreen || isTablet;
+  
+  // State Variables
   const [fullName, setFullName] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [cardNumber, setCardNumber] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [cvv, setCvv] = useState("");               
   
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -63,9 +66,34 @@ export default function Checkout() {
     }
   };
 
+  const handleExpiryChange = (text: string) => {
+    let formattedText = text.replace(/\D/g, ""); 
+    if (formattedText.length > 2) {
+      formattedText = formattedText.substring(0, 2) + "/" + formattedText.substring(2, 4);
+    }
+    setExpiryDate(formattedText);
+  };
+
   const handlePlaceOrder = async () => {
-    if (!fullName || !address || !city || !postalCode || !cardNumber) {
+    if (!fullName.trim() || !address.trim() || !city.trim() || !postalCode.trim() || !cardNumber.trim() || !expiryDate.trim() || !cvv.trim()) {
       showMessage("Missing Fields", "Please fill all the required details.");
+      return;
+    }
+
+    if (!/^\d{5,6}$/.test(postalCode)) {
+      showMessage("Invalid Input", "Please enter a valid 5 or 6 digit postal code.");
+      return;
+    }
+    if (!/^\d{16}$/.test(cardNumber)) {
+      showMessage("Invalid Input", "Card number must be exactly 16 digits.");
+      return;
+    }
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)) {
+      showMessage("Invalid Input", "Please enter a valid expiry date (e.g. 12/25).");
+      return;
+    }
+    if (!/^\d{3}$/.test(cvv)) {
+      showMessage("Invalid Input", "CVV must be exactly 3 digits.");
       return;
     }
 
@@ -213,10 +241,9 @@ export default function Checkout() {
           >
             <View className={`w-full max-w-5xl mx-auto flex-1 px-4 py-3 md:py-8 ${isDesktopOrTablet ? "flex-row gap-8" : "flex-col"}`}>
               
-              {/* Forms Column (Left on Desktop, Top on Mobile) */}
               <View className="flex-1">
                 
-                {/* Shipping Address Box */}
+                {/* Shipping Address  */}
                 <View 
                   className="p-4 md:p-6 rounded-2xl mb-6 md:mb-8 shadow-sm border"
                   style={{ backgroundColor: colors.surface, borderColor: colors.border }}
@@ -248,29 +275,34 @@ export default function Checkout() {
                       value={address}
                       onChangeText={setAddress}
                     />
-                    <View className="flex-row justify-between gap-3">
-                      <TextInput
-                        className="flex-1 px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
-                        style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
-                        placeholder="City"
-                        placeholderTextColor={colors.textMuted}
-                        value={city}
-                        onChangeText={setCity}
-                      />
-                      <TextInput
-                        className="flex-1 px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
-                        style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
-                        placeholder="Postal Code"
-                        placeholderTextColor={colors.textMuted}
-                        keyboardType="numeric"
-                        value={postalCode}
-                        onChangeText={setPostalCode}
-                      />
+                      <View className="flex-row w-full justify-between items-center">
+                      <View className="flex-1 mr-3">
+                        <TextInput
+                          className="px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
+                          style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
+                          placeholder="City"
+                          placeholderTextColor={colors.textMuted}
+                          value={city}
+                          onChangeText={setCity}
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <TextInput
+                          className="px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
+                          style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
+                          placeholder="Postal Code"
+                          placeholderTextColor={colors.textMuted}
+                          keyboardType="numeric"
+                          maxLength={6}
+                          value={postalCode}
+                          onChangeText={setPostalCode}
+                        />
+                      </View>
                     </View>
                   </View>
                 </View>
 
-                {/* Payment Method Box */}
+                {/* Payment Method */}
                 <View 
                   className="p-5 md:p-6 rounded-2xl mb-6 shadow-sm border"
                   style={{ backgroundColor: colors.surface, borderColor: colors.border }}
@@ -296,23 +328,33 @@ export default function Checkout() {
                       value={cardNumber}
                       onChangeText={setCardNumber}
                     />
-                    <View className="flex-row justify-between gap-3">
-                      <TextInput
-                        className="flex-1 px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
-                        style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
-                        placeholder="MM/YY"
-                        placeholderTextColor={colors.textMuted}
-                        maxLength={5}
-                      />
-                      <TextInput
-                        className="flex-1 px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
-                        style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
-                        placeholder="CVV"
-                        placeholderTextColor={colors.textMuted}
-                        keyboardType="numeric"
-                        maxLength={3}
-                        secureTextEntry
-                      />
+                    
+                    <View className="flex-row w-full justify-between items-center">
+                      <View className="flex-1 mr-3">
+                        <TextInput
+                          className="px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
+                          style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
+                          placeholder="MM/YY"
+                          placeholderTextColor={colors.textMuted}
+                          keyboardType="numeric"
+                          maxLength={5}
+                          value={expiryDate}
+                          onChangeText={handleExpiryChange}
+                        />
+                      </View>
+                      <View className="flex-1">
+                        <TextInput
+                          className="px-3 py-3 rounded-lg text-xs md:text-sm border outline-none"
+                          style={{ backgroundColor: colors.background, color: colors.textMain, borderColor: colors.border }}
+                          placeholder="CVV"
+                          placeholderTextColor={colors.textMuted}
+                          keyboardType="numeric"
+                          maxLength={3}
+                          secureTextEntry
+                          value={cvv}
+                          onChangeText={setCvv}
+                        />
+                      </View>
                     </View>
                   </View>
                 </View>
