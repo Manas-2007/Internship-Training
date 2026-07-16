@@ -9,7 +9,8 @@ import {
   Platform, 
   ScrollView,
   useWindowDimensions,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -26,10 +27,11 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  
+  const [isLoading, setIsLoading] = useState(false);
   const { height, width } = useWindowDimensions();
   const isLargeScreen = width >= 768; 
   const handleLogin = async () => {
+    setIsLoading(true);
     setErrors({}); 
 
     const tempErrors: { [key: string]: string } = {};
@@ -69,7 +71,9 @@ export default function Login() {
           Alert.alert("Login Failed", error.response?.data?.message || "Something went wrong");
         }
       }
-    }
+   } finally {
+    setIsLoading(false); 
+  }
   };
 
   const handleGuestLogin = async () => {
@@ -178,15 +182,20 @@ export default function Login() {
             </View>
 
             <TouchableOpacity 
-              className="py-3.5 rounded-xl items-center shadow-sm mb-4 transition-opacity cursor-pointer"
-              style={{ backgroundColor: colors.primary }}
-              onPress={handleLogin} 
-              activeOpacity={0.9}
-            >
+            className="py-3.5 rounded-xl items-center shadow-sm mb-4 transition-opacity cursor-pointer"
+            style={{ backgroundColor: colors.primary, opacity: isLoading ? 0.7 : 1 }}
+            onPress={handleLogin} 
+            disabled={isLoading}
+            activeOpacity={0.9}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
               <Text className="text-white font-semibold text-base tracking-wide">
                 LOGIN
               </Text>
-            </TouchableOpacity>
+            )}
+          </TouchableOpacity>
 
             <TouchableOpacity 
               className="border py-3.5 rounded-xl items-center mb-6 transition-colors cursor-pointer"
