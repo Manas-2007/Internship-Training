@@ -39,7 +39,7 @@ A full-stack e-commerce application inspired by **Myntra** with user authenticat
 ### 1. Clone the Repository
 
 ```bash
-[git clone https://github.com/your-username/myntra-clone.git](https://github.com/Manas-2007/Internship-Training.git)
+[git clone https://github.com/Manas-2007/Internship-Training.git](https://github.com/Manas-2007/Internship-Training.git)
 cd Internship-Training
 ```
 
