@@ -74,7 +74,7 @@ export default function Addresses() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
-        {/* Header Area */}
+        {/* Header */}
         <View 
           className="px-5 py-4 md:py-5 border-b shadow-sm z-10"
           style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
@@ -93,7 +93,7 @@ export default function Addresses() {
           </View>
         </View>
 
-        {/* Main Content Area */}
+        {/* Main Content */}
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40, paddingTop: isLargeScreen ? 32 : 16 }}

@@ -57,7 +57,6 @@ export default function NotificationsScreen() {
                 setNotifications(response.data.notifications || []);
             }
         } catch (error) {
-            // Silently handle error in production
         } finally {
             setLoading(false);
         }
@@ -69,8 +68,6 @@ export default function NotificationsScreen() {
         }
 
         if (item.isRead) return;
-
-        // Optimistic UI Update
         setNotifications(prev => 
             prev.map(notif => notif._id === item._id ? { ...notif, isRead: true } : notif)
         );
@@ -82,7 +79,6 @@ export default function NotificationsScreen() {
             });
             fetchUnreadNotificationsCount();
         } catch (error) {
-            // Silently handle error
         }
     };
 
@@ -197,7 +193,6 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
     safeArea: { 
         flex: 1,
-        // 👉 Android header overlapping fix:
         paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     },
     header: { 

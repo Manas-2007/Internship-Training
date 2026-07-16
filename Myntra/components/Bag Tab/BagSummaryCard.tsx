@@ -30,37 +30,82 @@ export default function BagSummaryCard({
       >
         <View className="flex-row items-center mb-6">
           <Ionicons name="receipt" size={20} color={colors.primary} />
-          <Text className="text-lg md:text-xl font-bold ml-2.5 tracking-tight" style={{ color: colors.textMain }}>
+          <Text
+            className="text-lg md:text-xl font-bold ml-2.5 tracking-tight"
+            style={{ color: colors.textMain }}
+          >
             Price Details
           </Text>
         </View>
 
         <View className="flex-row justify-between mb-4">
-          <Text className="text-sm md:text-base font-medium" style={{ color: colors.textMuted }}>Total MRP</Text>
-          <Text className="font-semibold text-sm md:text-base" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
+          <Text
+            className="text-sm md:text-base font-medium"
+            style={{ color: colors.textMuted }}
+          >
+            Total MRP
+          </Text>
+          <Text
+            className="font-semibold text-sm md:text-base"
+            style={{ color: colors.textMain }}
+          >
+            ₹{totalAmount}
+          </Text>
         </View>
 
         <View className="flex-row justify-between mb-4">
-          <Text className="text-sm md:text-base font-medium" style={{ color: colors.textMuted }}>Platform Fee</Text>
-          <Text className="font-semibold text-sm md:text-base" style={{ color: isDark ? '#34d399' : '#059669' }}>FREE</Text>
+          <Text
+            className="text-sm md:text-base font-medium"
+            style={{ color: colors.textMuted }}
+          >
+            Platform Fee
+          </Text>
+          <Text
+            className="font-semibold text-sm md:text-base"
+            style={{ color: isDark ? "#34d399" : "#059669" }}
+          >
+            FREE
+          </Text>
         </View>
 
         <View
           className="flex-row justify-between mb-6 pb-6 border-b border-dashed"
           style={{ borderBottomColor: colors.border }}
         >
-          <Text className="text-sm md:text-base font-medium" style={{ color: colors.textMuted }}>Shipping Fee</Text>
-          <Text className="font-semibold text-sm md:text-base" style={{ color: isDark ? '#34d399' : '#059669' }}>FREE</Text>
+          <Text
+            className="text-sm md:text-base font-medium"
+            style={{ color: colors.textMuted }}
+          >
+            Shipping Fee
+          </Text>
+          <Text
+            className="font-semibold text-sm md:text-base"
+            style={{ color: isDark ? "#34d399" : "#059669" }}
+          >
+            FREE
+          </Text>
         </View>
 
         <View className="flex-row justify-between items-center mb-8 pt-1">
-          <Text className="font-bold text-base md:text-lg" style={{ color: colors.textMain }}>Total Amount</Text>
-          <Text className="font-bold text-xl md:text-2xl tracking-tight" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
+          <Text
+            className="font-bold text-base md:text-lg"
+            style={{ color: colors.textMain }}
+          >
+            Total Amount
+          </Text>
+          <Text
+            className="font-bold text-xl md:text-2xl tracking-tight"
+            style={{ color: colors.textMain }}
+          >
+            ₹{totalAmount}
+          </Text>
         </View>
 
         <TouchableOpacity
           className="w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"
-          style={{ backgroundColor: isDisabled ? colors.border : colors.primary }}
+          style={{
+            backgroundColor: isDisabled ? colors.border : colors.primary,
+          }}
           onPress={handleCheckout}
           disabled={isDisabled}
         >
@@ -86,8 +131,18 @@ export default function BagSummaryCard({
       }}
     >
       <View className="flex-row justify-between items-center mb-4">
-        <Text className="font-semibold text-sm" style={{ color: colors.textMuted }}>Total Amount</Text>
-        <Text className="font-bold text-xl tracking-tight" style={{ color: colors.textMain }}>₹{totalAmount}</Text>
+        <Text
+          className="font-semibold text-sm"
+          style={{ color: colors.textMuted }}
+        >
+          Total Amount
+        </Text>
+        <Text
+          className="font-bold text-xl tracking-tight"
+          style={{ color: colors.textMain }}
+        >
+          ₹{totalAmount}
+        </Text>
       </View>
       <TouchableOpacity
         className="w-full py-4 rounded-xl items-center justify-center hover:opacity-90 transition-opacity cursor-pointer shadow-sm shadow-pink-200"

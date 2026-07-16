@@ -2,28 +2,29 @@ import React, { useEffect } from "react";
 import { LogBox } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, router } from "expo-router";
-import * as Notifications from 'expo-notifications';
-import axios from 'axios';
-import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated';
+import * as Notifications from "expo-notifications";
+import axios from "axios";
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from "react-native-reanimated";
 import "../global.css";
 import { GlobalProvider } from "./context/GlobalContext";
-import { ThemeProvider } from './context/ThemeContext';
-import { API_URL } from './constants/api';
-import { registerForPushNotificationsAsync } from '../utils/notifications';
+import { ThemeProvider } from "./context/ThemeContext";
+import { API_URL } from "./constants/api";
+import { registerForPushNotificationsAsync } from "../utils/notifications";
 
-LogBox.ignoreLogs([
-  'expo-notifications: Android Push notifications'
-]);
+LogBox.ignoreLogs(["expo-notifications: Android Push notifications"]);
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
-  strict: false, 
+  strict: false,
 });
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true, 
-    shouldShowList: true,   
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -35,7 +36,7 @@ export default function Layout() {
       try {
         const userToken = await AsyncStorage.getItem("userToken");
         let pushToken = null;
-        
+
         try {
           pushToken = await registerForPushNotificationsAsync();
         } catch (e) {
@@ -43,17 +44,16 @@ export default function Layout() {
         }
 
         if (pushToken) {
-          await AsyncStorage.setItem('pushToken', pushToken);
+          await AsyncStorage.setItem("pushToken", pushToken);
 
           if (userToken) {
             try {
               await axios.put(
                 `${API_URL}/api/auth/update-push-token`,
                 { pushToken },
-                { headers: { Authorization: `Bearer ${userToken}` } }
+                { headers: { Authorization: `Bearer ${userToken}` } },
               );
             } catch (syncError) {
-              // Silently ignore offline sync errors
             }
           }
         }
@@ -64,19 +64,21 @@ export default function Layout() {
 
     setupAppAndNotifications();
 
-    const notificationSubscription = Notifications.addNotificationReceivedListener((notification) => {
-      // Foreground notification logic
-    });
+    const notificationSubscription =
+      Notifications.addNotificationReceivedListener((notification) => {
+        // Foreground notification logic
+      });
 
-    const responseSubscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data;
-      
-      if (data?.url) {
-        requestAnimationFrame(() => {
-          router.push(data.url as any);
-        });
-      }
-    });
+    const responseSubscription =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const data = response.notification.request.content.data;
+
+        if (data?.url) {
+          requestAnimationFrame(() => {
+            router.push(data.url as any);
+          });
+        }
+      });
 
     return () => {
       notificationSubscription.remove();

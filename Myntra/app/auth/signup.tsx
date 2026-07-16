@@ -113,7 +113,6 @@ export default function SignUp() {
           ]}
         >
           
-          {/* Image Section */}
           <View style={isLargeScreen ? { width: '50%' } : { height: height * 0.35, width: '100%' }}>
             <Image
               source={{

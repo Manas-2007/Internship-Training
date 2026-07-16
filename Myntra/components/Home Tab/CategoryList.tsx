@@ -9,7 +9,10 @@ interface CategoryListProps {
   isLargeScreen: boolean;
 }
 
-export default function CategoryList({ categories, isLargeScreen }: CategoryListProps) {
+export default function CategoryList({
+  categories,
+  isLargeScreen,
+}: CategoryListProps) {
   const router = useRouter();
   const { colors } = useTheme();
 
@@ -19,15 +22,28 @@ export default function CategoryList({ categories, isLargeScreen }: CategoryList
     <View className="mt-8 md:mt-12 w-full">
       <View className="max-w-6xl mx-auto w-full px-4 lg:px-4">
         <View className="flex-row justify-between items-center mb-5 md:mb-6 px-1 lg:px-0">
-          <Text className="text-lg md:text-xl font-bold tracking-wide" style={{ color: colors.textMain }}>
+          <Text
+            className="text-lg md:text-xl font-bold tracking-wide"
+            style={{ color: colors.textMain }}
+          >
             SHOP BY CATEGORY
           </Text>
           <TouchableOpacity
             className="flex-row items-center cursor-pointer hover:opacity-70 transition-opacity"
             onPress={() => router.push("/categories")}
           >
-            <Text className="font-bold text-xs md:text-sm tracking-wide" style={{ color: colors.primary }}>VIEW ALL</Text>
-            <Ionicons name="arrow-forward" size={14} color={colors.primary} style={{ marginLeft: 4 }} />
+            <Text
+              className="font-bold text-xs md:text-sm tracking-wide"
+              style={{ color: colors.primary }}
+            >
+              VIEW ALL
+            </Text>
+            <Ionicons
+              name="arrow-forward"
+              size={14}
+              color={colors.primary}
+              style={{ marginLeft: 4 }}
+            />
           </TouchableOpacity>
         </View>
 
@@ -39,19 +55,27 @@ export default function CategoryList({ categories, isLargeScreen }: CategoryList
                 className="items-center group cursor-pointer w-24 md:w-28"
                 activeOpacity={0.9}
                 onPress={() => {
-                  router.push({ pathname: "/categories", params: { categoryName: cat.name } });
+                  router.push({
+                    pathname: "/categories",
+                    params: { categoryName: cat.name },
+                  });
                 }}
               >
-                <View 
+                <View
                   className="w-24 h-24 md:w-28 md:h-28 rounded-full items-center justify-center shadow-md border-2 border-transparent transition-colors p-1"
                   style={{ backgroundColor: colors.surface }}
                 >
                   <Image
-                    source={{ uri: cat.image || "https://via.placeholder.com/150" }}
+                    source={{
+                      uri: cat.image || "https://via.placeholder.com/150",
+                    }}
                     className="w-full h-full rounded-full object-cover"
                   />
                 </View>
-                <Text className="mt-3 text-sm font-bold tracking-tight text-center" style={{ color: colors.textMain }}>
+                <Text
+                  className="mt-3 text-sm font-bold tracking-tight text-center"
+                  style={{ color: colors.textMain }}
+                >
                   {cat.name}
                 </Text>
               </TouchableOpacity>
@@ -70,19 +94,30 @@ export default function CategoryList({ categories, isLargeScreen }: CategoryList
                 className="items-center mr-5 md:mr-6"
                 activeOpacity={0.7}
                 onPress={() => {
-                  router.push({ pathname: "/categories", params: { categoryName: cat.name } });
+                  router.push({
+                    pathname: "/categories",
+                    params: { categoryName: cat.name },
+                  });
                 }}
               >
-                <View 
+                <View
                   className="w-20 h-20 md:w-24 md:h-24 rounded-full items-center justify-center shadow-sm border p-1"
-                  style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+                  style={{
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  }}
                 >
                   <Image
-                    source={{ uri: cat.image || "https://via.placeholder.com/150" }}
+                    source={{
+                      uri: cat.image || "https://via.placeholder.com/150",
+                    }}
                     className="w-full h-full rounded-full object-cover"
                   />
                 </View>
-                <Text className="mt-2.5 text-[12px] md:text-sm font-bold tracking-tight" style={{ color: colors.textMain }}>
+                <Text
+                  className="mt-2.5 text-[12px] md:text-sm font-bold tracking-tight"
+                  style={{ color: colors.textMain }}
+                >
                   {cat.name}
                 </Text>
               </TouchableOpacity>

@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useColorScheme } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useColorScheme } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const lightTheme = {
   background: "#ffffff",
@@ -23,8 +23,8 @@ const darkTheme = {
 const ThemeContext = createContext<any>(null);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const systemColorScheme = useColorScheme(); 
-  const [themeMode, setThemeMode] = useState("System"); 
+  const systemColorScheme = useColorScheme();
+  const [themeMode, setThemeMode] = useState("System");
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
           setThemeMode(savedTheme);
         }
       } catch (error) {
-        console.log("Error loading theme:", error);
+        console.error("Error loading theme:", error);
       }
     };
     loadTheme();
@@ -56,7 +56,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await AsyncStorage.setItem("@app_theme", mode);
     } catch (error) {
-      console.log("Error saving theme:", error);
+      console.error("Error saving theme:", error);
     }
   };
 

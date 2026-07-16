@@ -38,14 +38,23 @@ export default function SavedLaterSection({
   if (savedItems.length === 0) return null;
 
   return (
-    <View className="mt-4 pt-6 border-t border-dashed" style={{ borderTopColor: colors.border }}>
-      <Text className="font-bold text-base uppercase tracking-widest mb-4" style={{ color: colors.textMuted }}>
+    <View
+      className="mt-4 pt-6 border-t border-dashed"
+      style={{ borderTopColor: colors.border }}
+    >
+      <Text
+        className="font-bold text-base uppercase tracking-widest mb-4"
+        style={{ color: colors.textMuted }}
+      >
         Saved For Later ({savedItems.length})
       </Text>
 
       {savedItems.map((item) => {
         const product = item.productId || ({} as Product);
-        const imageUrl = product.images?.[0] || product.image || "https://via.placeholder.com/150";
+        const imageUrl =
+          product.images?.[0] ||
+          product.image ||
+          "https://via.placeholder.com/150";
 
         return (
           <View
@@ -53,7 +62,11 @@ export default function SavedLaterSection({
             className={`flex-row p-4 md:p-5 rounded-2xl border mb-4 md:mb-5 shadow-sm transition-all ${
               isDesktop ? "hover:shadow-md" : ""
             }`}
-            style={{ backgroundColor: colors.surface, borderColor: colors.border, opacity: 0.85 }}
+            style={{
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+              opacity: 0.85,
+            }}
           >
             <View className="relative">
               <TouchableOpacity
@@ -64,7 +77,10 @@ export default function SavedLaterSection({
                 <Image
                   source={{ uri: imageUrl }}
                   className="w-[100px] h-[130px] md:w-[120px] md:h-[160px] rounded-xl object-cover border"
-                  style={{ backgroundColor: colors.background, borderColor: colors.border }}
+                  style={{
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                  }}
                 />
               </TouchableOpacity>
 
@@ -72,7 +88,9 @@ export default function SavedLaterSection({
                 onPress={() => removeBagItem(item._id)}
                 className="absolute -top-2.5 -right-2.5 p-1.5 rounded-full shadow-sm border z-10 transition-colors"
                 style={{
-                  backgroundColor: isDark ? 'rgba(38,38,38,0.95)' : 'rgba(255,255,255,0.95)',
+                  backgroundColor: isDark
+                    ? "rgba(38,38,38,0.95)"
+                    : "rgba(255,255,255,0.95)",
                   borderColor: colors.border,
                 }}
               >
@@ -82,7 +100,11 @@ export default function SavedLaterSection({
 
             <View className="flex-1 ml-5 md:ml-6 justify-between py-1">
               <View>
-                <Text className="text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase" numberOfLines={1} style={{ color: colors.textMuted }}>
+                <Text
+                  className="text-[10px] md:text-xs font-bold mb-1.5 tracking-widest uppercase"
+                  numberOfLines={1}
+                  style={{ color: colors.textMuted }}
+                >
                   {product.brand || "Brand"}
                 </Text>
                 <Text
@@ -92,10 +114,22 @@ export default function SavedLaterSection({
                 >
                   {product.name || "Product Name"}
                 </Text>
-                <Text className="text-xs md:text-sm font-medium mb-2.5" style={{ color: colors.textMuted }}>
-                  Size: <Text className="font-bold" style={{ color: colors.textMain }}>{item.size || "M"}</Text>
+                <Text
+                  className="text-xs md:text-sm font-medium mb-2.5"
+                  style={{ color: colors.textMuted }}
+                >
+                  Size:{" "}
+                  <Text
+                    className="font-bold"
+                    style={{ color: colors.textMain }}
+                  >
+                    {item.size || "M"}
+                  </Text>
                 </Text>
-                <Text className="font-bold text-lg md:text-xl tracking-tight" style={{ color: colors.textMain }}>
+                <Text
+                  className="font-bold text-lg md:text-xl tracking-tight"
+                  style={{ color: colors.textMain }}
+                >
                   ₹{product.price || 0}
                 </Text>
               </View>
@@ -106,10 +140,15 @@ export default function SavedLaterSection({
                   className="px-4 py-2 rounded-lg border"
                   style={{
                     borderColor: colors.primary,
-                    backgroundColor: isDark ? 'rgba(236,72,153,0.1)' : 'rgba(236,72,153,0.05)',
+                    backgroundColor: isDark
+                      ? "rgba(236,72,153,0.1)"
+                      : "rgba(236,72,153,0.05)",
                   }}
                 >
-                  <Text className="text-xs font-bold uppercase tracking-wide" style={{ color: colors.primary }}>
+                  <Text
+                    className="text-xs font-bold uppercase tracking-wide"
+                    style={{ color: colors.primary }}
+                  >
                     Move to Bag
                   </Text>
                 </TouchableOpacity>

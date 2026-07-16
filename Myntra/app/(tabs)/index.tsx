@@ -140,7 +140,6 @@ export default function Home() {
     return "48%";
   };
 
-  // 👉 FIXED: Hook early return ke theek UPAR aa gaya hai
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
@@ -158,7 +157,6 @@ export default function Home() {
     }, [])
   );
 
-  // 👉 Early return hooks ke BAAD hai
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center" style={{ backgroundColor: colors.background }}>

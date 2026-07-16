@@ -181,7 +181,7 @@ export default function Transactions() {
 
         <View className="w-full max-w-4xl mx-auto flex-1">
           
-          {/* Action Row: Dropdown + Export Button */}
+          {/* Action Row :  Dropdown + Export Button */}
           <View className="flex-row justify-between items-center px-4 py-4 z-20">
             <TouchableOpacity 
               activeOpacity={0.8}

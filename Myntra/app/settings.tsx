@@ -61,7 +61,6 @@ export default function Settings() {
           </View>
         </View>
 
-        {/* Content */}
         <ScrollView 
           className="flex-1"
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 40, paddingTop: isLargeScreen ? 32 : 16 }}
@@ -69,7 +68,6 @@ export default function Settings() {
         >
           <View className="w-full max-w-3xl mx-auto px-4">
             
-            {/* Settings Card */}
             <View 
               className="rounded-2xl border shadow-sm z-50"
               style={{ backgroundColor: colors.surface, borderColor: colors.border }}

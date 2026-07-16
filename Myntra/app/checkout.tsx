@@ -181,10 +181,9 @@ export default function Checkout() {
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
-      {/* 1400px Centering Wrapper */}
       <View className="w-full max-w-[1400px] mx-auto flex-1 relative">
         
-        {/* Header Area */}
+        {/* Header */}
         <View 
           className="px-5 py-4 md:py-5 border-b flex-row items-center z-10 shadow-sm"
           style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}

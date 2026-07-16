@@ -70,7 +70,7 @@ export default function Payments() {
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }} edges={["top"]}>
       <View className="w-full max-w-[1400px] mx-auto flex-1">
         
-        {/* Header Area */}
+        {/* Header */}
         <View 
           className="px-5 py-4 md:py-5 border-b shadow-sm z-10"
           style={{ backgroundColor: colors.surface, borderBottomColor: colors.border }}
@@ -97,7 +97,7 @@ export default function Payments() {
         >
           <View className="w-full max-w-3xl mx-auto px-4">
             
-            {/* Add New Card Box */}
+            {/* Card Box */}
             <View 
               className="p-5 md:p-6 rounded-2xl mb-8 shadow-sm border"
               style={{ backgroundColor: colors.surface, borderColor: colors.border }}

@@ -8,14 +8,22 @@ interface Props {
   onSelect?: (sub: string) => void;
 }
 
-export default function SubcategoryPills({ subCategories, selectedSubCategory, onSelect }: Props) {
+export default function SubcategoryPills({
+  subCategories,
+  selectedSubCategory,
+  onSelect,
+}: Props) {
   const { colors, isDark } = useTheme();
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6 px-4">
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      className="mb-6 px-4"
+    >
       {subCategories.map((sub, index) => {
         const isSelected = selectedSubCategory === sub;
-        
+
         return (
           <TouchableOpacity
             key={index}
@@ -23,13 +31,21 @@ export default function SubcategoryPills({ subCategories, selectedSubCategory, o
             activeOpacity={0.8}
             className="px-4 py-2 rounded-full mr-3 border transition-colors cursor-pointer"
             style={{
-              backgroundColor: isSelected ? colors.primary : (isDark ? '#1e293b' : '#f5f5f5'),
-              borderColor: isSelected ? colors.primary : (isDark ? '#334155' : 'transparent'),
+              backgroundColor: isSelected
+                ? colors.primary
+                : isDark
+                  ? "#1e293b"
+                  : "#f5f5f5",
+              borderColor: isSelected
+                ? colors.primary
+                : isDark
+                  ? "#334155"
+                  : "transparent",
             }}
           >
-            <Text 
-              className="font-medium" 
-              style={{ color: isSelected ? '#ffffff' : colors.textMain }}
+            <Text
+              className="font-medium"
+              style={{ color: isSelected ? "#ffffff" : colors.textMain }}
             >
               {sub}
             </Text>

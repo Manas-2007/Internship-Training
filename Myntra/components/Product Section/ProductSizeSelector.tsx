@@ -16,27 +16,27 @@ export default function ProductSizeSelector({
   const { colors } = useTheme();
 
   return (
-    <View 
+    <View
       className="mt-8 border-t pt-6 md:pt-8"
       style={{ borderTopColor: colors.border }}
     >
       <View className="flex-row justify-between items-center mb-4 md:mb-5">
-        <Text 
-          className="text-base md:text-lg font-bold tracking-tight" 
+        <Text
+          className="text-base md:text-lg font-bold tracking-tight"
           style={{ color: colors.textMain }}
         >
           Select Size
         </Text>
         <TouchableOpacity className="cursor-pointer group" activeOpacity={0.7}>
-          <Text 
-            className="font-bold text-xs md:text-sm tracking-wider uppercase group-hover:underline" 
+          <Text
+            className="font-bold text-xs md:text-sm tracking-wider uppercase group-hover:underline"
             style={{ color: colors.primary }}
           >
             SIZE CHART
           </Text>
         </TouchableOpacity>
       </View>
-      
+
       <View className="flex-row flex-wrap gap-3 md:gap-4">
         {sizes.map((size) => {
           const isSelected = selectedSize === size;
@@ -53,7 +53,7 @@ export default function ProductSizeSelector({
             >
               <Text
                 className="font-bold text-sm md:text-base"
-                style={{ color: isSelected ? '#ffffff' : colors.textMain }}
+                style={{ color: isSelected ? "#ffffff" : colors.textMain }}
               >
                 {size}
               </Text>

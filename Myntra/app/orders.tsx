@@ -42,7 +42,7 @@ export default function Orders() {
       );
       setOrders(Array.isArray(response.data) ? response.data.reverse() : []);
     } catch (error) {
-      console.log("Fetch Orders Error:", error);
+      console.error("Fetch Orders Error:", error);
     } finally {
       setLoading(false);
     }
