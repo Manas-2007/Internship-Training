@@ -39,7 +39,7 @@ A full-stack e-commerce application inspired by **Myntra** with user authenticat
 ### 1. Clone the Repository
 
 ```bash
-[git clone https://github.com/Manas-2007/Internship-Training.git](https://github.com/Manas-2007/Internship-Training.git)
+git clone https://github.com/Manas-2007/Internship-Training.git
 cd Internship-Training
 ```
 
@@ -66,7 +66,7 @@ npm install
 Create a `.env` file inside the **server** folder.
 
 ```env
-PORT=5000
+PORT=2000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
 ```
