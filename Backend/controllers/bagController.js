@@ -109,6 +109,7 @@ exports.updateQuantity = async (req, res) => {
 
 exports.validateCheckout = async (req, res) => {
   try {
+    const expectedTotal = req.query.expectedTotal ? Number(req.query.expectedTotal) : null;
     const activeItems = await Bag.find({
       userId: req.params.userid,
       status: "active",
@@ -142,7 +143,9 @@ exports.validateCheckout = async (req, res) => {
       }
       validTotal += product.price * item.quantity;
     }
-
+    if (expectedTotal !== null && validTotal !== expectedTotal) {
+  issues.push(`Prices have changed since you added items. The new total is ₹${validTotal}.`);
+}
     if (issues.length > 0) {
       return res.status(409).json({
         success: false,

@@ -131,10 +131,10 @@ export default function Bag() {
       const decoded: any = jwtDecode(token!);
       const userId = decoded.id || decoded._id;
 
-      const res = await axios.get(
-        `${API_URL}/api/bag/validate/${userId}?t=${new Date().getTime()}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+     const res = await axios.get(
+  `${API_URL}/api/bag/validate/${userId}?expectedTotal=${totalAmount}&t=${new Date().getTime()}`,
+  { headers: { Authorization: `Bearer ${token}` } }
+);
       if (res.data.success) {
         router.push({ pathname: "/checkout", params: { totalAmount: String(res.data.cartTotal) } });
       }
