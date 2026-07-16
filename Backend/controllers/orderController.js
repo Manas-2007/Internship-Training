@@ -6,6 +6,7 @@ const Transaction = require("../models/Transaction");
 const TransactionAudit = require("../models/TransactionAudit");
 const { enqueueRealTimeNotification } = require("../services/queueService");
 
+// product tracking logic
 const generateRandomTracking = () => {
   const carriers = ["Delhivery", "Bluedart", "Ecom Express", "XpressBees"];
   const statusOptions = [
@@ -34,6 +35,7 @@ const generateRandomTracking = () => {
   };
 };
 
+// Creating a new order function
 exports.createOrder = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -140,6 +142,7 @@ exports.createOrder = async (req, res) => {
   }
 };
 
+// Fetch User Orders
 exports.getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ userId: req.params.userid }).populate(

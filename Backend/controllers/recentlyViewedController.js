@@ -2,6 +2,7 @@ const RecentlyViewed = require("../models/RecentlyViewed");
 const Product = require("../models/Product");
 const Wishlist = require("../models/Wishlist");
 
+// Recenlty Viewed Logic
 exports.syncRecentlyViewed = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -61,6 +62,7 @@ exports.syncRecentlyViewed = async (req, res) => {
   }
 };
 
+// Recommendation logic
 exports.getRecommendations = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -73,19 +75,21 @@ exports.getRecommendations = async (req, res) => {
     const viewedProductIds = history
       ? history.items.map((item) => item.product?._id).filter(Boolean)
       : [];
-    
-    const wishlistedProductIds = userWishlistItems.map((item) => item.productId?._id).filter(Boolean);
+
+    const wishlistedProductIds = userWishlistItems
+      .map((item) => item.productId?._id)
+      .filter(Boolean);
 
     let combinedCategories = new Set();
-    
-    if (history) {  
+
+    if (history) {
       history.items.forEach(
         (item) =>
           item.product?.category &&
-          combinedCategories.add(item.product.category)
+          combinedCategories.add(item.product.category),
       );
     }
-    
+
     userWishlistItems.forEach((item) => {
       if (item.productId?.category) {
         combinedCategories.add(item.productId.category);

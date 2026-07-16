@@ -2,6 +2,7 @@ const Bag = require("../models/Bag");
 const User = require("../models/User");
 const { scheduleDelayedNotification } = require("../services/queueService");
 
+// Add items in Bag
 exports.addToBag = async (req, res) => {
   try {
     const { userId, productId, size, quantity } = req.body;
@@ -40,6 +41,8 @@ exports.addToBag = async (req, res) => {
   }
 };
 
+
+// fetch item from bag
 exports.getBag = async (req, res) => {
   try {
     const bag = await Bag.find({ userId: req.params.userid }).populate(
@@ -58,6 +61,8 @@ exports.getBag = async (req, res) => {
   }
 };
 
+
+// Bag item status 
 exports.toggleItemStatus = async (req, res) => {
   try {
     const item = await Bag.findById(req.params.itemid);
@@ -78,6 +83,8 @@ exports.toggleItemStatus = async (req, res) => {
   }
 };
 
+
+// Remove item from the bag
 exports.removeFromBag = async (req, res) => {
   try {
     await Bag.findByIdAndDelete(req.params.itemid);
@@ -87,6 +94,8 @@ exports.removeFromBag = async (req, res) => {
   }
 };
 
+
+// Update No. of items
 exports.updateQuantity = async (req, res) => {
   try {
     const item = await Bag.findById(req.params.itemid);
@@ -107,6 +116,8 @@ exports.updateQuantity = async (req, res) => {
   }
 };
 
+
+// Item Validation Logic
 exports.validateCheckout = async (req, res) => {
   try {
     const expectedTotal = req.query.expectedTotal ? Number(req.query.expectedTotal) : null;

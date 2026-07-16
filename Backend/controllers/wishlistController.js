@@ -1,6 +1,7 @@
 const Wishlist = require("../models/Wishlist");
 const mongoose = require("mongoose");
 
+// Item add to wishlist
 exports.addToWishlist = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -43,6 +44,7 @@ exports.getWishlist = async (req, res) => {
   }
 };
 
+// Item delete from wishlist
 exports.removeFromWishlist = async (req, res) => {
   try {
     const userId = req.user.id;

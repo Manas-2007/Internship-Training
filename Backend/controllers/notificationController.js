@@ -36,13 +36,11 @@ exports.markAsRead = async (req, res) => {
         .json({ success: false, message: "Notification not found" });
     }
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Notification marked as read",
-        notification,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+      notification,
+    });
   } catch (error) {
     res
       .status(500)

@@ -2,6 +2,7 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const Deal = require("../models/Deal");
 
+// Fetching Home data (Main)
 exports.getHomeData = async (req, res) => {
   try {
     const [categories, deals, products] = await Promise.all([
@@ -16,6 +17,7 @@ exports.getHomeData = async (req, res) => {
   }
 };
 
+// Cateogory section
 exports.getCategories = async (req, res) => {
   try {
     const categories = await Category.find().populate("productId");
@@ -26,6 +28,7 @@ exports.getCategories = async (req, res) => {
   }
 };
 
+// Product section
 exports.getProducts = async (req, res) => {
   try {
     const products = await Product.find();

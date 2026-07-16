@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 
+// User Registration 
 exports.registerUser = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty())
@@ -25,6 +26,7 @@ exports.registerUser = async (req, res) => {
   }
 };
 
+// User Login
 exports.loginUser = async (req, res) => {
   const { email, password, pushToken } = req.body;
   try {
@@ -54,6 +56,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+// User Profile Fetch
 exports.getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -64,6 +67,8 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
+
+// Unique User Token
 exports.updatePushToken = async (req, res) => {
   try {
     const { pushToken } = req.body;

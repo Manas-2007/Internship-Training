@@ -1,7 +1,7 @@
 const Transaction = require("../models/Transaction");
 const PDFDocument = require("pdfkit");
 
-// STREAMING CSV EXPORT
+// Streaming CSV format
 exports.exportTransactionsCSV = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id || req.user.userId;
@@ -37,7 +37,7 @@ exports.exportTransactionsCSV = async (req, res) => {
   }
 };
 
-// GENERATE SECURE PDF RECEIPT
+// Secure pdf receipt
 exports.downloadReceiptPDF = async (req, res) => {
   try {
     const { id } = req.params;
