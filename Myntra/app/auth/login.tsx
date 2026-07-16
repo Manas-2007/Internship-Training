@@ -40,6 +40,7 @@ export default function Login() {
 
     if (Object.keys(tempErrors).length > 0) {
       setErrors(tempErrors);
+      setIsLoading(false);
       return;
     }
 

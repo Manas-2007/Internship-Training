@@ -10,6 +10,7 @@ import {
   ScrollView,
   Alert,
   useWindowDimensions,
+  ActivityIndicator
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -29,6 +30,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const { height, width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
+  const [isLoading, setIsLoading] = useState(false);
 
   // Cross-platform alert helper
   const showMessage = (title: string, message: string) => {
@@ -40,6 +42,7 @@ export default function SignUp() {
   };
 
   const handleSignUp = async () => {
+    setIsLoading(true);
     setErrors({});
 
     const tempErrors: { [key: string]: string } = {};
@@ -49,6 +52,7 @@ export default function SignUp() {
 
     if (Object.keys(tempErrors).length > 0) {
       setErrors(tempErrors);
+      setIsLoading(false);
       return;
     }
 
@@ -78,8 +82,10 @@ export default function SignUp() {
           error.response?.data?.message || "Registration failed"
         );
       }
-    }
-  };
+    }finally {
+    setIsLoading(false); 
+  }
+};
 
   return (
     <KeyboardAvoidingView
@@ -217,14 +223,19 @@ export default function SignUp() {
 
             {/* Sign Up Button */}
             <TouchableOpacity
-              onPress={handleSignUp}
-              className="py-3.5 rounded-xl items-center mt-8 shadow-sm transition-opacity cursor-pointer hover:opacity-90"
-              style={{ backgroundColor: colors.primary }}
-            >
-              <Text className="text-white font-semibold text-base tracking-wide">
-                SIGN UP
-              </Text>
-            </TouchableOpacity>
+                onPress={handleSignUp}
+                disabled={isLoading}
+                className="py-3.5 rounded-xl items-center mt-8 shadow-sm transition-opacity cursor-pointer hover:opacity-90"
+                style={{ backgroundColor: colors.primary, opacity: isLoading ? 0.7 : 1 }}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#ffffff" />
+                ) : (
+                  <Text className="text-white font-semibold text-base tracking-wide">
+                    SIGN UP
+                  </Text>
+                )}
+              </TouchableOpacity>
 
            <TouchableOpacity
   onPress={() => router.push("/auth/login")}
